@@ -1,0 +1,358 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "rules": [
+    {
+      "rule_id": "R-EST-01",
+      "title": "Work started without an estimate",
+      "description": "The issue entered development (or a later stage) and has no estimate on the project's estimate basis.",
+      "kind": "rule",
+      "severity": "breach",
+      "version": "0.1.0",
+      "threshold": null,
+      "needs": [
+        "Estimate (story points)",
+        "Status history"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 270,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Started without an estimate"
+    },
+    {
+      "rule_id": "R-EST-02",
+      "title": "Estimate first set after work started",
+      "description": "The estimate was first recorded after the issue had already entered development; it may describe the work rather than predict it.",
+      "kind": "rule",
+      "severity": "warning",
+      "version": "0.1.0",
+      "threshold": "1 h grace",
+      "needs": [
+        "Estimate (story points)",
+        "Field history"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 180,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Estimate set late"
+    },
+    {
+      "rule_id": "R-EFF-01",
+      "title": "Effort far beyond the estimate",
+      "description": "Logged effort on finished work is at least the threshold times the estimate.",
+      "kind": "rule",
+      "severity": "breach",
+      "version": "0.1.0",
+      "threshold": "1.5×",
+      "needs": [
+        "Estimate (story points)",
+        "Logged time"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 76,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Effort over estimate"
+    },
+    {
+      "rule_id": "R-FLOW-01",
+      "title": "Reached testing without code review",
+      "description": "The issue entered the testing stage with no code-review evidence recorded before that moment.",
+      "kind": "rule",
+      "severity": "breach",
+      "version": "0.1.0",
+      "threshold": null,
+      "needs": [
+        "Code review evidence",
+        "A testing stage in the workflow"
+      ],
+      "measurable": false,
+      "missing_evidence": [
+        "code_review",
+        "testing"
+      ],
+      "open": 0,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Reached a stage without evidence"
+    },
+    {
+      "rule_id": "R-FLOW-02",
+      "title": "Skipped a stage",
+      "description": "A status change jumped forward over a stage the project's workflow maps (for example To Do straight to Done).",
+      "kind": "rule",
+      "severity": "breach",
+      "version": "0.1.0",
+      "threshold": null,
+      "needs": [
+        "Mapped stages",
+        "Status history"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 174,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Skipped a stage"
+    },
+    {
+      "rule_id": "R-FLOW-03",
+      "title": "Reopened after Done",
+      "description": "The issue left a Done status for a status that is not Done.",
+      "kind": "rule",
+      "severity": "warning",
+      "version": "0.1.0",
+      "threshold": null,
+      "needs": [
+        "Status history"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 56,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Reopened after Done"
+    },
+    {
+      "rule_id": "R-HYG-01",
+      "title": "In progress with no assignee",
+      "description": "The issue is in progress and nobody is assigned.",
+      "kind": "rule",
+      "severity": "breach",
+      "version": "0.1.0",
+      "threshold": null,
+      "needs": [
+        "Assignee"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 3,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "In progress, no assignee"
+    },
+    {
+      "rule_id": "W-EFF-01",
+      "title": "Effort burning fast",
+      "description": "Work still in progress has already used at least the threshold share of its estimate.",
+      "kind": "warning",
+      "severity": "warning",
+      "version": "0.1.0",
+      "threshold": "0.8×",
+      "needs": [
+        "Estimate (story points)",
+        "Logged time"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 11,
+      "escalates_to": "R-EFF-01",
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Effort over estimate"
+    },
+    {
+      "rule_id": "W-AGE-01",
+      "title": "Stuck in a status",
+      "description": "Longer in its current status than 90% of finished work took there.",
+      "kind": "warning",
+      "severity": "warning",
+      "version": "0.1.0",
+      "threshold": "Slower than 90% of finished work in the status",
+      "needs": [
+        "Status history",
+        "Closed work from the last 180 days"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 14,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Unusually long in a status"
+    },
+    {
+      "rule_id": "W-REV-01",
+      "title": "No review evidence yet",
+      "description": "In development longer than 75% of finished work, with no code review recorded.",
+      "kind": "warning",
+      "severity": "warning",
+      "version": "0.1.0",
+      "threshold": "Slower than 75% of finished work in development",
+      "needs": [
+        "Code review evidence",
+        "Closed work from the last 180 days"
+      ],
+      "measurable": false,
+      "missing_evidence": [
+        "code_review"
+      ],
+      "open": 0,
+      "escalates_to": "R-FLOW-01",
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "No evidence after usual time"
+    },
+    {
+      "rule_id": "W-SPR-01",
+      "title": "Sprint at risk",
+      "description": "The active sprint has at most the given days left and more than the given share of its issues not yet started.",
+      "kind": "warning",
+      "severity": "warning",
+      "version": "0.1.0",
+      "threshold": "≤ 2 days left, > 30% not started",
+      "needs": [
+        "Sprints"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 1,
+      "escalates_to": null,
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Sprint at risk"
+    },
+    {
+      "rule_id": "W-EST-01",
+      "title": "Unestimated work in the active sprint",
+      "description": "An issue in the active sprint has no estimate.",
+      "kind": "warning",
+      "severity": "warning",
+      "version": "0.1.0",
+      "threshold": null,
+      "needs": [
+        "Sprints",
+        "Estimate (story points)"
+      ],
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 24,
+      "escalates_to": "R-EST-01",
+      "enabled": true,
+      "customised": false,
+      "custom": false,
+      "check_label": "Unestimated in the sprint"
+    }
+  ],
+  "process": {
+    "version": "0.1.0",
+    "project": "DEMO",
+    "stages": [
+      {
+        "stage": "backlog",
+        "label": "Backlog",
+        "mapped_statuses": [
+          "To Do"
+        ],
+        "evidence": "status",
+        "measurable": true,
+        "note": "Work waiting to start sits in To Do."
+      },
+      {
+        "stage": "estimate",
+        "label": "Estimate",
+        "mapped_statuses": [],
+        "evidence": "field",
+        "measurable": true,
+        "note": "Recorded as story points, at 8 hours per point. No original estimates (hours) are used."
+      },
+      {
+        "stage": "development",
+        "label": "Development",
+        "mapped_statuses": [
+          "In Progress"
+        ],
+        "evidence": "status",
+        "measurable": true,
+        "note": "Work in development sits in In Progress."
+      },
+      {
+        "stage": "code_review",
+        "label": "Code review",
+        "mapped_statuses": [],
+        "evidence": "none",
+        "measurable": false,
+        "note": "No status, field or pull-request link records a review, so rules that need one cannot run."
+      },
+      {
+        "stage": "dev_signoff",
+        "label": "Dev sign-off",
+        "mapped_statuses": [],
+        "evidence": "none",
+        "measurable": false,
+        "note": "Nothing in Jira records a developer sign-off."
+      },
+      {
+        "stage": "testing",
+        "label": "Testing",
+        "mapped_statuses": [],
+        "evidence": "none",
+        "measurable": false,
+        "note": "The workflow has no testing status, and no field records testing."
+      },
+      {
+        "stage": "test_review",
+        "label": "Test review",
+        "mapped_statuses": [],
+        "evidence": "none",
+        "measurable": false,
+        "note": "Nothing in Jira records a test review."
+      },
+      {
+        "stage": "test_signoff",
+        "label": "Test sign-off",
+        "mapped_statuses": [],
+        "evidence": "none",
+        "measurable": false,
+        "note": "Nothing in Jira records a test sign-off."
+      },
+      {
+        "stage": "done",
+        "label": "Done",
+        "mapped_statuses": [
+          "Done"
+        ],
+        "evidence": "status",
+        "measurable": true,
+        "note": "Finished work sits in Done."
+      }
+    ],
+    "estimate": {
+      "basis": "points",
+      "field": "story_points",
+      "hours_per_point": 8
+    }
+  }
+}

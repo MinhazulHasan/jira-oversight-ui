@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "project": "DEMO",
+  "outcome": "drafted",
+  "draft": {
+    "title": "Bugs in progress too long",
+    "description": null,
+    "check": "time_in_status_over",
+    "params": {
+      "statuses": [
+        "In Progress"
+      ],
+      "hours": 72
+    },
+    "applies_to": {
+      "status_category": [
+        "indeterminate"
+      ],
+      "issue_type": [
+        "Bug"
+      ]
+    },
+    "severity": "breach"
+  },
+  "explanation": "Flags bugs that stay in progress for more than 3 days.",
+  "note": null,
+  "problems": []
+}

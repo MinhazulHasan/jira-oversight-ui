@@ -1,0 +1,321 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "issue": {
+    "key": "DEMO-1",
+    "summary": "Document help tooltips",
+    "type": "Task",
+    "status": "Done",
+    "status_category": "done",
+    "stage": "done",
+    "epic": {
+      "key": "DEMO-4",
+      "title": "Onboarding flow"
+    },
+    "assignee": {
+      "id": "pbc7fe62842ca",
+      "name": "Ada Brooks",
+      "avatar": null
+    },
+    "created_at": "2025-11-10T09:12:00.000Z",
+    "resolved_at": "2025-11-25T08:25:00.000Z",
+    "story_points": 3,
+    "time_spent_h": 43.75,
+    "estimate_basis": "points",
+    "estimate_set_at": "2025-11-17T11:34:00.000Z",
+    "started_at": "2025-11-12T11:12:00.000Z",
+    "effort_ratio": 1.8229,
+    "effort_threshold": 1.5,
+    "cycle_time_h": 309.2167,
+    "reopen_count": 1,
+    "url": null
+  },
+  "intervals": [
+    {
+      "status": "To Do",
+      "stage": "backlog",
+      "status_category": "new",
+      "entered_at": "2025-11-10T09:12:00.000Z",
+      "left_at": "2025-11-12T11:12:00.000Z",
+      "hours": 50
+    },
+    {
+      "status": "In Progress",
+      "stage": "development",
+      "status_category": "indeterminate",
+      "entered_at": "2025-11-12T11:12:00.000Z",
+      "left_at": "2025-11-17T11:49:00.000Z",
+      "hours": 120.6167
+    },
+    {
+      "status": "Done",
+      "stage": "done",
+      "status_category": "done",
+      "entered_at": "2025-11-17T11:49:00.000Z",
+      "left_at": "2025-11-24T14:57:00.000Z",
+      "hours": 171.1333
+    },
+    {
+      "status": "In Progress",
+      "stage": "development",
+      "status_category": "indeterminate",
+      "entered_at": "2025-11-24T14:57:00.000Z",
+      "left_at": "2025-11-25T08:25:00.000Z",
+      "hours": 17.4667
+    },
+    {
+      "status": "Done",
+      "stage": "done",
+      "status_category": "done",
+      "entered_at": "2025-11-25T08:25:00.000Z",
+      "left_at": null,
+      "hours": null
+    }
+  ],
+  "skipped": [],
+  "changes": [
+    {
+      "changelog_id": "310004",
+      "changed_at": "2025-11-12T11:12:00.000Z",
+      "kind": "status",
+      "field": "status",
+      "from": "To Do",
+      "to": "In Progress"
+    },
+    {
+      "changelog_id": "310008",
+      "changed_at": "2025-11-12T11:12:00.000Z",
+      "kind": "field",
+      "field": "assignee",
+      "from": "Unassigned",
+      "to": "Assigned"
+    },
+    {
+      "changelog_id": "310037",
+      "changed_at": "2025-11-17T11:34:00.000Z",
+      "kind": "field",
+      "field": "story_points",
+      "from": null,
+      "to": "3"
+    },
+    {
+      "changelog_id": "310040",
+      "changed_at": "2025-11-17T11:49:00.000Z",
+      "kind": "status",
+      "field": "status",
+      "from": "In Progress",
+      "to": "Done"
+    },
+    {
+      "changelog_id": "310131",
+      "changed_at": "2025-11-24T14:57:00.000Z",
+      "kind": "status",
+      "field": "status",
+      "from": "Done",
+      "to": "In Progress"
+    },
+    {
+      "changelog_id": "310135",
+      "changed_at": "2025-11-25T08:25:00.000Z",
+      "kind": "status",
+      "field": "status",
+      "from": "In Progress",
+      "to": "Done"
+    }
+  ],
+  "worklogs": [
+    {
+      "week": "2025-11-10",
+      "hours": 17
+    },
+    {
+      "week": "2025-11-17",
+      "hours": 20.25
+    },
+    {
+      "week": "2025-11-24",
+      "hours": 6.5
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "27214a96fe7ccd264ec62c7e8b4b9041",
+      "rule_id": "R-EST-02",
+      "rule_title": "Estimate first set after work started",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "warning",
+      "state": "open",
+      "message": "Story points first set on 17 Nov 2025, 120.4 h after work started",
+      "scope": "issue",
+      "issue_key": "DEMO-1",
+      "issue_summary": "Document help tooltips",
+      "issue_type": "Task",
+      "epic_key": "DEMO-4",
+      "epic_title": "Onboarding flow",
+      "assignee": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "1 h grace",
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2025-11-12T11:12:00.000Z",
+          "changelog_id": "310004"
+        },
+        {
+          "kind": "field_change",
+          "label": "Story points set",
+          "value": "3",
+          "unit": "points",
+          "from": null,
+          "to": "3",
+          "at": "2025-11-17T11:34:00.000Z",
+          "changelog_id": "310037"
+        },
+        {
+          "kind": "metric",
+          "label": "Set after work started",
+          "value": 120.3667,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "2c137fdcd942189c29aa2b5509afeb7c",
+      "rule_id": "R-FLOW-03",
+      "rule_title": "Reopened after Done",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "warning",
+      "state": "open",
+      "message": "Reopened on 24 Nov 2025: Done → In Progress",
+      "scope": "issue",
+      "issue_key": "DEMO-1",
+      "issue_summary": "Document help tooltips",
+      "issue_type": "Task",
+      "epic_key": "DEMO-4",
+      "epic_title": "Onboarding flow",
+      "assignee": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Reopened",
+          "value": "Done → In Progress",
+          "unit": null,
+          "from": "Done",
+          "to": "In Progress",
+          "at": "2025-11-24T14:57:00.000Z",
+          "changelog_id": "310131"
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "45834de40a31472113e2898410f13062",
+      "rule_id": "R-EFF-01",
+      "rule_title": "Effort far beyond the estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Logged 43.8 h against an estimate of 24.0 h (1.82×, threshold 1.5×)",
+      "scope": "issue",
+      "issue_key": "DEMO-1",
+      "issue_summary": "Document help tooltips",
+      "issue_type": "Task",
+      "epic_key": "DEMO-4",
+      "epic_title": "Onboarding flow",
+      "assignee": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "1.5×",
+      "evidence": [
+        {
+          "kind": "metric",
+          "label": "Logged time",
+          "value": 43.75,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Estimate",
+          "value": 24,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Effort ratio",
+          "value": 1.8229,
+          "unit": "ratio",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "status_change",
+          "label": "Moved to Done",
+          "value": "In Progress → Done",
+          "unit": null,
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2025-11-25T08:25:00.000Z",
+          "changelog_id": "310135"
+        }
+      ],
+      "warned_before": null
+    }
+  ]
+}

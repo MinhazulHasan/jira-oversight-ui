@@ -1,0 +1,264 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "entries": [
+    {
+      "id": "f0fef831f5508a01511fc86ad4f93cb4",
+      "at": "2026-11-04T14:18:00.000Z",
+      "viewer": {
+        "hash": "da0ad409cc947e532a081509f6c8c268",
+        "name": "Morgan Ellis"
+      },
+      "level": "people",
+      "project": null,
+      "action": "access_log_view",
+      "subjects": [],
+      "detail": {
+        "days": null,
+        "qa_id": null,
+        "entries": 50
+      }
+    },
+    {
+      "id": "22fd750c20ee24b0d38795898a4458b6",
+      "at": "2026-11-04T14:04:00.000Z",
+      "viewer": {
+        "hash": "da0ad409cc947e532a081509f6c8c268",
+        "name": "Morgan Ellis"
+      },
+      "level": "people",
+      "project": "DEMO",
+      "action": "scorecard_view",
+      "subjects": [
+        {
+          "id": "pbc7fe62842ca",
+          "name": "Ada Brooks",
+          "avatar": null
+        }
+      ],
+      "detail": {
+        "days": 90,
+        "qa_id": null,
+        "entries": null
+      }
+    },
+    {
+      "id": "e353020ca334c0a5f6a099337f4c1f1e",
+      "at": "2026-11-04T13:57:00.000Z",
+      "viewer": {
+        "hash": "da0ad409cc947e532a081509f6c8c268",
+        "name": "Morgan Ellis"
+      },
+      "level": "people",
+      "project": "DEMO",
+      "action": "person_card_view",
+      "subjects": [
+        {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        }
+      ],
+      "detail": {
+        "days": 90,
+        "qa_id": null,
+        "entries": null
+      }
+    },
+    {
+      "id": "2539e757d01bfda93f9d6b1ec0aaa4c0",
+      "at": "2026-11-04T13:49:00.000Z",
+      "viewer": {
+        "hash": "71951790dc5e96b3fd240f618540327a",
+        "name": "Priya Raman"
+      },
+      "level": "people",
+      "project": "DEMO",
+      "action": "person_ask",
+      "subjects": [
+        {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        {
+          "id": "pbc7fe62842ca",
+          "name": "Ada Brooks",
+          "avatar": null
+        }
+      ],
+      "detail": {
+        "days": null,
+        "qa_id": "e8fde09e31cb50be6a5d1bd0a1031913",
+        "entries": null
+      }
+    },
+    {
+      "id": "ebd25d8c7aeaea11ac8a56df01667166",
+      "at": "2026-11-04T13:32:00.000Z",
+      "viewer": {
+        "hash": "da0ad409cc947e532a081509f6c8c268",
+        "name": "Morgan Ellis"
+      },
+      "level": "people",
+      "project": "DEMO",
+      "action": "people_compare_view",
+      "subjects": [
+        {
+          "id": "pbc7fe62842ca",
+          "name": "Ada Brooks",
+          "avatar": null
+        },
+        {
+          "id": "p7614b22410ea",
+          "name": "Ben Okafor",
+          "avatar": null
+        },
+        {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        {
+          "id": "p7eadbe877710",
+          "name": "Dev Malhotra",
+          "avatar": null
+        },
+        {
+          "id": "p15311a7e00f9",
+          "name": "Elif Aydin",
+          "avatar": null
+        },
+        {
+          "id": "p0998d9f44491",
+          "name": "Finn Gallagher",
+          "avatar": null
+        },
+        {
+          "id": "p65b14f7daa03",
+          "name": "Grace Lindqvist",
+          "avatar": "37d44fa82021"
+        },
+        {
+          "id": "pe0f1fe0c54ec",
+          "name": "Hana Mori",
+          "avatar": null
+        }
+      ],
+      "detail": {
+        "days": 90,
+        "qa_id": null,
+        "entries": null
+      }
+    },
+    {
+      "id": "43382291ea7eef40380819b4fbf0dd81",
+      "at": "2026-11-04T12:55:00.000Z",
+      "viewer": {
+        "hash": "3a12b78b26bba47417713e7f197805c5",
+        "name": "Tobias Wren"
+      },
+      "level": "team",
+      "project": "DEMO",
+      "action": "person_findings_view",
+      "subjects": [
+        {
+          "id": "p7614b22410ea",
+          "name": "Ben Okafor",
+          "avatar": null
+        }
+      ],
+      "detail": {
+        "days": null,
+        "qa_id": null,
+        "entries": null
+      }
+    }
+  ],
+  "next_cursor": "1793796900000.43382291ea7eef40380819b4fbf0dd81",
+  "facets": {
+    "viewers": [
+      {
+        "hash": "local",
+        "name": "Local (sign-in off)"
+      },
+      {
+        "hash": "da0ad409cc947e532a081509f6c8c268",
+        "name": "Morgan Ellis"
+      },
+      {
+        "hash": "71951790dc5e96b3fd240f618540327a",
+        "name": "Priya Raman"
+      },
+      {
+        "hash": "1be34a4bae26e0e57746d3fd6205cd3a",
+        "name": "Signed-in user"
+      },
+      {
+        "hash": "3a12b78b26bba47417713e7f197805c5",
+        "name": "Tobias Wren"
+      }
+    ],
+    "subjects": [
+      {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      {
+        "id": "p7614b22410ea",
+        "name": "Ben Okafor",
+        "avatar": null
+      },
+      {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      {
+        "id": "p7eadbe877710",
+        "name": "Dev Malhotra",
+        "avatar": null
+      },
+      {
+        "id": "p15311a7e00f9",
+        "name": "Elif Aydin",
+        "avatar": null
+      },
+      {
+        "id": "p0998d9f44491",
+        "name": "Finn Gallagher",
+        "avatar": null
+      },
+      {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      {
+        "id": "pe0f1fe0c54ec",
+        "name": "Hana Mori",
+        "avatar": null
+      },
+      {
+        "id": "pc3d7609d78d1",
+        "name": "Noor Haddad",
+        "avatar": null
+      },
+      {
+        "id": "peef2732d4606",
+        "name": "Former member",
+        "avatar": null
+      }
+    ]
+  }
+}

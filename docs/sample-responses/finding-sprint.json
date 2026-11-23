@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "finding": {
+    "finding_id": "4f4dea9b42b76d4882fbb2db662287c3",
+    "rule_id": "W-SPR-01",
+    "rule_title": "Sprint at risk",
+    "rule_version": "0.1.0",
+    "kind": "warning",
+    "severity": "warning",
+    "state": "open",
+    "message": "Sprint 26 ends in 1.9 days with 33 of 94 issues (35%) not started",
+    "scope": "sprint",
+    "issue_key": null,
+    "issue_summary": null,
+    "issue_type": null,
+    "epic_key": null,
+    "epic_title": null,
+    "assignee": null,
+    "sprint": {
+      "sprint_id": 4426,
+      "name": "Sprint 26"
+    },
+    "first_seen_at": "2026-11-04T12:29:00.000Z",
+    "last_seen_at": "2026-11-04T14:29:00.000Z",
+    "resolved_at": null,
+    "resolved_why": null,
+    "threshold": "≤ 2 days left, > 30% not started",
+    "evidence": [
+      {
+        "kind": "sprint",
+        "label": "Sprint ends",
+        "value": "Sprint 26",
+        "unit": null,
+        "from": null,
+        "to": null,
+        "at": "2026-11-06T12:00:00.000Z",
+        "changelog_id": null
+      },
+      {
+        "kind": "metric",
+        "label": "Days left",
+        "value": 1.8972,
+        "unit": "days",
+        "from": null,
+        "to": null,
+        "at": null,
+        "changelog_id": null
+      },
+      {
+        "kind": "metric",
+        "label": "Issues in the sprint",
+        "value": 94,
+        "unit": "count",
+        "from": null,
+        "to": null,
+        "at": null,
+        "changelog_id": null
+      },
+      {
+        "kind": "metric",
+        "label": "Not started",
+        "value": 33,
+        "unit": "count",
+        "from": null,
+        "to": null,
+        "at": null,
+        "changelog_id": null
+      },
+      {
+        "kind": "metric",
+        "label": "Share not started",
+        "value": 0.3511,
+        "unit": "share",
+        "from": null,
+        "to": null,
+        "at": null,
+        "changelog_id": null
+      }
+    ],
+    "warned_before": null
+  },
+  "timeline": []
+}

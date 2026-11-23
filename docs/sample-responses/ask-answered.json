@@ -1,0 +1,167 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "0158846c914bd3fbbac535aac2659e59",
+  "question": "Which epics have the most open breaches?",
+  "outcome": "answered",
+  "answer": "DEMO-704 Data import pipeline has the most open breaches, 73, with 27 open warnings across 94 issues. Next come DEMO-763 Integrations API with 57 and DEMO-89 Search and filtering with 54.",
+  "citations": [
+    {
+      "marker": 1,
+      "text": "DEMO-704",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "epic_key"
+    },
+    {
+      "marker": 2,
+      "text": "73",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "open_breaches"
+    },
+    {
+      "marker": 3,
+      "text": "27",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "open_warnings"
+    },
+    {
+      "marker": 4,
+      "text": "94",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "issues"
+    },
+    {
+      "marker": 5,
+      "text": "DEMO-763",
+      "fact_ref": "F1",
+      "row_index": 1,
+      "column": "epic_key"
+    },
+    {
+      "marker": 6,
+      "text": "57",
+      "fact_ref": "F1",
+      "row_index": 1,
+      "column": "open_breaches"
+    },
+    {
+      "marker": 7,
+      "text": "DEMO-89",
+      "fact_ref": "F1",
+      "row_index": 2,
+      "column": "epic_key"
+    },
+    {
+      "marker": 8,
+      "text": "54",
+      "fact_ref": "F1",
+      "row_index": 2,
+      "column": "open_breaches"
+    }
+  ],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_hot_spots",
+      "params": {
+        "n": 5
+      },
+      "columns": [
+        {
+          "key": "epic_key",
+          "label": "Epic",
+          "kind": "issue_key"
+        },
+        {
+          "key": "epic_title",
+          "label": "Epic title",
+          "kind": "text"
+        },
+        {
+          "key": "open_breaches",
+          "label": "Open breaches",
+          "kind": "count"
+        },
+        {
+          "key": "open_warnings",
+          "label": "Open warnings",
+          "kind": "count"
+        },
+        {
+          "key": "issues",
+          "label": "Issues with findings",
+          "kind": "count"
+        }
+      ],
+      "rows": [
+        {
+          "epic_key": "DEMO-704",
+          "epic_title": "Data import pipeline",
+          "open_breaches": 73,
+          "open_warnings": 27,
+          "issues": 94
+        },
+        {
+          "epic_key": "DEMO-763",
+          "epic_title": "Integrations API",
+          "open_breaches": 57,
+          "open_warnings": 31,
+          "issues": 78
+        },
+        {
+          "epic_key": "DEMO-89",
+          "epic_title": "Search and filtering",
+          "open_breaches": 54,
+          "open_warnings": 27,
+          "issues": 78
+        },
+        {
+          "epic_key": "DEMO-178",
+          "epic_title": "Reporting exports",
+          "open_breaches": 44,
+          "open_warnings": 36,
+          "issues": 74
+        },
+        {
+          "epic_key": "DEMO-4",
+          "epic_title": "Onboarding flow",
+          "open_breaches": 43,
+          "open_warnings": 21,
+          "issues": 58
+        }
+      ],
+      "truncated": true,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "epics by open breaches, then open warnings"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_hot_spots",
+      "params": {
+        "n": 5
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": null,
+  "suggestions": [],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [],
+  "note": null
+}

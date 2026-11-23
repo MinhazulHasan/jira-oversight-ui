@@ -1,0 +1,195 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO",
+      "MOB"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "boards": [
+    {
+      "project": {
+        "key": "DEMO",
+        "name": "Demo project"
+      },
+      "last_sync_at": "2026-11-04T14:28:00.000Z",
+      "open_tickets": 68,
+      "in_progress": 29,
+      "open_breaches": 523,
+      "open_warnings": 286,
+      "new_findings_7d": 43,
+      "resolved_findings_7d": 24,
+      "open_findings_trend": [
+        673,
+        697,
+        706,
+        736,
+        755,
+        779,
+        794,
+        809
+      ],
+      "tracking_since": "2026-06-17T14:29:00.000Z",
+      "active_sprint": true,
+      "unestimated_in_active_sprint": 24,
+      "sprint_at_risk": true,
+      "top_rule": {
+        "id": "R-EST-01",
+        "title": "Work started without an estimate",
+        "open": 270
+      },
+      "stale": true
+    },
+    {
+      "project": {
+        "key": "MOB",
+        "name": "Mobile app"
+      },
+      "last_sync_at": "2026-11-04T14:28:00.000Z",
+      "open_tickets": 13,
+      "in_progress": 6,
+      "open_breaches": 77,
+      "open_warnings": 46,
+      "new_findings_7d": 13,
+      "resolved_findings_7d": 4,
+      "open_findings_trend": [
+        92,
+        99,
+        101,
+        105,
+        106,
+        112,
+        115,
+        123
+      ],
+      "tracking_since": "2026-06-17T14:29:00.000Z",
+      "active_sprint": true,
+      "unestimated_in_active_sprint": 5,
+      "sprint_at_risk": true,
+      "top_rule": {
+        "id": "R-EST-01",
+        "title": "Work started without an estimate",
+        "open": 37
+      },
+      "stale": true
+    }
+  ],
+  "attention": [
+    {
+      "project": "DEMO",
+      "issue_key": "DEMO-1",
+      "rule_id": "R-EFF-01",
+      "title": "Effort far beyond the estimate",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "MOB",
+      "issue_key": "MOB-1",
+      "rule_id": "R-EFF-01",
+      "title": "Effort far beyond the estimate",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "DEMO",
+      "issue_key": "DEMO-3",
+      "rule_id": "R-FLOW-02",
+      "title": "Skipped a stage",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "MOB",
+      "issue_key": "MOB-5",
+      "rule_id": "R-FLOW-02",
+      "title": "Skipped a stage",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "DEMO",
+      "issue_key": "DEMO-5",
+      "rule_id": "R-FLOW-02",
+      "title": "Skipped a stage",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "MOB",
+      "issue_key": "MOB-6",
+      "rule_id": "R-EST-01",
+      "title": "Work started without an estimate",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "DEMO",
+      "issue_key": "DEMO-6",
+      "rule_id": "R-EST-01",
+      "title": "Work started without an estimate",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "MOB",
+      "issue_key": "MOB-7",
+      "rule_id": "R-FLOW-02",
+      "title": "Skipped a stage",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "DEMO",
+      "issue_key": "DEMO-8",
+      "rule_id": "R-EST-01",
+      "title": "Work started without an estimate",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    },
+    {
+      "project": "MOB",
+      "issue_key": "MOB-17",
+      "rule_id": "R-EFF-01",
+      "title": "Effort far beyond the estimate",
+      "severity": "breach",
+      "opened_at": "2026-06-17T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "age_days": 140,
+      "findings": 1
+    }
+  ],
+  "boards_not_synced": 1
+}

@@ -1,0 +1,310 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "b0dca565a53a760c9402e43ecb924de6",
+  "question": "How is effort against estimate trending?",
+  "outcome": "answered",
+  "answer": "The median effort ratio was 1.03× in the week of 17 Aug 2026 and 1.38× in the week of 26 Oct 2026. This week so far it is 1.27×. Over the last 30 days, DEMO-763 Integrations API has the highest median, 1.67× across 10 finished issues, with 80% at or above the 1.50× threshold, followed by DEMO-704 Data import pipeline at 1.63×.",
+  "citations": [
+    {
+      "marker": 1,
+      "text": "1.03",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "value"
+    },
+    {
+      "marker": 2,
+      "text": "17 Aug 2026",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "week_of"
+    },
+    {
+      "marker": 3,
+      "text": "1.38",
+      "fact_ref": "F1",
+      "row_index": 10,
+      "column": "value"
+    },
+    {
+      "marker": 4,
+      "text": "26 Oct 2026",
+      "fact_ref": "F1",
+      "row_index": 10,
+      "column": "week_of"
+    },
+    {
+      "marker": 5,
+      "text": "1.27",
+      "fact_ref": "F1",
+      "row_index": 11,
+      "column": "value"
+    },
+    {
+      "marker": 6,
+      "text": "30",
+      "fact_ref": "F2",
+      "row_index": -1,
+      "column": "note"
+    },
+    {
+      "marker": 7,
+      "text": "DEMO-763",
+      "fact_ref": "F2",
+      "row_index": 0,
+      "column": "group"
+    },
+    {
+      "marker": 8,
+      "text": "1.67",
+      "fact_ref": "F2",
+      "row_index": 0,
+      "column": "median_ratio"
+    },
+    {
+      "marker": 9,
+      "text": "10",
+      "fact_ref": "F2",
+      "row_index": 0,
+      "column": "n"
+    },
+    {
+      "marker": 10,
+      "text": "80%",
+      "fact_ref": "F2",
+      "row_index": 0,
+      "column": "share_over_threshold"
+    },
+    {
+      "marker": 11,
+      "text": "1.50",
+      "fact_ref": "F2",
+      "row_index": 0,
+      "column": "threshold"
+    },
+    {
+      "marker": 12,
+      "text": "DEMO-704",
+      "fact_ref": "F2",
+      "row_index": 1,
+      "column": "group"
+    },
+    {
+      "marker": 13,
+      "text": "1.63",
+      "fact_ref": "F2",
+      "row_index": 1,
+      "column": "median_ratio"
+    }
+  ],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_trend",
+      "params": {
+        "metric": "median_effort_ratio",
+        "last_n": 12
+      },
+      "columns": [
+        {
+          "key": "week_of",
+          "label": "Week of",
+          "kind": "date"
+        },
+        {
+          "key": "value",
+          "label": "median effort ratio",
+          "kind": "ratio"
+        }
+      ],
+      "rows": [
+        {
+          "week_of": "2026-08-17",
+          "value": 1.0313
+        },
+        {
+          "week_of": "2026-08-24",
+          "value": 0.95
+        },
+        {
+          "week_of": "2026-08-31",
+          "value": 1.0422
+        },
+        {
+          "week_of": "2026-09-07",
+          "value": 1.0594
+        },
+        {
+          "week_of": "2026-09-14",
+          "value": 0.9688
+        },
+        {
+          "week_of": "2026-09-21",
+          "value": 0.9583
+        },
+        {
+          "week_of": "2026-09-28",
+          "value": 1.15
+        },
+        {
+          "week_of": "2026-10-05",
+          "value": 1.0156
+        },
+        {
+          "week_of": "2026-10-12",
+          "value": 1.1458
+        },
+        {
+          "week_of": "2026-10-19",
+          "value": 1.6197
+        },
+        {
+          "week_of": "2026-10-26",
+          "value": 1.3813
+        },
+        {
+          "week_of": "2026-11-02",
+          "value": 1.2734
+        }
+      ],
+      "truncated": false,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "Median logged time over estimate, over work finished in the week that has both an estimate and logged time; weeks start on Monday (UTC), oldest first; null = nothing finished that week"
+    },
+    {
+      "ref": "F2",
+      "tool": "oversight_effort_vs_estimate",
+      "params": {
+        "group_by": "epic",
+        "period": "30d"
+      },
+      "columns": [
+        {
+          "key": "group",
+          "label": "Epic",
+          "kind": "issue_key"
+        },
+        {
+          "key": "epic_title",
+          "label": "Epic title",
+          "kind": "text"
+        },
+        {
+          "key": "n",
+          "label": "Issues",
+          "kind": "count"
+        },
+        {
+          "key": "median_ratio",
+          "label": "Median ratio",
+          "kind": "ratio"
+        },
+        {
+          "key": "share_over_threshold",
+          "label": "Share over threshold",
+          "kind": "share"
+        },
+        {
+          "key": "threshold",
+          "label": "Threshold",
+          "kind": "ratio"
+        }
+      ],
+      "rows": [
+        {
+          "group": "DEMO-763",
+          "epic_title": "Integrations API",
+          "n": 10,
+          "median_ratio": 1.6667,
+          "share_over_threshold": 0.8,
+          "threshold": 1.5
+        },
+        {
+          "group": "DEMO-704",
+          "epic_title": "Data import pipeline",
+          "n": 16,
+          "median_ratio": 1.6302,
+          "share_over_threshold": 0.5625,
+          "threshold": 1.5
+        },
+        {
+          "group": "DEMO-948",
+          "epic_title": "Mobile layout",
+          "n": 4,
+          "median_ratio": 1.2734,
+          "share_over_threshold": 0.25,
+          "threshold": 1.5
+        },
+        {
+          "group": "DEMO-1053",
+          "epic_title": "Performance tuning",
+          "n": 3,
+          "median_ratio": 1.0625,
+          "share_over_threshold": 0,
+          "threshold": 1.5
+        },
+        {
+          "group": "DEMO-598",
+          "epic_title": "Document storage",
+          "n": 7,
+          "median_ratio": 1.025,
+          "share_over_threshold": 0,
+          "threshold": 1.5
+        },
+        {
+          "group": "DEMO-847",
+          "epic_title": "Scheduling engine",
+          "n": 7,
+          "median_ratio": 1.0104,
+          "share_over_threshold": 0,
+          "threshold": 1.5
+        },
+        {
+          "group": "(no epic)",
+          "epic_title": "(no epic)",
+          "n": 4,
+          "median_ratio": 0.9375,
+          "share_over_threshold": 0,
+          "threshold": 1.5
+        }
+      ],
+      "truncated": false,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "done work finished in the last 30 days that has both an estimate and logged time; ratio = logged hours / estimated hours; threshold 1.5× from R-EFF-01"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_trend",
+      "params": {
+        "metric": "median_effort_ratio",
+        "last_n": 12
+      }
+    },
+    {
+      "tool": "oversight_effort_vs_estimate",
+      "params": {
+        "group_by": "epic",
+        "period": "30d"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": null,
+  "suggestions": [],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [],
+  "note": null
+}

@@ -1,0 +1,276 @@
+{
+  "source": "jira-oversight-sys tests/eval/rule_drafts.yaml (the service drafter eval), as JSON: copy it again whenever that file changes",
+  "board": {
+    "project": "EVAL",
+    "statuses": [
+      {
+        "name": "To Do",
+        "category": "new"
+      },
+      {
+        "name": "Code Review",
+        "category": "indeterminate"
+      },
+      {
+        "name": "In Progress",
+        "category": "indeterminate"
+      },
+      {
+        "name": "QA",
+        "category": "indeterminate"
+      },
+      {
+        "name": "Done",
+        "category": "done"
+      }
+    ],
+    "issue_types": [
+      "Bug",
+      "Story",
+      "Task"
+    ],
+    "stages": [
+      "backlog",
+      "development",
+      "code_review",
+      "testing",
+      "done"
+    ],
+    "evidence": [
+      "code_review",
+      "dev_signoff",
+      "testing",
+      "test_review",
+      "test_signoff"
+    ],
+    "recorded": [
+      "code_review",
+      "testing"
+    ],
+    "estimate_basis": "points"
+  },
+  "cases": [
+    {
+      "id": "d01",
+      "request": "Bugs in Code Review for more than 3 days",
+      "outcome": "drafted",
+      "check": "time_in_status_over",
+      "params": {
+        "statuses": [
+          "Code Review"
+        ],
+        "hours": 72
+      },
+      "categories": [
+        "indeterminate"
+      ],
+      "issue_types": [
+        "Bug"
+      ],
+      "severity": "breach"
+    },
+    {
+      "id": "d02",
+      "request": "Anything sitting in QA for over 48 hours",
+      "outcome": "drafted",
+      "check": "time_in_status_over",
+      "params": {
+        "statuses": [
+          "QA"
+        ],
+        "hours": 48
+      },
+      "categories": [
+        "indeterminate"
+      ]
+    },
+    {
+      "id": "d03",
+      "request": "Stories waiting in To Do for more than 2 weeks",
+      "outcome": "drafted",
+      "check": "time_in_status_over",
+      "params": {
+        "statuses": [
+          "To Do"
+        ],
+        "hours": 336
+      },
+      "categories": [
+        "new"
+      ],
+      "issue_types": [
+        "Story"
+      ]
+    },
+    {
+      "id": "d04",
+      "request": "Warn me early when tickets sit in review for 2 days",
+      "outcome": "drafted",
+      "check": "time_in_status_over",
+      "params": {
+        "statuses": [
+          "Code Review"
+        ],
+        "hours": 48
+      },
+      "severity": "warning"
+    },
+    {
+      "id": "d05",
+      "request": "Tickets open for more than 30 days",
+      "outcome": "drafted",
+      "check": "open_longer_than",
+      "params": {
+        "days": 30
+      }
+    },
+    {
+      "id": "d06",
+      "request": "Bugs older than 90 days",
+      "outcome": "drafted",
+      "check": "open_longer_than",
+      "params": {
+        "days": 90
+      },
+      "issue_types": [
+        "Bug"
+      ]
+    },
+    {
+      "id": "d07",
+      "request": "Tasks with no update for 14 days",
+      "outcome": "drafted",
+      "check": "no_update_for",
+      "params": {
+        "days": 14
+      },
+      "issue_types": [
+        "Task"
+      ]
+    },
+    {
+      "id": "d08",
+      "request": "Work that has not been updated in 10 days",
+      "outcome": "drafted",
+      "check": "no_update_for",
+      "params": {
+        "days": 10
+      }
+    },
+    {
+      "id": "d09",
+      "request": "Untouched tickets",
+      "outcome": "drafted",
+      "check": "no_update_for"
+    },
+    {
+      "id": "d10",
+      "request": "Tickets with no assignee",
+      "outcome": "drafted",
+      "check": "missing_field",
+      "params": {
+        "field": "assignee"
+      }
+    },
+    {
+      "id": "d11",
+      "request": "Stories without an epic",
+      "outcome": "drafted",
+      "check": "missing_field",
+      "params": {
+        "field": "epic"
+      },
+      "issue_types": [
+        "Story"
+      ]
+    },
+    {
+      "id": "d12",
+      "request": "Bugs with no estimate, started or not",
+      "outcome": "drafted",
+      "check": "missing_field",
+      "params": {
+        "field": "estimate"
+      },
+      "issue_types": [
+        "Bug"
+      ]
+    },
+    {
+      "id": "d13",
+      "request": "Tickets that are not in a sprint",
+      "outcome": "drafted",
+      "check": "missing_field",
+      "params": {
+        "field": "sprint"
+      }
+    },
+    {
+      "id": "d14",
+      "request": "Reopened bugs",
+      "outcome": "drafted",
+      "check": "reopened",
+      "issue_types": [
+        "Bug"
+      ]
+    },
+    {
+      "id": "d15",
+      "request": "Anything that skips a stage",
+      "outcome": "drafted",
+      "check": "skipped_stage"
+    },
+    {
+      "id": "d16",
+      "request": "Effort over 2x the estimate",
+      "outcome": "drafted",
+      "check": "effort_ratio_at_least",
+      "params": {
+        "threshold": 2
+      },
+      "severity": "breach"
+    },
+    {
+      "id": "d17",
+      "request": "Warn when effort reaches 1.5 times the estimate",
+      "outcome": "drafted",
+      "check": "effort_ratio_at_least",
+      "params": {
+        "threshold": 1.5
+      },
+      "severity": "warning"
+    },
+    {
+      "id": "d18",
+      "request": "Flag bugs whose summary has no steps to reproduce",
+      "outcome": "not_supported"
+    },
+    {
+      "id": "d19",
+      "request": "Flag tickets that two people worked on",
+      "outcome": "not_supported"
+    },
+    {
+      "id": "d20",
+      "request": "???",
+      "outcome": "not_understood"
+    },
+    {
+      "id": "d21",
+      "request": "Stories in Blocked for more than 2 days",
+      "outcome": "not_supported"
+    },
+    {
+      "id": "d22",
+      "request": "Bugs nobody has touched for 2 weeks",
+      "outcome": "drafted",
+      "check": "no_update_for",
+      "params": {
+        "days": 14
+      },
+      "issue_types": [
+        "Bug"
+      ]
+    }
+  ]
+}

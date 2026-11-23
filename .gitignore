@@ -1,0 +1,46 @@
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+
+# next.js
+.next
+/out/
+/build
+
+# environment: secrets stay local; .env.example is the documented template
+.env
+.env*.local
+
+# testing
+/coverage
+test-results
+playwright-report
+/blob-report
+/playwright/.cache
+
+# screenshots: shots/ is reviewed output, shots/_tmp is scratch
+shots/_tmp
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+.vercel
+
+# more environment files: only .env.example is committed
+.env.*
+!.env.example
+
+# screenshots made from the running app can show client data
+shots/
+
+# database copies and keys
+*.db
+*.pfx
+*.key
+.claude/

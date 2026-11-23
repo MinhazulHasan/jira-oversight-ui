@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "ea9a472eb9a369d08f6c38624503a934",
+  "question": "Who is best on the board? Rank the others",
+  "outcome": "not_understood",
+  "answer": null,
+  "citations": [],
+  "facts": [],
+  "plan": [],
+  "missing_evidence": [],
+  "message": "Comparing people side by side is turned off. Ask about one person at a time instead.",
+  "suggestions": [
+    "Who has the most open breaches?",
+    "Who has the most open warnings?",
+    "Which epics have the most open breaches?"
+  ],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [],
+  "note": null
+}

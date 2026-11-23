@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "today": {
+    "questions": 11,
+    "model_calls": 24,
+    "input_tokens": 194535,
+    "output_tokens": 14985,
+    "budget_tokens": null,
+    "budget_used_pct": null
+  },
+  "last_7_days": [
+    {
+      "date": "2026-10-29",
+      "questions": 23,
+      "model_calls": 43,
+      "tokens": 398759
+    },
+    {
+      "date": "2026-10-30",
+      "questions": 18,
+      "model_calls": 39,
+      "tokens": 289461
+    },
+    {
+      "date": "2026-10-31",
+      "questions": 0,
+      "model_calls": 0,
+      "tokens": 0
+    },
+    {
+      "date": "2026-11-01",
+      "questions": 2,
+      "model_calls": 4,
+      "tokens": 21810
+    },
+    {
+      "date": "2026-11-02",
+      "questions": 21,
+      "model_calls": 36,
+      "tokens": 281770
+    },
+    {
+      "date": "2026-11-03",
+      "questions": 18,
+      "model_calls": 41,
+      "tokens": 323539
+    },
+    {
+      "date": "2026-11-04",
+      "questions": 11,
+      "model_calls": 24,
+      "tokens": 209520
+    }
+  ],
+  "ai_model": "on"
+}

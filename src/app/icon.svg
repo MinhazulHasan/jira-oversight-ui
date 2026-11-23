@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Jira Oversight">
+  <!--
+    A frame around one item.
+
+    Two opposite corners of a viewfinder close on a single square: one piece
+    of work, singled out and looked at closely. That is the product's job:
+    rules pick out the issue, and everything said about it can be traced back
+    to it. It is not an eye, and it is not a tick: the system flags and
+    explains, it does not certify.
+
+    Same tile, teal and corner radius as Ask the System's quotation mark, so
+    the two products read as one family in a tab strip.
+  -->
+  <rect width="32" height="32" rx="7.5" fill="#1f6f8f"/>
+  <g fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8.6 14.2V10.2a1.6 1.6 0 0 1 1.6-1.6h4"/>
+    <path d="M23.4 17.8v4a1.6 1.6 0 0 1-1.6 1.6h-4"/>
+  </g>
+  <rect x="12.9" y="12.9" width="6.2" height="6.2" rx="1.3" fill="#ffffff"/>
+</svg>

@@ -1,0 +1,1210 @@
+{
+  "meta": {
+    "data_mode": "live",
+    "last_synced_at": "2026-11-17T10:00:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-17T10:20:00.000Z",
+    "report_timezone": "UTC"
+  },
+  "project": "DEMO",
+  "revision": 5,
+  "catalogue_version": "0.1.0",
+  "updated_at": "2026-11-17T10:20:00.000Z",
+  "updated_by": "Morgan Reyes",
+  "apply": {
+    "state": "failed",
+    "applied_revision": 4,
+    "started_at": "2026-11-17T10:20:00.000Z",
+    "finished_at": "2026-11-17T10:20:00.000Z",
+    "message": "Couldn't re-check Demo project's findings with the new settings: the rules run failed. They will apply at the next sync.",
+    "result": null
+  },
+  "rules": [
+    {
+      "rule_id": "R-EST-01",
+      "title": "Work started without an estimate",
+      "description": "The issue entered development (or a later stage) and has no estimate on the project's estimate basis.",
+      "kind": "rule",
+      "check": "missing_estimate",
+      "scope": "issue",
+      "escalates_to": null,
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "breach",
+      "default_severity": "breach",
+      "params": [],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 146,
+      "custom": false,
+      "check_label": "Started without an estimate",
+      "applies_to": {
+        "status_category": [
+          "indeterminate",
+          "done"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "R-EST-02",
+      "title": "Estimate first set after work started",
+      "description": "The estimate was first recorded after the issue had already entered development; it may describe the work rather than predict it.",
+      "kind": "rule",
+      "check": "estimate_after_start",
+      "scope": "issue",
+      "escalates_to": null,
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "warning",
+      "default_severity": "warning",
+      "params": [
+        {
+          "name": "grace_hours",
+          "label": "Grace after work started",
+          "kind": "number",
+          "unit": "hours",
+          "value": 1.0,
+          "default": 1.0,
+          "min": 0.0,
+          "max": 168.0,
+          "step": 0.5,
+          "options": null
+        }
+      ],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 33,
+      "custom": false,
+      "check_label": "Estimate set late",
+      "applies_to": {
+        "status_category": [
+          "indeterminate",
+          "done"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "R-EFF-01",
+      "title": "Effort far beyond the estimate",
+      "description": "Logged effort on finished work is at least the threshold times the estimate.",
+      "kind": "rule",
+      "check": "effort_ratio_at_least",
+      "scope": "issue",
+      "escalates_to": null,
+      "enabled": false,
+      "default_enabled": true,
+      "severity": "breach",
+      "default_severity": "breach",
+      "params": [
+        {
+          "name": "threshold",
+          "label": "Effort ratio",
+          "kind": "number",
+          "unit": "ratio",
+          "value": 1.5,
+          "default": 1.5,
+          "min": 0.1,
+          "max": 10.0,
+          "step": 0.05,
+          "options": null
+        }
+      ],
+      "customised": true,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 0,
+      "custom": false,
+      "check_label": "Effort over estimate",
+      "applies_to": {
+        "status_category": [
+          "done"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "R-FLOW-01",
+      "title": "Reached testing without code review",
+      "description": "The issue entered the testing stage with no code-review evidence recorded before that moment.",
+      "kind": "rule",
+      "check": "entered_stage_without_evidence",
+      "scope": "issue",
+      "escalates_to": null,
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "breach",
+      "default_severity": "breach",
+      "params": [],
+      "customised": false,
+      "measurable": false,
+      "missing_evidence": [
+        "code_review",
+        "testing"
+      ],
+      "open": 0,
+      "custom": false,
+      "check_label": "Reached a stage without evidence",
+      "applies_to": {
+        "status_category": [
+          "new",
+          "indeterminate",
+          "done"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "R-FLOW-02",
+      "title": "Skipped a stage",
+      "description": "A status change jumped forward over a stage the project's workflow maps (for example To Do straight to Done).",
+      "kind": "rule",
+      "check": "skipped_stage",
+      "scope": "issue",
+      "escalates_to": null,
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "breach",
+      "default_severity": "breach",
+      "params": [],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 44,
+      "custom": false,
+      "check_label": "Skipped a stage",
+      "applies_to": {
+        "status_category": [
+          "new",
+          "indeterminate",
+          "done"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "R-FLOW-03",
+      "title": "Reopened after Done",
+      "description": "The issue left a Done status for a status that is not Done.",
+      "kind": "rule",
+      "check": "reopened",
+      "scope": "issue",
+      "escalates_to": null,
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "warning",
+      "default_severity": "warning",
+      "params": [],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 13,
+      "custom": false,
+      "check_label": "Reopened after Done",
+      "applies_to": {
+        "status_category": [
+          "new",
+          "indeterminate",
+          "done"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "R-HYG-01",
+      "title": "In progress with no assignee",
+      "description": "The issue is in progress and nobody is assigned.",
+      "kind": "rule",
+      "check": "in_progress_unassigned",
+      "scope": "issue",
+      "escalates_to": null,
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "breach",
+      "default_severity": "breach",
+      "params": [],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 7,
+      "custom": false,
+      "check_label": "In progress, no assignee",
+      "applies_to": {
+        "status_category": [
+          "indeterminate"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "W-EFF-01",
+      "title": "Effort burning fast",
+      "description": "Work still in progress has already used at least the threshold share of its estimate.",
+      "kind": "warning",
+      "check": "effort_ratio_at_least",
+      "scope": "issue",
+      "escalates_to": "R-EFF-01",
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "warning",
+      "default_severity": "warning",
+      "params": [
+        {
+          "name": "threshold",
+          "label": "Effort ratio",
+          "kind": "number",
+          "unit": "ratio",
+          "value": 0.8,
+          "default": 0.8,
+          "min": 0.1,
+          "max": 10.0,
+          "step": 0.05,
+          "options": null
+        }
+      ],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 27,
+      "custom": false,
+      "check_label": "Effort over estimate",
+      "applies_to": {
+        "status_category": [
+          "indeterminate"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "W-AGE-01",
+      "title": "Stuck in a status",
+      "description": "Time in the current status is above the project's own p90 for that status, measured on closed work.",
+      "kind": "warning",
+      "check": "stuck_in_status",
+      "scope": "issue",
+      "escalates_to": null,
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "warning",
+      "default_severity": "warning",
+      "params": [
+        {
+          "name": "pct",
+          "label": "Percentile of time in the status",
+          "kind": "number",
+          "unit": "percentile",
+          "value": 90.0,
+          "default": 90.0,
+          "min": 50.0,
+          "max": 99.0,
+          "step": 1.0,
+          "options": null
+        }
+      ],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 90,
+      "custom": false,
+      "check_label": "Unusually long in a status",
+      "applies_to": {
+        "status_category": [
+          "new",
+          "indeterminate"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "W-REV-01",
+      "title": "No review evidence yet",
+      "description": "In development longer than the project's p75 with no code-review evidence.",
+      "kind": "warning",
+      "check": "no_evidence_after_percentile",
+      "scope": "issue",
+      "escalates_to": "R-FLOW-01",
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "warning",
+      "default_severity": "warning",
+      "params": [
+        {
+          "name": "pct",
+          "label": "Percentile of time in the stage",
+          "kind": "number",
+          "unit": "percentile",
+          "value": 75.0,
+          "default": 75.0,
+          "min": 50.0,
+          "max": 99.0,
+          "step": 1.0,
+          "options": null
+        }
+      ],
+      "customised": false,
+      "measurable": false,
+      "missing_evidence": [
+        "code_review"
+      ],
+      "open": 0,
+      "custom": false,
+      "check_label": "No evidence after usual time",
+      "applies_to": {
+        "status_category": [
+          "indeterminate"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "W-SPR-01",
+      "title": "Sprint at risk",
+      "description": "The active sprint has at most the given days left and more than the given share of its issues not yet started, or it is past its end date with work not done.",
+      "kind": "warning",
+      "check": "sprint_at_risk",
+      "scope": "sprint",
+      "escalates_to": null,
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "warning",
+      "default_severity": "warning",
+      "params": [
+        {
+          "name": "days_left",
+          "label": "Days left in the sprint",
+          "kind": "number",
+          "unit": "days",
+          "value": 2.0,
+          "default": 2.0,
+          "min": 0.0,
+          "max": 14.0,
+          "step": 0.5,
+          "options": null
+        },
+        {
+          "name": "not_started_share",
+          "label": "Share of issues not started",
+          "kind": "number",
+          "unit": "share",
+          "value": 0.3,
+          "default": 0.3,
+          "min": 0.05,
+          "max": 0.95,
+          "step": 0.05,
+          "options": null
+        }
+      ],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 1,
+      "custom": false,
+      "check_label": "Sprint at risk",
+      "applies_to": {
+        "status_category": [],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    },
+    {
+      "rule_id": "W-EST-01",
+      "title": "Unestimated work in the active sprint",
+      "description": "An issue in the active sprint has no estimate.",
+      "kind": "warning",
+      "check": "unestimated_in_active_sprint",
+      "scope": "issue",
+      "escalates_to": "R-EST-01",
+      "enabled": true,
+      "default_enabled": true,
+      "severity": "warning",
+      "default_severity": "warning",
+      "params": [],
+      "customised": false,
+      "measurable": true,
+      "missing_evidence": [],
+      "open": 66,
+      "custom": false,
+      "check_label": "Unestimated in the sprint",
+      "applies_to": {
+        "status_category": [
+          "new",
+          "indeterminate"
+        ],
+        "issue_type": null
+      },
+      "created_at": null,
+      "created_by": null
+    }
+  ],
+  "history": [
+    {
+      "change_id": "e25109d52e344241a70fe31f0cc84fb7",
+      "at": "2026-11-17T10:20:00.000Z",
+      "revision": 5,
+      "by": {
+        "hash": "0123456789abcdef0123456789abcdef",
+        "name": "Morgan Reyes"
+      },
+      "reason": null,
+      "undo_of": null,
+      "changes": [
+        {
+          "rule_id": "W-AGE-01",
+          "field": "params.pct",
+          "from": 80.0,
+          "to": 90.0
+        }
+      ]
+    },
+    {
+      "change_id": "06b811dc22ad428f806120c90fc2d431",
+      "at": "2026-11-17T10:15:00.000Z",
+      "revision": 4,
+      "by": {
+        "hash": "0123456789abcdef0123456789abcdef",
+        "name": "Morgan Reyes"
+      },
+      "reason": null,
+      "undo_of": null,
+      "changes": [
+        {
+          "rule_id": "W-AGE-01",
+          "field": "params.pct",
+          "from": 90.0,
+          "to": 80.0
+        }
+      ]
+    },
+    {
+      "change_id": "e7b4ee8c1ac0487ca292fccd4007b6d8",
+      "at": "2026-11-17T10:10:00.000Z",
+      "revision": 3,
+      "by": {
+        "hash": "0123456789abcdef0123456789abcdef",
+        "name": "Morgan Reyes"
+      },
+      "reason": null,
+      "undo_of": null,
+      "changes": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "enabled",
+          "from": true,
+          "to": false
+        }
+      ]
+    },
+    {
+      "change_id": "9b19b097d3e54e0a8852ce43f1d9fd69",
+      "at": "2026-11-17T10:10:00.000Z",
+      "revision": 2,
+      "by": {
+        "hash": "0123456789abcdef0123456789abcdef",
+        "name": "Morgan Reyes"
+      },
+      "reason": "Undo of revision 1",
+      "undo_of": "1ade4d333bd64c1eb2c96fb5776313ea",
+      "changes": [
+        {
+          "rule_id": "R-EST-02",
+          "field": "params.grace_hours",
+          "from": 2.0,
+          "to": 1.0
+        },
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.threshold",
+          "from": 2.0,
+          "to": 1.5
+        },
+        {
+          "rule_id": "R-FLOW-01",
+          "field": "enabled",
+          "from": false,
+          "to": true
+        },
+        {
+          "rule_id": "R-FLOW-03",
+          "field": "severity",
+          "from": "breach",
+          "to": "warning"
+        },
+        {
+          "rule_id": "R-HYG-01",
+          "field": "enabled",
+          "from": false,
+          "to": true
+        },
+        {
+          "rule_id": "W-AGE-01",
+          "field": "params.pct",
+          "from": 95.0,
+          "to": 90.0
+        },
+        {
+          "rule_id": "W-REV-01",
+          "field": "params.pct",
+          "from": 60.0,
+          "to": 75.0
+        },
+        {
+          "rule_id": "W-SPR-01",
+          "field": "params.days_left",
+          "from": 3.0,
+          "to": 2.0
+        },
+        {
+          "rule_id": "W-SPR-01",
+          "field": "params.not_started_share",
+          "from": 0.5,
+          "to": 0.3
+        }
+      ]
+    },
+    {
+      "change_id": "1ade4d333bd64c1eb2c96fb5776313ea",
+      "at": "2026-11-17T10:05:00.000Z",
+      "revision": 1,
+      "by": {
+        "hash": "0123456789abcdef0123456789abcdef",
+        "name": "Morgan Reyes"
+      },
+      "reason": "Agreed with the team",
+      "undo_of": null,
+      "changes": [
+        {
+          "rule_id": "R-EST-02",
+          "field": "params.grace_hours",
+          "from": 1.0,
+          "to": 2.0
+        },
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.threshold",
+          "from": 1.5,
+          "to": 2.0
+        },
+        {
+          "rule_id": "R-FLOW-01",
+          "field": "enabled",
+          "from": true,
+          "to": false
+        },
+        {
+          "rule_id": "R-FLOW-03",
+          "field": "severity",
+          "from": "warning",
+          "to": "breach"
+        },
+        {
+          "rule_id": "R-HYG-01",
+          "field": "enabled",
+          "from": true,
+          "to": false
+        },
+        {
+          "rule_id": "W-AGE-01",
+          "field": "params.pct",
+          "from": 90.0,
+          "to": 95.0
+        },
+        {
+          "rule_id": "W-REV-01",
+          "field": "params.pct",
+          "from": 75.0,
+          "to": 60.0
+        },
+        {
+          "rule_id": "W-SPR-01",
+          "field": "params.days_left",
+          "from": 2.0,
+          "to": 3.0
+        },
+        {
+          "rule_id": "W-SPR-01",
+          "field": "params.not_started_share",
+          "from": 0.3,
+          "to": 0.5
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "time_in_status_over",
+      "label": "Time in a status",
+      "summary": "Flags work that has sat in one of these statuses past the limit.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "statuses",
+          "label": "Statuses",
+          "kind": "statuses",
+          "unit": null,
+          "min": null,
+          "max": null,
+          "step": null,
+          "default": null,
+          "options": [
+            {
+              "value": "To Do",
+              "label": "To Do",
+              "category": "new"
+            },
+            {
+              "value": "In Progress",
+              "label": "In Progress",
+              "category": "indeterminate"
+            },
+            {
+              "value": "Done",
+              "label": "Done",
+              "category": "done"
+            }
+          ]
+        },
+        {
+          "name": "hours",
+          "label": "Time in the status",
+          "kind": "number",
+          "unit": "hours",
+          "min": 1.0,
+          "max": 8760.0,
+          "step": 1.0,
+          "default": 72.0,
+          "options": null
+        }
+      ],
+      "categories": [
+        "new",
+        "indeterminate"
+      ],
+      "default_categories": [
+        "indeterminate"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "open_longer_than",
+      "label": "Open too long",
+      "summary": "Flags work still open this many days after it was created.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "days",
+          "label": "Days open",
+          "kind": "number",
+          "unit": "days",
+          "min": 1.0,
+          "max": 3650.0,
+          "step": 1.0,
+          "default": 30.0,
+          "options": null
+        }
+      ],
+      "categories": [
+        "new",
+        "indeterminate"
+      ],
+      "default_categories": [
+        "new",
+        "indeterminate"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "no_update_for",
+      "label": "No updates",
+      "summary": "Flags open work with no change in Jira for this many days.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "days",
+          "label": "Days without a change",
+          "kind": "number",
+          "unit": "days",
+          "min": 1.0,
+          "max": 365.0,
+          "step": 1.0,
+          "default": 7.0,
+          "options": null
+        }
+      ],
+      "categories": [
+        "new",
+        "indeterminate"
+      ],
+      "default_categories": [
+        "indeterminate"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "missing_field",
+      "label": "Missing field",
+      "summary": "Flags work with no assignee, estimate, epic or sprint.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "field",
+          "label": "Field",
+          "kind": "field",
+          "unit": null,
+          "min": null,
+          "max": null,
+          "step": null,
+          "default": "assignee",
+          "options": [
+            {
+              "value": "assignee",
+              "label": "Assignee"
+            },
+            {
+              "value": "estimate",
+              "label": "Estimate"
+            },
+            {
+              "value": "epic",
+              "label": "Epic"
+            },
+            {
+              "value": "sprint",
+              "label": "Sprint"
+            }
+          ]
+        }
+      ],
+      "categories": [
+        "new",
+        "indeterminate",
+        "done"
+      ],
+      "default_categories": [
+        "indeterminate"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "missing_estimate",
+      "label": "Started without an estimate",
+      "summary": "Flags work that started with no estimate.",
+      "scope": "issue",
+      "params": [],
+      "categories": [
+        "indeterminate",
+        "done"
+      ],
+      "default_categories": [
+        "indeterminate",
+        "done"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "estimate_after_start",
+      "label": "Estimate set late",
+      "summary": "Flags work whose estimate was first set after work started.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "grace_hours",
+          "label": "Grace after work started",
+          "kind": "number",
+          "unit": "hours",
+          "min": 0.0,
+          "max": 168.0,
+          "step": 0.5,
+          "default": 1.0,
+          "options": null
+        }
+      ],
+      "categories": [
+        "indeterminate",
+        "done"
+      ],
+      "default_categories": [
+        "indeterminate",
+        "done"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "effort_ratio_at_least",
+      "label": "Effort over estimate",
+      "summary": "Flags work whose logged time is at least this many times its estimate.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "threshold",
+          "label": "Effort ratio",
+          "kind": "number",
+          "unit": "ratio",
+          "min": 0.1,
+          "max": 10.0,
+          "step": 0.05,
+          "default": 1.5,
+          "options": null
+        }
+      ],
+      "categories": [
+        "indeterminate",
+        "done"
+      ],
+      "default_categories": [
+        "done"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "entered_stage_without_evidence",
+      "label": "Reached a stage without evidence",
+      "summary": "Flags work that reached a stage with no evidence recorded before it.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "stage",
+          "label": "Stage",
+          "kind": "stage",
+          "unit": null,
+          "min": null,
+          "max": null,
+          "step": null,
+          "default": null,
+          "options": [
+            {
+              "value": "backlog",
+              "label": "Backlog"
+            },
+            {
+              "value": "development",
+              "label": "Development"
+            },
+            {
+              "value": "done",
+              "label": "Done"
+            }
+          ]
+        },
+        {
+          "name": "evidence",
+          "label": "Evidence",
+          "kind": "evidence",
+          "unit": null,
+          "min": null,
+          "max": null,
+          "step": null,
+          "default": null,
+          "options": [
+            {
+              "value": "code_review",
+              "label": "Code review"
+            },
+            {
+              "value": "dev_signoff",
+              "label": "Dev sign-off"
+            },
+            {
+              "value": "testing",
+              "label": "Testing"
+            },
+            {
+              "value": "test_review",
+              "label": "Test review"
+            },
+            {
+              "value": "test_signoff",
+              "label": "Test sign-off"
+            }
+          ]
+        }
+      ],
+      "categories": [
+        "new",
+        "indeterminate",
+        "done"
+      ],
+      "default_categories": [
+        "new",
+        "indeterminate",
+        "done"
+      ],
+      "measurable": false,
+      "missing_evidence": [
+        "code_review",
+        "dev_signoff",
+        "testing",
+        "test_review",
+        "test_signoff"
+      ]
+    },
+    {
+      "name": "skipped_stage",
+      "label": "Skipped a stage",
+      "summary": "Flags a status change that jumped over a stage the workflow maps.",
+      "scope": "issue",
+      "params": [],
+      "categories": [
+        "new",
+        "indeterminate",
+        "done"
+      ],
+      "default_categories": [
+        "new",
+        "indeterminate",
+        "done"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "reopened",
+      "label": "Reopened after Done",
+      "summary": "Flags work moved out of Done to a status that is not Done.",
+      "scope": "issue",
+      "params": [],
+      "categories": [
+        "new",
+        "indeterminate",
+        "done"
+      ],
+      "default_categories": [
+        "new",
+        "indeterminate",
+        "done"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "in_progress_unassigned",
+      "label": "In progress, no assignee",
+      "summary": "Flags work in progress that nobody is assigned to.",
+      "scope": "issue",
+      "params": [],
+      "categories": [
+        "indeterminate"
+      ],
+      "default_categories": [
+        "indeterminate"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "stuck_in_status",
+      "label": "Unusually long in a status",
+      "summary": "Flags work in its status longer than this board usually takes there.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "pct",
+          "label": "Percentile of time in the status",
+          "kind": "number",
+          "unit": "percentile",
+          "min": 50.0,
+          "max": 99.0,
+          "step": 1.0,
+          "default": 90.0,
+          "options": null
+        }
+      ],
+      "categories": [
+        "new",
+        "indeterminate"
+      ],
+      "default_categories": [
+        "new",
+        "indeterminate"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "no_evidence_after_percentile",
+      "label": "No evidence after usual time",
+      "summary": "Flags work in a stage longer than usual with no evidence yet.",
+      "scope": "issue",
+      "params": [
+        {
+          "name": "stage",
+          "label": "Stage",
+          "kind": "stage",
+          "unit": null,
+          "min": null,
+          "max": null,
+          "step": null,
+          "default": null,
+          "options": [
+            {
+              "value": "backlog",
+              "label": "Backlog"
+            },
+            {
+              "value": "development",
+              "label": "Development"
+            },
+            {
+              "value": "done",
+              "label": "Done"
+            }
+          ]
+        },
+        {
+          "name": "evidence",
+          "label": "Evidence",
+          "kind": "evidence",
+          "unit": null,
+          "min": null,
+          "max": null,
+          "step": null,
+          "default": null,
+          "options": [
+            {
+              "value": "code_review",
+              "label": "Code review"
+            },
+            {
+              "value": "dev_signoff",
+              "label": "Dev sign-off"
+            },
+            {
+              "value": "testing",
+              "label": "Testing"
+            },
+            {
+              "value": "test_review",
+              "label": "Test review"
+            },
+            {
+              "value": "test_signoff",
+              "label": "Test sign-off"
+            }
+          ]
+        },
+        {
+          "name": "pct",
+          "label": "Percentile of time in the stage",
+          "kind": "number",
+          "unit": "percentile",
+          "min": 50.0,
+          "max": 99.0,
+          "step": 1.0,
+          "default": 75.0,
+          "options": null
+        }
+      ],
+      "categories": [
+        "indeterminate"
+      ],
+      "default_categories": [
+        "indeterminate"
+      ],
+      "measurable": false,
+      "missing_evidence": [
+        "code_review",
+        "dev_signoff",
+        "testing",
+        "test_review",
+        "test_signoff"
+      ]
+    },
+    {
+      "name": "unestimated_in_active_sprint",
+      "label": "Unestimated in the sprint",
+      "summary": "Flags work in the active sprint that has no estimate.",
+      "scope": "issue",
+      "params": [],
+      "categories": [
+        "new",
+        "indeterminate"
+      ],
+      "default_categories": [
+        "new",
+        "indeterminate"
+      ],
+      "measurable": true,
+      "missing_evidence": []
+    },
+    {
+      "name": "sprint_at_risk",
+      "label": "Sprint at risk",
+      "summary": "Flags an active sprint near its end with much of its work not started.",
+      "scope": "sprint",
+      "params": [
+        {
+          "name": "days_left",
+          "label": "Days left in the sprint",
+          "kind": "number",
+          "unit": "days",
+          "min": 0.0,
+          "max": 14.0,
+          "step": 0.5,
+          "default": 2.0,
+          "options": null
+        },
+        {
+          "name": "not_started_share",
+          "label": "Share of issues not started",
+          "kind": "number",
+          "unit": "share",
+          "min": 0.05,
+          "max": 0.95,
+          "step": 0.05,
+          "default": 0.3,
+          "options": null
+        }
+      ],
+      "categories": [],
+      "default_categories": [],
+      "measurable": true,
+      "missing_evidence": []
+    }
+  ],
+  "custom_limit": 50,
+  "custom_count": 0,
+  "issue_types": [
+    "Bug",
+    "Subtask",
+    "Task",
+    "Test"
+  ],
+  "ai_draft": {
+    "available": true,
+    "reason": null
+  }
+}

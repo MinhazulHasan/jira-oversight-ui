@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "4332c822d6092c5f81f3cca8c3ad21ba",
+  "question": "Which tickets reached testing without code review?",
+  "outcome": "not_measurable",
+  "answer": null,
+  "citations": [],
+  "facts": [],
+  "plan": [
+    {
+      "tool": "oversight_list_findings",
+      "params": {
+        "rule_id": "R-FLOW-01",
+        "state": "all",
+        "period": "all",
+        "n": 20
+      }
+    }
+  ],
+  "missing_evidence": [
+    "code_review"
+  ],
+  "message": "Jira holds no code-review evidence for DEMO: no status, field or pull-request link records a review, and the workflow has no testing status. R-FLOW-01, the rule that would answer this, cannot run. That gap is itself a finding: the agreed process puts code review before testing, and Jira cannot show that either happened.",
+  "suggestions": [
+    "Which rules can't be measured in Jira today?",
+    "Which tickets went straight from To Do to Done this month?"
+  ],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [],
+  "note": null
+}

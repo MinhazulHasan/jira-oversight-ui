@@ -1,0 +1,396 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "ea9a472eb9a369d08f6c38624503a934",
+  "question": "Who is best on the board? Rank the others",
+  "outcome": "answered",
+  "answer": "Measures closer to the process than the board, last 90 days, most first: Finn Gallagher 2 of 5, Ben Okafor 1 of 7, Carmen Ruiz 1 of 7, Ada Brooks 1 of 7, Hana Mori 1 of 5, Dev Malhotra 0 of 7, Grace Lindqvist 0 of 7 and Elif Aydin 0 of 5.\n\nFigures from Jira over the last 90 days, next to the whole board, by each ticket's current assignee. Code review isn't recorded on this board, so reviewers' work doesn't show.",
+  "citations": [
+    {
+      "marker": 1,
+      "text": "90",
+      "fact_ref": "F1",
+      "row_index": -1,
+      "column": "params"
+    },
+    {
+      "marker": 2,
+      "text": "2",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "closer"
+    },
+    {
+      "marker": 3,
+      "text": "5",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "compared"
+    },
+    {
+      "marker": 4,
+      "text": "1",
+      "fact_ref": "F1",
+      "row_index": 1,
+      "column": "closer"
+    },
+    {
+      "marker": 5,
+      "text": "7",
+      "fact_ref": "F1",
+      "row_index": 1,
+      "column": "compared"
+    },
+    {
+      "marker": 6,
+      "text": "1",
+      "fact_ref": "F1",
+      "row_index": 2,
+      "column": "closer"
+    },
+    {
+      "marker": 7,
+      "text": "7",
+      "fact_ref": "F1",
+      "row_index": 2,
+      "column": "compared"
+    },
+    {
+      "marker": 8,
+      "text": "1",
+      "fact_ref": "F1",
+      "row_index": 3,
+      "column": "closer"
+    },
+    {
+      "marker": 9,
+      "text": "7",
+      "fact_ref": "F1",
+      "row_index": 3,
+      "column": "compared"
+    },
+    {
+      "marker": 10,
+      "text": "1",
+      "fact_ref": "F1",
+      "row_index": 4,
+      "column": "closer"
+    },
+    {
+      "marker": 11,
+      "text": "5",
+      "fact_ref": "F1",
+      "row_index": 4,
+      "column": "compared"
+    },
+    {
+      "marker": 12,
+      "text": "0",
+      "fact_ref": "F1",
+      "row_index": 5,
+      "column": "closer"
+    },
+    {
+      "marker": 13,
+      "text": "7",
+      "fact_ref": "F1",
+      "row_index": 5,
+      "column": "compared"
+    },
+    {
+      "marker": 14,
+      "text": "0",
+      "fact_ref": "F1",
+      "row_index": 6,
+      "column": "closer"
+    },
+    {
+      "marker": 15,
+      "text": "7",
+      "fact_ref": "F1",
+      "row_index": 6,
+      "column": "compared"
+    },
+    {
+      "marker": 16,
+      "text": "0",
+      "fact_ref": "F1",
+      "row_index": 7,
+      "column": "closer"
+    },
+    {
+      "marker": 17,
+      "text": "5",
+      "fact_ref": "F1",
+      "row_index": 7,
+      "column": "compared"
+    },
+    {
+      "marker": 18,
+      "text": "90",
+      "fact_ref": "F1",
+      "row_index": -1,
+      "column": "params"
+    }
+  ],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_people_compare",
+      "params": {
+        "project": "DEMO",
+        "measure": "overall",
+        "days": 90,
+        "order": "closer"
+      },
+      "columns": [
+        {
+          "key": "person_id",
+          "label": "Person id",
+          "kind": "text"
+        },
+        {
+          "key": "name",
+          "label": "Person",
+          "kind": "text"
+        },
+        {
+          "key": "closer",
+          "label": "Closer to the process",
+          "kind": "count"
+        },
+        {
+          "key": "further",
+          "label": "Further from the process",
+          "kind": "count"
+        },
+        {
+          "key": "level",
+          "label": "Level with the board",
+          "kind": "count"
+        },
+        {
+          "key": "compared",
+          "label": "Measures compared",
+          "kind": "count"
+        },
+        {
+          "key": "too_few",
+          "label": "Too few tickets",
+          "kind": "count"
+        },
+        {
+          "key": "open_findings_per_10",
+          "label": "Open findings per 10 open tickets",
+          "kind": "number"
+        },
+        {
+          "key": "open_findings",
+          "label": "Open findings",
+          "kind": "count"
+        },
+        {
+          "key": "open_tickets",
+          "label": "Open tickets",
+          "kind": "count"
+        },
+        {
+          "key": "enough",
+          "label": "Enough tickets",
+          "kind": "text"
+        },
+        {
+          "key": "standing",
+          "label": "Standing",
+          "kind": "text"
+        }
+      ],
+      "rows": [
+        {
+          "person_id": "p0998d9f44491",
+          "name": "Finn Gallagher",
+          "closer": 2,
+          "further": 0,
+          "level": 3,
+          "compared": 5,
+          "too_few": 2,
+          "open_findings_per_10": 6.7,
+          "open_findings": 2,
+          "open_tickets": 3,
+          "enough": false,
+          "standing": null
+        },
+        {
+          "person_id": "p7614b22410ea",
+          "name": "Ben Okafor",
+          "closer": 1,
+          "further": 0,
+          "level": 6,
+          "compared": 7,
+          "too_few": 0,
+          "open_findings_per_10": 8.3,
+          "open_findings": 5,
+          "open_tickets": 6,
+          "enough": true,
+          "standing": null
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "closer": 1,
+          "further": 1,
+          "level": 5,
+          "compared": 7,
+          "too_few": 0,
+          "open_findings_per_10": 8.6,
+          "open_findings": 6,
+          "open_tickets": 7,
+          "enough": true,
+          "standing": null
+        },
+        {
+          "person_id": "pbc7fe62842ca",
+          "name": "Ada Brooks",
+          "closer": 1,
+          "further": 1,
+          "level": 5,
+          "compared": 7,
+          "too_few": 0,
+          "open_findings_per_10": 9,
+          "open_findings": 9,
+          "open_tickets": 10,
+          "enough": true,
+          "standing": null
+        },
+        {
+          "person_id": "pe0f1fe0c54ec",
+          "name": "Hana Mori",
+          "closer": 1,
+          "further": 0,
+          "level": 4,
+          "compared": 5,
+          "too_few": 2,
+          "open_findings_per_10": 3.3,
+          "open_findings": 1,
+          "open_tickets": 3,
+          "enough": false,
+          "standing": null
+        },
+        {
+          "person_id": "p7eadbe877710",
+          "name": "Dev Malhotra",
+          "closer": 0,
+          "further": 3,
+          "level": 4,
+          "compared": 7,
+          "too_few": 0,
+          "open_findings_per_10": 10.8,
+          "open_findings": 14,
+          "open_tickets": 13,
+          "enough": true,
+          "standing": null
+        },
+        {
+          "person_id": "p65b14f7daa03",
+          "name": "Grace Lindqvist",
+          "closer": 0,
+          "further": 5,
+          "level": 2,
+          "compared": 7,
+          "too_few": 0,
+          "open_findings_per_10": 13.1,
+          "open_findings": 17,
+          "open_tickets": 13,
+          "enough": true,
+          "standing": null
+        },
+        {
+          "person_id": "p15311a7e00f9",
+          "name": "Elif Aydin",
+          "closer": 0,
+          "further": 3,
+          "level": 2,
+          "compared": 5,
+          "too_few": 2,
+          "open_findings_per_10": 5,
+          "open_findings": 2,
+          "open_tickets": 4,
+          "enough": false,
+          "standing": null
+        }
+      ],
+      "truncated": false,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "everyone who holds a ticket, by the number of measures on which they are closer to the process than the whole board over the last 90 days (6 Aug 2026 to 4 Nov 2026), most first, ties by open findings per 10 open tickets (fewer first; a figure on too few tickets is never compared, so it counts as the most), people compared on no measure last; by each ticket's current assignee, Epics left out; the closer, further and level counts are the measures on which the person's figure stands closer to the process than the board's, further from it, or level with it (within 5 points, 0.5 for the ratio); measures compared is their sum; too few tickets counts the measures where either side rests on fewer than 5 tickets; open findings per 10 open tickets is the open breaches and warnings on the person's open tickets for every 10 of those tickets, compared only when it rests on enough tickets"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_people_compare",
+      "params": {
+        "project": "DEMO",
+        "measure": "overall",
+        "days": 90,
+        "order": "closer"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": null,
+  "suggestions": [],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [
+    {
+      "id": "p0998d9f44491",
+      "name": "Finn Gallagher",
+      "avatar": null
+    },
+    {
+      "id": "p7614b22410ea",
+      "name": "Ben Okafor",
+      "avatar": null
+    },
+    {
+      "id": "p599114b761a6",
+      "name": "Carmen Ruiz",
+      "avatar": "55ea1804e5bd"
+    },
+    {
+      "id": "pbc7fe62842ca",
+      "name": "Ada Brooks",
+      "avatar": null
+    },
+    {
+      "id": "pe0f1fe0c54ec",
+      "name": "Hana Mori",
+      "avatar": null
+    },
+    {
+      "id": "p7eadbe877710",
+      "name": "Dev Malhotra",
+      "avatar": null
+    },
+    {
+      "id": "p65b14f7daa03",
+      "name": "Grace Lindqvist",
+      "avatar": "37d44fa82021"
+    },
+    {
+      "id": "p15311a7e00f9",
+      "name": "Elif Aydin",
+      "avatar": null
+    }
+  ],
+  "note": null
+}

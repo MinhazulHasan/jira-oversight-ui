@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "fcac06ff1a7823ac4ece8a4d50e1d9f9",
+  "question": "What is the weather?",
+  "outcome": "not_understood",
+  "answer": null,
+  "citations": [],
+  "facts": [],
+  "plan": [],
+  "missing_evidence": [],
+  "message": "That question can't be answered from the Jira data; try one of the suggestions.",
+  "suggestions": [
+    "Where do tickets get stuck most?",
+    "Which epics have the most open breaches?",
+    "How much work was estimated before it started?",
+    "Which tickets went straight from To Do to Done this month?",
+    "How is effort against estimate trending?",
+    "Which rules can't be measured in Jira today?"
+  ],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [],
+  "note": null
+}

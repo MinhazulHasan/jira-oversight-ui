@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "person": {
+    "id": "pbc7fe62842ca",
+    "name": "Ada Brooks",
+    "avatar": null
+  },
+  "board": {
+    "key": "DEMO",
+    "name": "Demo project"
+  },
+  "membership": "holds_tickets",
+  "work": {
+    "open_tickets": 10,
+    "in_progress": 4,
+    "done_in_period": 56,
+    "days": 90
+  },
+  "findings": {
+    "open_breaches": 82,
+    "open_warnings": 67
+  },
+  "process": {
+    "closer": 1,
+    "level": 5,
+    "further": 1,
+    "too_few": 0,
+    "measurable": 7
+  },
+  "in_progress_now": [
+    {
+      "key": "DEMO-1038",
+      "summary": "Improve mobile sign-in",
+      "status": "In Progress",
+      "since": "2026-10-19T15:23:00.000Z"
+    },
+    {
+      "key": "DEMO-1084",
+      "summary": "Fix import templates",
+      "status": "In Progress",
+      "since": "2026-10-20T14:37:00.000Z"
+    },
+    {
+      "key": "DEMO-1128",
+      "summary": "Rework file upload limits",
+      "status": "In Progress",
+      "since": "2026-10-29T08:27:00.000Z"
+    }
+  ],
+  "in_progress_more": 1,
+  "other_boards": [
+    {
+      "key": "MOB",
+      "name": "Mobile app",
+      "open_tickets": 1
+    },
+    {
+      "key": "OPS",
+      "name": "Operations",
+      "open_tickets": 3
+    },
+    {
+      "key": "WEB",
+      "name": "Web platform",
+      "open_tickets": 1
+    }
+  ],
+  "last_activity_at": "2026-11-04T08:45:00.000Z"
+}

@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "person": {
+    "id": "pc3d7609d78d1",
+    "name": "Noor Haddad",
+    "avatar": null
+  },
+  "board": {
+    "key": "DEMO",
+    "name": "Demo project"
+  },
+  "membership": "member_no_tickets",
+  "work": {
+    "open_tickets": 0,
+    "in_progress": 0,
+    "done_in_period": 0,
+    "days": 30
+  },
+  "findings": {
+    "open_breaches": 0,
+    "open_warnings": 0
+  },
+  "process": null,
+  "in_progress_now": [],
+  "in_progress_more": 0,
+  "other_boards": [
+    {
+      "key": "OPS",
+      "name": "Operations",
+      "open_tickets": 2
+    }
+  ],
+  "last_activity_at": null
+}

@@ -1,0 +1,876 @@
+@import "tailwindcss" source("../");
+@import "../styles/components.css";
+@import "../styles/charts.css";
+
+/* ============================================================================
+   Jira Oversight: the token system.
+
+   Ported from Ask the System (same client, same team) and extended for a
+   dashboard. Light is authored first and is the primary theme: this audience
+   prints, sits near windows, and the screenshot that circulates in decks is
+   the light one. Dark is its own set of steps, never an inversion.
+
+   Every colour is defined on bare :root. Dark redefines only the tokens, once
+   under prefers-color-scheme and again under [data-theme], so an explicit
+   toggle wins in both directions and no colour has its only definition inside
+   a media query.
+
+   One accent. --cite means "traceable": links to evidence, citation markers,
+   bound values, the tick-and-tie line, the focus ring and the single primary
+   action. It is never decoration, never a chart series, never a nav highlight.
+
+   Status colour is reserved, and always ships with an icon and a label:
+   breach (clay), warn (amber), ok (green), and the hatch for "not measurable".
+   Each status has a mark step (--x: fills, bars, icons, badge edges) and an
+   ink step (--x-ink: text). In light the mark steps sit near 4:1, which is
+   enough for a mark next to a label but not for words, so text uses -ink.
+   ========================================================================= */
+
+:root {
+  color-scheme: light;
+
+  /* Grounds: warm paper. */
+  --paper-000: #f2f0eb; /* desk */
+  --paper-050: #ffffff; /* the sheet, menus, dialogs */
+  --paper-100: #f7f5f0; /* rail, table heads, insets */
+  --paper-150: #ffffff; /* raised controls */
+  --paper-200: #ebe8e1; /* hover */
+  --paper-250: #e2ded5; /* pressed, the current nav item */
+
+  --rule-weak: #e8e4dc;
+  --rule: #d9d4c9;
+  --rule-strong: #bdb6a8;
+  /* The edge of a form control. A field has to be findable without its
+     placeholder, so this one clears 3:1 against the sheet and the desk. */
+  --rule-control: #8c877d;
+
+  --text-hi: #14181c;
+  --text-mid: #434c56;
+  /* Informational muted. Ask the System used #687280, which measures 4.28:1 on
+     the desk and 4.47:1 on the rail; this step clears 4.5:1 on every ground
+     text sits on (sheet, desk, rail, hover). */
+  --text-low: #5f6874;
+  /* DECORATIVE ONLY: rules inside glyphs, disabled marks. Never words. */
+  --text-dim: #9aa2ac;
+
+  /* The one accent. Institutional teal: authoritative without being loud. */
+  --cite: #1f6f8f;
+  --cite-hot: #17566f;
+  --cite-ink: #ffffff; /* text on a filled accent */
+  --cite-tint: rgba(31, 111, 143, 0.1);
+  --cite-tint-strong: rgba(31, 111, 143, 0.18);
+  --cite-line: rgba(31, 111, 143, 0.42);
+
+  --ok: #2f7d5b;
+  --ok-ink: #276b4d;
+  --ok-tint: rgba(47, 125, 91, 0.1);
+  --warn: #a86f14;
+  --warn-ink: #875a0f;
+  --warn-tint: rgba(168, 111, 20, 0.1);
+  /* Clay. A breached value and a breach badge are the same colour. */
+  --breach: #a2565c;
+  --breach-ink: #93484e;
+  --breach-tint: rgba(162, 86, 92, 0.1);
+
+  /* The hatch: Ask the System's redaction texture, reused to mean NOT
+     MEASURABLE (the process step exists, but Jira holds no evidence for it).
+     Calm and deliberate, never an error look. */
+  --hatch-a: #e6e2da;
+  --hatch-b: #d5d0c5;
+  --hatch-edge: #a39d91;
+
+  /* Focus is solid accent: the translucent ring Ask the System used measures
+     under 2:1 against white, and a focus indicator needs 3:1. */
+  --focus: #1f6f8f;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+
+  --overlay: rgba(20, 24, 28, 0.32);
+
+  /* Elevation. The sheet sits on the desk; raised controls sit on the sheet. */
+  --shadow-sheet:
+    0 0 0 1px rgba(20, 24, 28, 0.05),
+    0 1px 2px rgba(20, 24, 28, 0.04),
+    0 14px 40px -20px rgba(20, 24, 28, 0.18);
+  --shadow-raised:
+    0 0 0 1px rgba(20, 24, 28, 0.08),
+    0 1px 2px rgba(20, 24, 28, 0.05),
+    0 8px 24px -14px rgba(20, 24, 28, 0.22);
+  --shadow-raised-focus:
+    0 0 0 1px var(--cite),
+    0 0 0 4px var(--cite-tint),
+    0 8px 24px -14px rgba(20, 24, 28, 0.22);
+  --shadow-pop:
+    0 0 0 1px rgba(20, 24, 28, 0.08),
+    0 12px 36px -12px rgba(20, 24, 28, 0.28);
+  /* A status line, not a card: lifted just enough to separate from the page. */
+  --shadow-toast:
+    0 1px 2px rgba(20, 24, 28, 0.06),
+    0 6px 18px -12px rgba(20, 24, 28, 0.3);
+  --raise-inset: none;
+
+  /* A half-pixel rule on a Retina panel is the strongest native-app signal a browser has. */
+  --hairline: 1px;
+
+  /* Type scale (Ask the System). */
+  --t-micro: 10.5px;
+  --t-mono-s: 11.5px;
+  --t-xs: 12px;
+  --t-sm: 13px;
+  --t-base: 15px;
+  --t-md: 16px;
+  --t-lg: 17px;
+  --t-xl: 21px;
+  --t-h: 22px;
+  --t-hero: 30px;
+
+  /* Layout. */
+  --rail-w: 232px;
+  --rail-w-collapsed: 64px;
+  --topbar-h: 56px;
+  --gutter: 28px;
+  --sheet-pad: 32px;
+  --content-max: 1600px;
+
+  /* Rows. */
+  --row-nav: 34px;
+  --row-table-head: 36px;
+  --row-table: 40px;
+  --row-table-dense: 32px;
+
+  --r-xs: 3px;
+  --r-sm: 5px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-pill: 999px;
+
+  /* Motion: restrained. Content rises 6px as it fades in; nothing bounces. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --dur-slow: 260ms;
+
+  --z-sticky: 30;
+  --z-overlay: 50;
+  --z-toast: 60;
+}
+
+@media (min-resolution: 2dppx) {
+  :root {
+    --hairline: 0.5px;
+  }
+}
+
+/* ------------------------------------------------------------ dark theme ----
+   Institutional dark: deep slate, not an editor palette. Depth is carried by
+   luminance steps and an inset top highlight rather than drop shadows. The
+   accent is a desaturated cyan-teal, still unmistakably the citation colour.
+   Semantic colours are muted so nothing glows, and every one of them already
+   clears 4.5:1 as text, so the ink steps equal the mark steps. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --paper-000: #0c1015;
+    --paper-050: #12181f;
+    --paper-100: #0f141a;
+    --paper-150: #192028;
+    --paper-200: #212a34;
+    --paper-250: #2a3441;
+
+    --rule-weak: #1d252e;
+    --rule: #28323d;
+    --rule-strong: #3a4653;
+    --rule-control: #5f6b78;
+
+    --text-hi: #e9edf2;
+    --text-mid: #b4bec9;
+    --text-low: #8d98a5;
+    --text-dim: #5f6b78;
+
+    --cite: #5fc4e6;
+    --cite-hot: #93daf1;
+    --cite-ink: #0c1015;
+    --cite-tint: rgba(95, 196, 230, 0.14);
+    --cite-tint-strong: rgba(95, 196, 230, 0.24);
+    --cite-line: rgba(95, 196, 230, 0.48);
+
+    --ok: #4fb286;
+    --ok-ink: #4fb286;
+    --ok-tint: rgba(79, 178, 134, 0.12);
+    --warn: #d9a441;
+    --warn-ink: #d9a441;
+    --warn-tint: rgba(217, 164, 65, 0.12);
+    --breach: #e06c75;
+    --breach-ink: #e06c75;
+    --breach-tint: rgba(224, 108, 117, 0.12);
+
+    --hatch-a: #1d252e;
+    --hatch-b: #12181f;
+    --hatch-edge: #4a5663;
+
+    --focus: #5fc4e6;
+    --overlay: rgba(0, 0, 0, 0.55);
+
+    --shadow-sheet:
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 20px 50px -30px rgba(0, 0, 0, 0.8);
+    --shadow-raised:
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --shadow-raised-focus:
+      0 0 0 1px var(--cite),
+      0 0 0 4px var(--cite-tint),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --shadow-pop:
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 16px 40px -12px rgba(0, 0, 0, 0.7);
+    --shadow-toast:
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 10px 24px -12px rgba(0, 0, 0, 0.7);
+    --raise-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper-000: #0c1015;
+  --paper-050: #12181f;
+  --paper-100: #0f141a;
+  --paper-150: #192028;
+  --paper-200: #212a34;
+  --paper-250: #2a3441;
+
+  --rule-weak: #1d252e;
+  --rule: #28323d;
+  --rule-strong: #3a4653;
+  --rule-control: #5f6b78;
+
+  --text-hi: #e9edf2;
+  --text-mid: #b4bec9;
+  --text-low: #8d98a5;
+  --text-dim: #5f6b78;
+
+  --cite: #5fc4e6;
+  --cite-hot: #93daf1;
+  --cite-ink: #0c1015;
+  --cite-tint: rgba(95, 196, 230, 0.14);
+  --cite-tint-strong: rgba(95, 196, 230, 0.24);
+  --cite-line: rgba(95, 196, 230, 0.48);
+
+  --ok: #4fb286;
+  --ok-ink: #4fb286;
+  --ok-tint: rgba(79, 178, 134, 0.12);
+  --warn: #d9a441;
+  --warn-ink: #d9a441;
+  --warn-tint: rgba(217, 164, 65, 0.12);
+  --breach: #e06c75;
+  --breach-ink: #e06c75;
+  --breach-tint: rgba(224, 108, 117, 0.12);
+
+  --hatch-a: #1d252e;
+  --hatch-b: #12181f;
+  --hatch-edge: #4a5663;
+
+  --focus: #5fc4e6;
+  --overlay: rgba(0, 0, 0, 0.55);
+
+  --shadow-sheet:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 20px 50px -30px rgba(0, 0, 0, 0.8);
+  --shadow-raised:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-raised-focus:
+    0 0 0 1px var(--cite),
+    0 0 0 4px var(--cite-tint),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-pop:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 16px 40px -12px rgba(0, 0, 0, 0.7);
+  --shadow-toast:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 10px 24px -12px rgba(0, 0, 0, 0.7);
+  --raise-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* --------------------------------------------------- tailwind mapping ------
+   The default Tailwind palette and type scale are removed on purpose: the
+   only colours and sizes that exist are the ones above, so a second palette
+   cannot creep in through a utility class. Chart colours are added by the UI
+   kit in charts.css. */
+
+@theme {
+  --color-*: initial;
+  --text-*: initial;
+}
+
+@theme inline {
+  --color-desk: var(--paper-000);
+  --color-sheet: var(--paper-050);
+  --color-rail: var(--paper-100);
+  --color-raised: var(--paper-150);
+  --color-hover: var(--paper-200);
+  --color-pressed: var(--paper-250);
+
+  --color-rule-weak: var(--rule-weak);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-rule-control: var(--rule-control);
+
+  --color-ink: var(--text-hi);
+  --color-ink-mid: var(--text-mid);
+  --color-ink-low: var(--text-low);
+  --color-ink-dim: var(--text-dim);
+
+  --color-cite: var(--cite);
+  --color-cite-hot: var(--cite-hot);
+  --color-cite-ink: var(--cite-ink);
+  --color-cite-tint: var(--cite-tint);
+  --color-cite-tint-strong: var(--cite-tint-strong);
+  --color-cite-line: var(--cite-line);
+
+  --color-ok: var(--ok);
+  --color-ok-ink: var(--ok-ink);
+  --color-ok-tint: var(--ok-tint);
+  --color-warn: var(--warn);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn-tint: var(--warn-tint);
+  --color-breach: var(--breach);
+  --color-breach-ink: var(--breach-ink);
+  --color-breach-tint: var(--breach-tint);
+
+  --color-hatch-edge: var(--hatch-edge);
+  --color-focus: var(--focus);
+  --color-overlay: var(--overlay);
+
+  /* Latin-ext first: it only claims the characters in its unicode-range, so
+     everything else falls through to the preloaded latin face. Each variable
+     carries a fallback so the stack stays valid in a document that does not
+     load the fonts (the global error page). */
+  --font-sans:
+    var(--font-inter-ext, ui-sans-serif), var(--font-inter, system-ui), ui-sans-serif, system-ui,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    var(--font-plex-mono, ui-monospace), ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
+
+  --text-micro: var(--t-micro);
+  --text-micro--line-height: 1.2;
+  --text-mono-s: var(--t-mono-s);
+  --text-mono-s--line-height: 1.4;
+  --text-xs: var(--t-xs);
+  --text-xs--line-height: 1.45;
+  --text-sm: var(--t-sm);
+  --text-sm--line-height: 1.45;
+  --text-base: var(--t-base);
+  --text-base--line-height: 1.55;
+  --text-md: var(--t-md);
+  --text-md--line-height: 1.5;
+  --text-lg: var(--t-lg);
+  --text-lg--line-height: 1.45;
+  --text-xl: var(--t-xl);
+  --text-xl--line-height: 1.3;
+  --text-h: var(--t-h);
+  --text-h--line-height: 1.25;
+  --text-hero: var(--t-hero);
+  --text-hero--line-height: 1.15;
+
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-pill: var(--r-pill);
+
+  --shadow-sheet: var(--shadow-sheet);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-pop: var(--shadow-pop);
+  --shadow-toast: var(--shadow-toast);
+
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+}
+
+/* ---------------------------------------------------------------- base ---- */
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--rule-weak);
+  }
+
+  html {
+    font-variant-numeric: lining-nums;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Anchored headings land below the sticky top bar, not under it. */
+    scroll-padding-top: calc(var(--topbar-h) + 16px);
+  }
+
+  /* While a page's sticky bar of unsaved changes shows (the rule settings page, JO-15), a control the keyboard reaches
+     stops above it, never under it: the bar's 48 px, its 16 px from the foot, and room for the focus ring to show
+     (WCAG 2.4.11). */
+  html:has([data-unsaved-bar]) {
+    scroll-padding-bottom: 5.5rem;
+  }
+
+  body {
+    background: var(--paper-000);
+    color: var(--text-hi);
+    font-family: var(--font-sans);
+    font-size: var(--t-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * Tabular lining figures wherever figures are read: in tables, times, data,
+   * keys, code, and anything marked data-figure. A figure column that does not
+   * align is a tell. Figures in Plex Mono (.mono) are tabular by construction.
+   *
+   * Not on running text. Inter's tabular set also widens the hyphen-minus by
+   * half (it doubles as a minus sign) and the full stop, comma and colon, so
+   * applied to prose and labels it reads "read - only", "sign - off". For a
+   * figure anywhere else, use data-figure or the tabular-nums utility.
+   */
+  :where(table, time, data, output, meter, progress, kbd, code, samp, [data-figure]) {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    background: var(--cite-tint-strong);
+    color: var(--text-hi);
+  }
+
+  :focus-visible {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary {
+    cursor: pointer;
+  }
+
+  button,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* ---------------------------------------------------------- primitives ----
+   The few classes everything shares. Components live in components.css. */
+
+@layer components {
+  .mono {
+    font-family: var(--font-mono);
+    font-feature-settings:
+      "tnum" 1,
+      "zero" 1;
+    /* Mono renders larger than the adjacent sans at the same size. */
+    font-size: 0.92em;
+  }
+
+  .micro {
+    font-size: var(--t-micro);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+
+  .hairline-b {
+    border-bottom: var(--hairline) solid var(--rule-weak);
+  }
+  .hairline-t {
+    border-top: var(--hairline) solid var(--rule-weak);
+  }
+  .hairline-r {
+    border-right: var(--hairline) solid var(--rule-weak);
+  }
+  .hairline-l {
+    border-left: var(--hairline) solid var(--rule-weak);
+  }
+
+  /* Surfaces. */
+  .sheet {
+    background: var(--paper-050);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sheet);
+  }
+
+  .raised {
+    background: var(--paper-150);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-raised);
+    transition:
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+  .raised:focus-within {
+    box-shadow: var(--shadow-raised-focus);
+  }
+
+  /* Every control acknowledges a press. */
+  .pressable {
+    transition:
+      transform 90ms ease,
+      background-color var(--dur-fast) ease,
+      border-color var(--dur-fast) ease,
+      color var(--dur-fast) ease;
+  }
+  .pressable:active:not(:disabled) {
+    transform: translateY(0.5px) scale(0.995);
+  }
+
+  /* NOT MEASURABLE. Put it on any area or mark whose evidence Jira does not
+     hold. Pair it with --text-low text and the words "Not measurable". */
+  .hatch {
+    background-color: var(--hatch-a);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--hatch-a) 0 4px,
+      var(--hatch-b) 4px 8px
+    );
+  }
+
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border: var(--hairline) solid var(--rule);
+    border-bottom-width: 1.5px;
+    border-radius: 4px;
+    background: var(--paper-050);
+    color: var(--text-low);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* A placeholder in the final shape of what it stands for. */
+  .skeleton {
+    border-radius: var(--r-xs);
+    background: linear-gradient(
+      90deg,
+      var(--paper-200) 0%,
+      var(--paper-100) 50%,
+      var(--paper-200) 100%
+    );
+    background-size: 200% 100%;
+    animation: jo-shimmer 1.6s ease-in-out infinite;
+  }
+  /* Same shape, no movement: for a layout that is waiting to be built, not loading. */
+  .skeleton-still {
+    animation: none;
+    background: var(--paper-200);
+    opacity: 0.7;
+  }
+
+  .scroll-region {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+
+  .rise {
+    animation: jo-rise var(--dur-slow) var(--ease-out) both;
+  }
+  .rise-2 {
+    animation-delay: 60ms;
+  }
+  .rise-3 {
+    animation-delay: 120ms;
+  }
+
+  /* A loading state that only appears if the wait is long enough to notice,
+     so a fast navigation never flashes a skeleton. */
+  .reveal-late {
+    animation: jo-fade-in var(--dur) ease 180ms both;
+  }
+
+  .skip-link {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: calc(var(--z-toast) + 1);
+    padding: 8px 14px;
+    border-radius: var(--r-sm);
+    background: var(--cite);
+    color: var(--cite-ink);
+    font-size: var(--t-sm);
+    font-weight: 500;
+    transform: translateY(-160%);
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .skip-link:focus-visible {
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------- toast -----
+   Acknowledgement at the edge of the page, never data a reader must act on.
+   A ruled status line, not a card: hairline, square-ish, a 3px tone bar down
+   the leading edge and a small tone mark. Sonner runs unstyled and keeps only
+   its positioning; the tone bar is an inset shadow rather than a pseudo
+   element because Sonner uses ::before and ::after for its swipe areas. */
+
+.jo-toast {
+  --toast-tone: var(--text-low);
+  display: flex;
+  align-items: flex-start;
+  width: max-content;
+  min-width: 220px;
+  max-width: min(380px, calc(100vw - 32px));
+  min-height: 46px;
+  padding: 11px 16px 11px 15px;
+  border: var(--hairline) solid var(--rule);
+  border-radius: var(--r-sm);
+  background: var(--paper-050);
+  color: var(--text-hi);
+  box-shadow:
+    inset 3px 0 0 var(--toast-tone),
+    var(--shadow-toast);
+  font-family: var(--font-sans);
+  cursor: default;
+}
+/* While a page's bar of unsaved changes shows (the rule settings page), a toast rises above it rather than lie over
+   its buttons (at a 13-inch MacBook's width the toast's column reaches "Review and save"; on a phone it covers the
+   bar): the bar's 48 px, its 16 px from the foot, and the toaster's own 20 px. */
+html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"] {
+  bottom: 84px;
+}
+/* Sonner's own focus style is injected after this sheet at the same weight. */
+[data-sonner-toast].jo-toast:focus-visible {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: 2px;
+  box-shadow:
+    inset 3px 0 0 var(--toast-tone),
+    var(--shadow-toast);
+}
+.jo-toast.tone-ok {
+  --toast-tone: var(--ok);
+}
+.jo-toast.tone-warn {
+  --toast-tone: var(--warn);
+}
+.jo-toast.tone-cite {
+  --toast-tone: var(--cite);
+}
+.jo-toast-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding-left: 14px;
+}
+.jo-toast-title {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text-hi);
+}
+.jo-toast-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6.5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--toast-tone);
+}
+.jo-toast-description {
+  font-size: var(--t-xs);
+  line-height: 1.45;
+  color: var(--text-low);
+}
+
+/* ------------------------------------------------------ command palette ---
+   cmdk renders its group headings itself, so they are styled by attribute. */
+
+.jo-palette [cmdk-group-heading] {
+  padding: 10px 12px 6px;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--text-low);
+}
+
+/* ------------------------------------------------------------- motion -----
+   Restrained. Content rises 6px as it fades in; a trace line draws itself;
+   a wait sweeps. Nothing bounces, nothing spins. */
+
+@keyframes jo-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes jo-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes jo-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes jo-sweep {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+@keyframes jo-draw {
+  from {
+    stroke-dashoffset: 1400;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes jo-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------- forced colours ---
+   High-contrast mode drops backgrounds and shadows, which is where the sheet,
+   the current nav item and the hatch carry their meaning. Give each an edge. */
+
+@media (forced-colors: active) {
+  .sheet,
+  .raised,
+  .jo-toast {
+    border: 1px solid CanvasText;
+  }
+  .hatch {
+    forced-color-adjust: none;
+    background-color: Canvas;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      GrayText 0 1px,
+      Canvas 1px 5px
+    );
+  }
+  [aria-current="page"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  .skeleton,
+  .skeleton-still {
+    border: 1px dashed GrayText;
+  }
+}
+
+/* ---------------------------------------------------------------- print ---
+   This audience presses Cmd-P inside the first minute. The page prints as a
+   document: no rail, no top bar, no toasts, the sheet flat on white, and the
+   provenance line (data source, last synced) at the top. */
+
+@media print {
+  @page {
+    margin: 16mm;
+  }
+  html {
+    font-size: 11px;
+  }
+  :root {
+    --paper-000: #fff;
+    --paper-050: #fff;
+    --paper-100: #fff;
+    --text-hi: #000;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .sheet {
+    box-shadow: none;
+    border-radius: 0;
+  }
+  [data-print="hide"],
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+  [data-print="only"] {
+    display: block !important;
+  }
+  [data-print="flow"] {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    border: 0 !important;
+  }
+  .scroll-region {
+    overflow: visible !important;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tr,
+  img,
+  svg {
+    break-inside: avoid;
+  }
+}

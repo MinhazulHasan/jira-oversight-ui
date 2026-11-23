@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "project": "DEMO",
+  "revision": 0,
+  "impact": [
+    {
+      "rule_id": "R-EFF-01",
+      "measurable": true,
+      "open_now": 76,
+      "would_open": 0,
+      "would_close": 58,
+      "would_stay": 18,
+      "examples": {
+        "open": [],
+        "close": [
+          "DEMO-1",
+          "DEMO-32",
+          "DEMO-41",
+          "DEMO-46",
+          "DEMO-58"
+        ]
+      },
+      "note": null
+    },
+    {
+      "rule_id": "W-AGE-01",
+      "measurable": true,
+      "open_now": 14,
+      "would_open": 0,
+      "would_close": 14,
+      "would_stay": 0,
+      "examples": {
+        "open": [],
+        "close": [
+          "DEMO-749",
+          "DEMO-802",
+          "DEMO-916",
+          "DEMO-938",
+          "DEMO-945"
+        ]
+      },
+      "note": null
+    }
+  ],
+  "totals": {
+    "would_open": 0,
+    "would_close": 72
+  }
+}

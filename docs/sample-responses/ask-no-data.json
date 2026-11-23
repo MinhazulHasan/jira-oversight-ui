@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "67da711d61576aaea1956c4eee6c6c40",
+  "question": "Which tickets were reopened this week?",
+  "outcome": "no_data",
+  "answer": null,
+  "citations": [],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_list_findings",
+      "params": {
+        "state": "all",
+        "period": "7d",
+        "n": 20,
+        "rule_id": "R-FLOW-03"
+      },
+      "columns": [
+        {
+          "key": "finding_id",
+          "label": "Finding",
+          "kind": "text"
+        },
+        {
+          "key": "rule_id",
+          "label": "Rule",
+          "kind": "text"
+        },
+        {
+          "key": "rule_title",
+          "label": "Rule title",
+          "kind": "text"
+        },
+        {
+          "key": "severity",
+          "label": "Severity",
+          "kind": "text"
+        },
+        {
+          "key": "issue_key",
+          "label": "Issue",
+          "kind": "issue_key"
+        },
+        {
+          "key": "summary",
+          "label": "Summary",
+          "kind": "text"
+        },
+        {
+          "key": "epic_key",
+          "label": "Epic",
+          "kind": "issue_key"
+        },
+        {
+          "key": "message",
+          "label": "Message",
+          "kind": "text"
+        },
+        {
+          "key": "first_seen_at",
+          "label": "First seen",
+          "kind": "date"
+        },
+        {
+          "key": "resolved_at",
+          "label": "Resolved",
+          "kind": "date"
+        }
+      ],
+      "rows": [],
+      "truncated": false,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "all findings, rule R-FLOW-03 (Reopened after Done), first seen in the last 7 days, newest first"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_list_findings",
+      "params": {
+        "state": "all",
+        "period": "7d",
+        "n": 20,
+        "rule_id": "R-FLOW-03"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": "No ticket was reopened after Done in the last 7 days. Looked at: every finding of R-FLOW-03 (Reopened after Done) first seen in that period.",
+  "suggestions": [
+    "Which tickets have been reopened after Done?"
+  ],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [],
+  "note": null
+}

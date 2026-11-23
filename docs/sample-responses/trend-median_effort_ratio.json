@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "metric": "median_effort_ratio",
+  "period": "week",
+  "last_n": 12,
+  "label": "Median effort ratio",
+  "unit": "ratio",
+  "direction_good": "down",
+  "note": "Median logged time over estimate, over work finished in the week that has both an estimate and logged time.",
+  "series": [
+    {
+      "t": "2026-08-17",
+      "value": 1.0313
+    },
+    {
+      "t": "2026-08-24",
+      "value": 0.95
+    },
+    {
+      "t": "2026-08-31",
+      "value": 1.0422
+    },
+    {
+      "t": "2026-09-07",
+      "value": 1.0594
+    },
+    {
+      "t": "2026-09-14",
+      "value": 0.9688
+    },
+    {
+      "t": "2026-09-21",
+      "value": 0.9583
+    },
+    {
+      "t": "2026-09-28",
+      "value": 1.15
+    },
+    {
+      "t": "2026-10-05",
+      "value": 1.0156
+    },
+    {
+      "t": "2026-10-12",
+      "value": 1.1458
+    },
+    {
+      "t": "2026-10-19",
+      "value": 1.6197
+    },
+    {
+      "t": "2026-10-26",
+      "value": 1.3813
+    },
+    {
+      "t": "2026-11-02",
+      "value": 1.2734
+    }
+  ]
+}

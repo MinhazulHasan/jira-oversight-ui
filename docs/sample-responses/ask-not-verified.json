@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "f1a218fc2f6186a637b706a7f8355e40",
+  "question": "What is the median cycle time this quarter?",
+  "outcome": "not_verified",
+  "answer": null,
+  "citations": [],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_trend",
+      "params": {
+        "metric": "median_cycle_time_h",
+        "last_n": 12
+      },
+      "columns": [
+        {
+          "key": "week_of",
+          "label": "Week of",
+          "kind": "date"
+        },
+        {
+          "key": "value",
+          "label": "median cycle time h",
+          "kind": "hours"
+        }
+      ],
+      "rows": [
+        {
+          "week_of": "2026-08-17",
+          "value": 100.05
+        },
+        {
+          "week_of": "2026-08-24",
+          "value": 144.5833
+        },
+        {
+          "week_of": "2026-08-31",
+          "value": 165.7833
+        },
+        {
+          "week_of": "2026-09-07",
+          "value": 120.6
+        },
+        {
+          "week_of": "2026-09-14",
+          "value": 83.2167
+        },
+        {
+          "week_of": "2026-09-21",
+          "value": 95.5667
+        },
+        {
+          "week_of": "2026-09-28",
+          "value": 133.25
+        },
+        {
+          "week_of": "2026-10-05",
+          "value": 81.75
+        },
+        {
+          "week_of": "2026-10-12",
+          "value": 96.325
+        },
+        {
+          "week_of": "2026-10-19",
+          "value": 119.175
+        },
+        {
+          "week_of": "2026-10-26",
+          "value": 143.55
+        },
+        {
+          "week_of": "2026-11-02",
+          "value": 113.4
+        }
+      ],
+      "truncated": false,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "Median hours from the start of development to Done, over work finished in the week; weeks start on Monday (UTC), oldest first; null = nothing finished that week"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_trend",
+      "params": {
+        "metric": "median_cycle_time_h",
+        "last_n": 12
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": "The written answer could not be verified against the facts, so only the facts are shown.",
+  "suggestions": [],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [],
+  "note": null
+}

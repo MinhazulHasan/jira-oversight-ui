@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "project": "DEMO",
+  "revision": 0,
+  "impact": [
+    {
+      "rule_id": "R-CUS-01",
+      "measurable": true,
+      "open_now": 0,
+      "would_open": 2,
+      "would_close": 0,
+      "would_stay": 0,
+      "examples": {
+        "open": [
+          "DEMO-945",
+          "DEMO-1084"
+        ],
+        "close": []
+      },
+      "note": null
+    }
+  ],
+  "totals": {
+    "would_open": 2,
+    "would_close": 0
+  }
+}

@@ -1,0 +1,720 @@
+/* ============================================================================
+   UI kit styles for src/components/ui, owned by the UI-kit build. Tokens and
+   the shared primitives (.sheet, .raised, .hatch, .kbd, .skeleton, .micro,
+   .mono) live in src/app/globals.css; what is here is what utilities express
+   badly: tables, scroll edges, fields and the drawer's motion.
+   ========================================================================= */
+
+@layer components {
+  /* A button that is the mark of a wider control (Sync in the top bar, last-synced.tsx): stretched over its nearest
+     positioned ancestor, so the whole control presses, and rung by the focus ring as a whole. */
+  .jo-stretch::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .jo-stretch:focus-visible {
+    outline: none;
+  }
+  .jo-stretch:focus-visible::after {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
+  }
+
+  /* ------------------------------------------------------------- fields ---
+     A text field has to be findable without its placeholder, so its edge is
+     --rule-control (3:1). The container draws the focus ring for the whole
+     control, so the input inside must not draw a second one. */
+  .jo-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    height: 32px;
+    padding: 0 6px 0 10px;
+    border: 1px solid var(--rule-control);
+    border-radius: var(--r-md);
+    background: var(--paper-050);
+    color: var(--text-hi);
+    transition: border-color var(--dur-fast) ease;
+  }
+  .jo-field:hover {
+    border-color: var(--text-low);
+  }
+  .jo-field:focus-within {
+    border-color: var(--focus);
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: 0;
+  }
+  .jo-field input {
+    min-width: 0;
+    flex: 1;
+    height: 100%;
+    background: transparent;
+    font-size: var(--t-sm);
+    color: var(--text-hi);
+  }
+  .jo-field input::placeholder {
+    color: var(--text-low);
+  }
+  .jo-field input:focus,
+  .jo-field input:focus-visible {
+    outline: none;
+  }
+  /* The kit draws its own clear button. */
+  .jo-field input::-webkit-search-cancel-button,
+  .jo-field input::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* ------------------------------------------------------------ numbers ---
+     A threshold's field (number-field.tsx, JO-15): compact, its unit inside,
+     its figure in Plex Mono. The edge is the 3:1 field edge and the container
+     draws the focus ring, as .jo-field does; a value that cannot be saved
+     turns the edge to the breach ink, and the words beside it say why (never
+     the colour alone). */
+  .jo-number {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--rule-control);
+    border-radius: var(--r-sm);
+    background: var(--paper-050);
+    color: var(--text-hi);
+    font-size: var(--t-sm);
+    line-height: 1;
+    transition: border-color var(--dur-fast) ease;
+  }
+  .jo-number:hover {
+    border-color: var(--text-low);
+  }
+  .jo-number:focus-within {
+    border-color: var(--focus);
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: 0;
+  }
+  .jo-number[data-invalid] {
+    border-color: var(--breach);
+  }
+  .jo-number[data-invalid]:focus-within {
+    outline-color: var(--breach);
+  }
+  .jo-number input {
+    min-width: 0;
+    height: 100%;
+    background: transparent;
+    color: var(--text-hi);
+    text-align: right;
+  }
+  .jo-number input:focus,
+  .jo-number input:focus-visible {
+    outline: none;
+  }
+
+  /* ------------------------------------------------------ rule settings ---
+     A rule's row on the rule settings page (JO-15): the rule, its switch, its
+     severity, its thresholds and its open findings in one line where the list
+     is wide (a MacBook's sheet), stacked where it is not (a tablet's column, a
+     phone), decided by the list's own width, as the process map is. The head
+     row above the list shares the columns. */
+  .jo-rule-row,
+  .jo-rule-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "rule rule open"
+      "state severity severity"
+      "threshold threshold threshold";
+    column-gap: 16px;
+    row-gap: 12px;
+    align-items: start;
+  }
+  .jo-rule-head {
+    display: none;
+  }
+  /* The switch's and the severity's columns are as wide as their heads and controls need, no wider, so a threshold's
+     sentence keeps to one line at a 13-inch MacBook's width. */
+  @container rules (min-width: 56rem) {
+    .jo-rule-row,
+    .jo-rule-head {
+      grid-template-columns: minmax(0, 1fr) 6rem 8.25rem minmax(17rem, 1.25fr) 3.5rem;
+      grid-template-areas: "rule state severity threshold open";
+      column-gap: 20px;
+    }
+    .jo-rule-head {
+      display: grid;
+    }
+  }
+
+  /* -------------------------------------------------------- scroll edges ---
+     macOS hides scrollbars until you scroll, so a region with more to see
+     says so: a soft fade at the edge it can still scroll towards. The frame
+     sets data-more-* from the scroll position. */
+  .jo-scroll-frame {
+    position: relative;
+    min-width: 0;
+    --jo-fade: var(--paper-050);
+  }
+  .jo-scroll-frame::before,
+  .jo-scroll-frame::after {
+    content: "";
+    position: absolute;
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur) ease;
+  }
+  .jo-scroll-frame[data-axis="x"]::before,
+  .jo-scroll-frame[data-axis="x"]::after {
+    top: 0;
+    bottom: 0;
+    width: 28px;
+  }
+  .jo-scroll-frame[data-axis="x"]::before {
+    left: 0;
+    background: linear-gradient(to right, var(--jo-fade), transparent);
+  }
+  .jo-scroll-frame[data-axis="x"]::after {
+    right: 0;
+    background: linear-gradient(to left, var(--jo-fade), transparent);
+  }
+  .jo-scroll-frame[data-axis="y"]::before,
+  .jo-scroll-frame[data-axis="y"]::after {
+    left: 0;
+    right: 0;
+    height: 20px;
+  }
+  .jo-scroll-frame[data-axis="y"]::before {
+    top: 0;
+    background: linear-gradient(to bottom, var(--jo-fade), transparent);
+  }
+  .jo-scroll-frame[data-axis="y"]::after {
+    bottom: 0;
+    background: linear-gradient(to top, var(--jo-fade), transparent);
+  }
+  .jo-scroll-frame[data-more-start="true"]::before,
+  .jo-scroll-frame[data-more-end="true"]::after {
+    opacity: 1;
+  }
+  .jo-scroller {
+    /* The containing block of anything placed absolutely inside (a visually hidden label in a cell, say), so the
+       scroller clips it: otherwise it is laid out against the frame and can widen the page on a phone. */
+    position: relative;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+
+  /* -------------------------------------------------------------- table ---
+     Hairline rows on the sheet, a rail-coloured head that stays put, figures
+     right-aligned. Row focus is drawn on the cells: WebKit does not paint an
+     outline on a table row. */
+  .jo-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    font-size: var(--t-sm);
+    color: var(--text-hi);
+  }
+  .jo-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: var(--row-table-head);
+    padding: 0 12px;
+    background: var(--paper-100);
+    box-shadow: inset 0 -1px 0 var(--rule-weak);
+    text-align: left;
+    vertical-align: middle;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .jo-table[data-sticky="false"] th {
+    position: static;
+  }
+  .jo-table th:first-child,
+  .jo-table td:first-child {
+    padding-left: 16px;
+  }
+  .jo-table th:last-child,
+  .jo-table td:last-child {
+    padding-right: 16px;
+  }
+  .jo-table td {
+    height: var(--row-table);
+    padding: 0 12px;
+    border-bottom: 1px solid var(--rule-weak);
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .jo-table[data-density="compact"] td {
+    height: var(--row-table-dense);
+  }
+  /* A table whose columns size to their content (a chart's table view): the
+     figures take only the width they need and the name column the rest. */
+  .jo-table[data-layout="auto"] {
+    table-layout: auto;
+  }
+  .jo-table[data-layout="auto"] [data-numeric="true"] {
+    width: 1%;
+  }
+  .jo-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  .jo-table [data-numeric="true"] {
+    text-align: right;
+  }
+  .jo-table td[data-numeric="true"] {
+    font-family: var(--font-mono);
+    font-feature-settings:
+      "tnum" 1,
+      "zero" 1;
+    font-size: 0.92em;
+  }
+  .jo-table tbody tr[data-interactive="true"] {
+    cursor: pointer;
+  }
+  .jo-table tbody tr[data-interactive="true"]:hover td {
+    background: var(--paper-100);
+  }
+  .jo-table tbody tr[aria-current="true"] td {
+    background: var(--cite-tint);
+  }
+  .jo-table tbody tr[aria-current="true"] td:first-child {
+    box-shadow: inset 2px 0 0 var(--cite);
+  }
+  .jo-table tbody tr:focus {
+    outline: none;
+  }
+  .jo-table tbody tr:focus-visible td {
+    box-shadow:
+      inset 0 2px 0 var(--focus),
+      inset 0 -2px 0 var(--focus);
+  }
+  .jo-table tbody tr:focus-visible td:first-child {
+    box-shadow:
+      inset 2px 0 0 var(--focus),
+      inset 0 2px 0 var(--focus),
+      inset 0 -2px 0 var(--focus);
+  }
+  .jo-table tbody tr:focus-visible td:last-child {
+    box-shadow:
+      inset -2px 0 0 var(--focus),
+      inset 0 2px 0 var(--focus),
+      inset 0 -2px 0 var(--focus);
+  }
+  /* The row says where it leads only when you are on it. */
+  .jo-table .jo-row-affordance {
+    opacity: 0;
+    transition: opacity var(--dur-fast) ease;
+  }
+  .jo-table tbody tr:hover .jo-row-affordance,
+  .jo-table tbody tr:focus-visible .jo-row-affordance,
+  .jo-table tbody tr[aria-current="true"] .jo-row-affordance {
+    opacity: 1;
+  }
+  /* Scrolled under the head: the head lifts. Only a head that stays put (a sticky one) in the frame that scrolls it:
+     a table in a drawer whose body scrolls has a head that scrolls with it, with nothing under it (JO-14). The lift
+     is one soft edge under the whole row, each cell's part of it reaching edge to edge: a cell's own shadow, inset
+     at both ends, broke at every column. */
+  .jo-scroll-frame[data-scrolled="true"] > .jo-scroller > .jo-table:not([data-sticky="false"]) th {
+    box-shadow: inset 0 -1px 0 var(--rule);
+  }
+  .jo-scroll-frame[data-scrolled="true"] > .jo-scroller > .jo-table:not([data-sticky="false"]) th::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: 6px;
+    background: linear-gradient(rgba(20, 24, 28, 0.12), rgba(20, 24, 28, 0));
+    pointer-events: none;
+  }
+
+  /* ------------------------------------------------------------- avatar ---
+     A person's Jira picture beside their name, as Jira and Confluence show
+     it (src/components/ui/person-avatar.tsx); their initials on the pressed
+     ground when there is no picture or it fails to load; for nobody, the
+     same ground with a generic figure. Round, a fixed size so nothing
+     shifts, decorative: the name always sits beside it. The initials come
+     from data-initials, so they stay out of the text a reader copies; a
+     picture covers the ground. A hairline edge keeps a pale picture round
+     on the sheet, and the ground prints as it shows. */
+  .jo-avatar {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--paper-250);
+    color: var(--text-mid);
+    font-size: var(--t-micro);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .jo-avatar::before {
+    content: attr(data-initials);
+  }
+  /* In the 20 px round, micro less 2 px (8.5 px): two wide letters (MW, WW) then clear the
+     edge where the round is narrowest across their capitals, as they do at micro size in 24 px. */
+  .jo-avatar[data-size="20"] {
+    font-size: calc(var(--t-micro) - 2px);
+  }
+  /* Heading a person card (JO-13), 48 px: the initials at --t-xl (21 px), in the 24 px round's proportion
+     (micro, 10.5 px), set a little tighter at this size. */
+  .jo-avatar[data-size="48"] {
+    font-size: var(--t-xl);
+    letter-spacing: -0.03em;
+  }
+  .jo-avatar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 var(--hairline) var(--rule);
+    pointer-events: none;
+  }
+  .jo-avatar > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .jo-avatar[data-avatar="none"] {
+    color: var(--text-low);
+  }
+
+  /* ----------------------------------------------------------- the drawer --- */
+  .jo-sheet-panel[data-state="open"] {
+    animation: jo-sheet-in var(--dur-slow) var(--ease-out) both;
+  }
+  .jo-sheet-panel[data-state="closed"] {
+    animation: jo-sheet-out 160ms ease both;
+  }
+  /* The bottom sheet (a touch screen, a phone): it rises from the bottom edge, and sinks back. */
+  .jo-sheet-bottom[data-state="open"] {
+    animation: jo-sheet-rise var(--dur-slow) var(--ease-out) both;
+  }
+  .jo-sheet-bottom[data-state="closed"] {
+    animation: jo-sheet-sink 160ms ease both;
+  }
+
+  /* --------------------------------------------------------- person card ---
+     The card a name opens (src/components/person-card/): it fades in as it
+     rises 4 px, in 120 ms, and fades out; nothing moves with reduced motion
+     (globals.css stops every animation). */
+  .jo-person-card[data-state="open"] {
+    animation: jo-card-in var(--dur-fast) var(--ease-out) both;
+  }
+  .jo-person-card[data-state="closed"] {
+    animation: jo-fade-out 100ms ease both;
+  }
+
+  /* ------------------------------------------------------------- people ---
+     The scorecard (src/components/people/scorecard.tsx): a measure a row, the
+     figures right-aligned in Plex Mono, a hairline between rows. A row holds
+     two lines (the figure and the counts behind it), so every row, and every
+     loading row, is one height: nothing moves when the figures arrive. */
+  .jo-scorecard th,
+  .jo-scorecard td {
+    padding: 7px 8px;
+    border-bottom: var(--hairline) solid var(--rule-weak);
+    vertical-align: middle;
+    text-align: inherit;
+  }
+  /* Where the scorecard has room for the mark and the link in columns of their own. */
+  @container (min-width: 40rem) {
+    .jo-scorecard th,
+    .jo-scorecard td {
+      padding-inline: 12px;
+    }
+  }
+  .jo-scorecard tr > :first-child {
+    padding-left: 0;
+  }
+  .jo-scorecard tr > :last-child {
+    padding-right: 0;
+  }
+  .jo-scorecard thead th {
+    height: 36px;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-bottom-color: var(--rule);
+    font-size: var(--t-micro);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--text-low);
+    white-space: nowrap;
+  }
+  .jo-scorecard tbody tr {
+    height: 3.25rem;
+  }
+  .jo-scorecard tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  /* The compact scorecard in an Ask answer: 32 px rows, the measure's name
+     held in place while several people's figures scroll beside it. */
+  .jo-compact-scorecard th,
+  .jo-compact-scorecard td {
+    height: var(--row-table-dense);
+    padding: 4px 12px;
+    border-bottom: var(--hairline) solid var(--rule-weak);
+    font-size: var(--t-xs);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .jo-compact-scorecard thead th {
+    background: var(--paper-100);
+    font-weight: 500;
+    color: var(--text-low);
+  }
+  .jo-compact-scorecard tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+  .jo-compact-scorecard tr > :first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    /* The name wraps rather than widening the column, so one person and the board stay in view beside it. */
+    min-width: 8.5rem;
+    max-width: 13rem;
+    white-space: normal;
+    background: var(--paper-050);
+    box-shadow: inset calc(-1 * var(--hairline)) 0 0 var(--rule-weak);
+  }
+  .jo-compact-scorecard thead tr > :first-child {
+    background: var(--paper-100);
+  }
+  /* The whole board's figures are held at the right while several people's scroll beside them: every mark is set
+     against them, so they are always in view. */
+  .jo-compact-scorecard [data-board-cell] {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--paper-050);
+    box-shadow: inset var(--hairline) 0 0 var(--rule-weak);
+  }
+  .jo-compact-scorecard thead [data-board-cell] {
+    background: var(--paper-100);
+  }
+  .jo-compact-scorecard tr[data-measurable="false"] td {
+    white-space: normal;
+  }
+  /* On a phone, one person's figures and the board's fit beside the measure's name, inside the frame: tighter cells,
+     and a narrower name column whose names wrap. Several people still scroll sideways, the name and the board held. */
+  @media (max-width: 39.99rem) {
+    .jo-compact-scorecard th,
+    .jo-compact-scorecard td {
+      padding-inline: 8px;
+    }
+    .jo-compact-scorecard tr > :first-child {
+      min-width: 7rem;
+    }
+  }
+
+  /* The everyone table on the People page: the person held in place at the
+     left while the measures scroll, so each row is still somebody's. The
+     held cell's ground is opaque (a tint over the sheet), or the figures
+     passing under it would show through. */
+  .jo-people-table th[data-sticky],
+  .jo-people-table td[data-sticky] {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--paper-050);
+    box-shadow: inset calc(-1 * var(--hairline)) 0 0 var(--rule-weak);
+  }
+  .jo-people-table thead th[data-sticky] {
+    z-index: 3;
+    background: var(--paper-100);
+    box-shadow:
+      inset calc(-1 * var(--hairline)) 0 0 var(--rule-weak),
+      inset 0 -1px 0 var(--rule-weak);
+  }
+  .jo-people-table tbody tr[data-interactive="true"]:hover td[data-sticky] {
+    background: var(--paper-100);
+  }
+  .jo-people-table tbody tr[aria-current="true"] td[data-sticky] {
+    background: linear-gradient(var(--cite-tint), var(--cite-tint)), var(--paper-050);
+    box-shadow:
+      inset 2px 0 0 var(--cite),
+      inset calc(-1 * var(--hairline)) 0 0 var(--rule-weak);
+  }
+  /* A focused row's ring runs through the held name cell too, chosen or not, with its edge kept. */
+  .jo-people-table tbody tr:focus-visible td[data-sticky],
+  .jo-people-table tbody tr[aria-current="true"]:focus-visible td[data-sticky] {
+    box-shadow:
+      inset 2px 0 0 var(--focus),
+      inset 0 2px 0 var(--focus),
+      inset 0 -2px 0 var(--focus),
+      inset calc(-1 * var(--hairline)) 0 0 var(--rule-weak);
+  }
+  /* The whole board's row is set apart from the people: a full rule above it and the rail's ground. */
+  .jo-people-table tfoot th,
+  .jo-people-table tfoot td {
+    background: var(--paper-100);
+    box-shadow: inset 0 1px 0 var(--rule);
+    border-bottom: 0;
+  }
+  .jo-people-table tfoot th[data-sticky] {
+    background: var(--paper-100);
+    box-shadow:
+      inset 0 1px 0 var(--rule),
+      inset calc(-1 * var(--hairline)) 0 0 var(--rule-weak);
+  }
+  .jo-people-table td[data-sticky] {
+    overflow: visible;
+  }
+  .jo-people-table td {
+    height: 3.25rem;
+  }
+
+  /* -------------------------------------------------- floating surfaces --- */
+  .jo-pop[data-state="open"],
+  .jo-pop[data-state="delayed-open"],
+  .jo-pop[data-state="instant-open"] {
+    animation: jo-pop-in 140ms var(--ease-out) both;
+  }
+  .jo-pop[data-state="closed"] {
+    animation: jo-fade-out 100ms ease both;
+  }
+}
+
+@keyframes jo-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes jo-sheet-out {
+  to {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes jo-sheet-rise {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes jo-sheet-sink {
+  to {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+@keyframes jo-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes jo-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* High contrast mode removes shadows and tints, which carry the focused and
+   current row, the checked segment and the drawer's edge. Give each a line. */
+@media (forced-colors: active) {
+  .jo-table tbody tr:focus-visible td {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  .jo-table tbody tr[aria-current="true"] td {
+    border-bottom: 2px solid Highlight;
+  }
+  /* The chosen person in the People page's narrow list, and the open finding in Findings' phone list: the tint and
+     the bar are gone, so a line. */
+  [data-comparison="list"] button[aria-current="true"],
+  [data-findings-list] button[aria-current="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  [data-segment][data-state="checked"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  .jo-sheet-panel {
+    border-left: 1px solid CanvasText;
+  }
+  .jo-sheet-bottom {
+    border-top: 1px solid CanvasText;
+  }
+  .jo-person-card {
+    border: 1px solid CanvasText;
+  }
+  .jo-field:focus-within {
+    outline-color: Highlight;
+  }
+  .jo-avatar {
+    border: 1px solid CanvasText;
+  }
+  /* The switch's track and thumb are fills, which forced colours take away: an edge, and the state in system colours. */
+  .jo-switch {
+    border: 1px solid ButtonText;
+  }
+  .jo-switch[data-state="checked"] {
+    background: Highlight;
+  }
+  .jo-switch > span {
+    background: ButtonText;
+  }
+  .jo-number:focus-within,
+  .jo-number[data-invalid] {
+    outline: 2px solid Highlight;
+  }
+}
+
+@media print {
+  .jo-scroll-frame::before,
+  .jo-scroll-frame::after {
+    display: none;
+  }
+  .jo-scroller {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  .jo-table th {
+    position: static;
+  }
+  .jo-table td {
+    white-space: normal;
+  }
+}

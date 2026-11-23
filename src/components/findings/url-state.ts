@@ -1,0 +1,197 @@
+"use client";
+
+import {
+  createParser,
+  debounce,
+  parseAsInteger,
+  parseAsNativeArrayOf,
+  parseAsString,
+  parseAsStringLiteral,
+  useQueryState,
+  useQueryStates,
+  type Options,
+} from "nuqs";
+import { useEffect, useState } from "react";
+
+import {
+  FINDING_STATES,
+  FINDINGS_SORTS,
+  FIRST_SEEN_WINDOWS,
+  NO_EPIC,
+  type FindingsQueryInput,
+} from "@/lib/api/params";
+import { FINDING_ID_PATTERN, ISSUE_KEY_PATTERN, PERSON_ID_PATTERN, RULE_ID_PATTERN, UNASSIGNED } from "@/lib/api/schemas";
+
+/*
+ * The Findings page keeps everything in the URL: the filters, the sort, the
+ * page and the open finding. The names are the API's own (rule, severity,
+ * state, epic, person, q, first_seen, sort, order, page), so a link built
+ * elsewhere (`/findings?state=open&epic=DEMO-704`, an Overview hot spot,
+ * `/findings?state=open&person=unassigned`) means exactly what the API means
+ * by it. Values the API would refuse are dropped as the URL is read, so a
+ * hand-edited link narrows nothing rather than failing.
+ */
+
+export const SEVERITY_FILTERS = ["breach", "warning"] as const;
+export type SeverityFilter = (typeof SEVERITY_FILTERS)[number];
+export type StateFilter = (typeof FINDING_STATES)[number];
+export type FirstSeenFilter = (typeof FIRST_SEEN_WINDOWS)[number];
+export type FindingsSort = (typeof FINDINGS_SORTS)[number];
+
+const ORDERS = ["asc", "desc"] as const;
+
+/** What the API accepts (src/lib/api/params.ts); more is trimmed, never sent. */
+export const SEARCH_MAX = 100;
+const MAX_RULES = 24;
+const MAX_EPICS = 50;
+const MAX_PEOPLE = 50;
+const MAX_PAGE = 10_000;
+/** Typing settles for this long before the list is asked again. */
+export const SEARCH_DEBOUNCE_MS = 300;
+
+const ruleIdParser = createParser({
+  parse: (value: string) => {
+    const id = value.trim().toUpperCase();
+    return RULE_ID_PATTERN.test(id) ? id : null;
+  },
+  serialize: (value: string) => value,
+});
+
+/** An epic key, any case, or "none" for findings outside every epic. */
+const epicParser = createParser({
+  parse: (value: string) => {
+    const text = value.trim();
+    if (text.toLowerCase() === NO_EPIC) return NO_EPIC;
+    const key = text.toUpperCase();
+    return ISSUE_KEY_PATTERN.test(key) ? key : null;
+  },
+  serialize: (value: string) => value,
+});
+
+/** A person id ("p" and 12 hex digits, any case), or "unassigned" for tickets nobody is assigned to. */
+const personParser = createParser({
+  parse: (value: string) => {
+    const text = value.trim().toLowerCase();
+    return text === UNASSIGNED || PERSON_ID_PATTERN.test(text) ? text : null;
+  },
+  serialize: (value: string) => value,
+});
+
+/**
+ * `menu=person` opens the Person menu on arrival (`/findings?state=open&menu=person`):
+ * the Overview's "All people" lands on everyone's counts. It is not a filter,
+ * so it never reaches the API, and it leaves the address once the menu closes.
+ * (A query value rather than a #hash: the page's URL state reads it with the
+ * first render, and it leaves the address through the same history as the filters.)
+ */
+export const FILTER_MENUS = ["person"] as const;
+
+export function useFilterMenu() {
+  return useQueryState("menu", parseAsStringLiteral(FILTER_MENUS).withOptions({ history: "replace" }));
+}
+
+export const findingsUrlParsers = {
+  q: parseAsString.withDefault(""),
+  severity: parseAsStringLiteral(SEVERITY_FILTERS),
+  state: parseAsStringLiteral(FINDING_STATES).withDefault("open"),
+  rule: parseAsNativeArrayOf(ruleIdParser),
+  epic: parseAsNativeArrayOf(epicParser),
+  person: parseAsNativeArrayOf(personParser),
+  first_seen: parseAsStringLiteral(FIRST_SEEN_WINDOWS).withDefault("all"),
+  sort: parseAsStringLiteral(FINDINGS_SORTS).withDefault("first_seen_at"),
+  order: parseAsStringLiteral(ORDERS).withDefault("desc"),
+  page: parseAsInteger.withDefault(1),
+};
+
+export interface FindingsFilters {
+  q: string;
+  severity: SeverityFilter | null;
+  state: StateFilter;
+  rule: string[];
+  epic: string[];
+  /** Person ids and "unassigned", by the issue's assignee now. */
+  person: string[];
+  first_seen: FirstSeenFilter;
+  sort: FindingsSort;
+  order: "asc" | "desc";
+  page: number;
+}
+
+/** Every change is a step in the browser's history, so Back and Forward walk the views. */
+const PUSH: Options = { history: "push" };
+/** Search writes once typing pauses: one history step per search, not per key. */
+export const SEARCH_UPDATE: Options = { history: "push", limitUrlUpdates: debounce(SEARCH_DEBOUNCE_MS) };
+
+export function useFindingsUrl() {
+  return useQueryStates(findingsUrlParsers, PUSH);
+}
+
+export type SetFindingsUrl = ReturnType<typeof useFindingsUrl>[1];
+
+/** The filter keys reset to their defaults, the sort kept. */
+export const CLEARED_FILTERS = {
+  q: null,
+  severity: null,
+  state: null,
+  rule: null,
+  epic: null,
+  person: null,
+  first_seen: null,
+  page: null,
+} as const;
+
+/** True when anything narrows the list beyond the default (open findings, any age). */
+export function hasActiveFilters(filters: FindingsFilters): boolean {
+  return (
+    filters.q.trim() !== "" ||
+    filters.severity !== null ||
+    filters.state !== "open" ||
+    filters.rule.length > 0 ||
+    filters.epic.length > 0 ||
+    filters.person.length > 0 ||
+    filters.first_seen !== "all"
+  );
+}
+
+/** The API query for the URL's filters, clamped to what the API accepts. */
+export function toFindingsQuery(filters: FindingsFilters, search: string = filters.q): FindingsQueryInput {
+  const q = search.trim().slice(0, SEARCH_MAX);
+  return {
+    rule: filters.rule.slice(0, MAX_RULES),
+    epic: filters.epic.slice(0, MAX_EPICS),
+    person: filters.person.slice(0, MAX_PEOPLE),
+    severity: filters.severity ?? undefined,
+    state: filters.state,
+    q: q === "" ? undefined : q,
+    first_seen: filters.first_seen,
+    sort: filters.sort,
+    order: filters.order,
+    page: Math.min(MAX_PAGE, Math.max(1, Math.trunc(filters.page) || 1)),
+  };
+}
+
+/**
+ * The open finding (?finding=<id>). Opening pushes a history entry, so the
+ * browser's Back closes the drawer; moving to the previous or next finding
+ * replaces it, so Back still closes it in one step.
+ */
+export function useOpenFinding() {
+  return useQueryState("finding", parseAsString.withOptions({ history: "push" }));
+}
+
+/** A finding id as the API writes it, or null when the text cannot be one. */
+export function normaliseFindingId(value: string | null): string | null {
+  if (value === null) return null;
+  const id = value.trim().toLowerCase();
+  return FINDING_ID_PATTERN.test(id) ? id : null;
+}
+
+/** The value, once it has stopped changing for `delay` ms. */
+export function useSettledValue<T>(value: T, delay: number): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return settled;
+}

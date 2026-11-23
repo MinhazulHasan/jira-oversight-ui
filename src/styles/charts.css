@@ -1,0 +1,317 @@
+/* ============================================================================
+   Charts: the validated chart palette and the chrome every chart shares.
+   Owned by the UI-kit build; the reasoning and both validator reports are in
+   docs/DESIGN.md section 11. Change a value here only by re-running the
+   validator against both sheets and updating that section.
+
+   Colour does one job per token family:
+
+   - series-N   identity (epics, series). Assigned in this order, never
+                cycled; a seventh series folds into "Other". Desaturated
+                inks that keep clear of the status hues and of --cite, which
+                is never a series colour.
+   - stage-*    position in James's process. Ordered, so one hue stepped:
+                backlog palest to done deepest on paper; on slate the ramp
+                turns round (backlog dimmest, done brightest), so "further
+                along" is always "more contrast".
+   - measure-*  median, 75th and 90th percentile: three steps of that ramp.
+   - chart-*    status marks inside charts, and the chrome (grid, axes,
+                crosshair, tracks).
+
+   These are plain custom properties, not @theme utilities: globals.css
+   imports this file before its `--color-*: initial` reset, which would wipe a
+   theme block declared here. Components use them through var() in SVG
+   attributes and inline styles, or Tailwind's bg-(--series-1) form.
+   ========================================================================= */
+
+:root {
+  /* Categorical. Light sheet #ffffff. Worst adjacent pair: CVD ΔE 18.6,
+     normal vision 22.3; the first three also pass all-pairs. Sand sits at
+     2.66:1 on paper, so a chart that reaches four series labels them directly
+     (and every chart has its table view). */
+  --series-1: #5674be; /* blue */
+  --series-2: #78822b; /* olive */
+  --series-3: #7c3d70; /* plum */
+  --series-4: #b29e4c; /* sand */
+  --series-5: #8c6ebd; /* violet */
+  --series-6: #85491a; /* sepia */
+  /* Context and "Other": present but not the point. 3.6:1 on paper. */
+  --series-other: #8c877d;
+
+  /* Stages, ordinal, hue 266. 2.05:1 at the pale end, every step >= 0.06 L apart. */
+  --stage-backlog: #a7b5d6;
+  --stage-estimate: #8fa2cc;
+  --stage-development: #798fc1;
+  --stage-code-review: #637cb6;
+  --stage-dev-signoff: #4f69a8;
+  --stage-testing: #3d5798;
+  --stage-test-review: #2e4682;
+  --stage-test-signoff: #22366a;
+  --stage-done: #162653;
+
+  /* Percentiles: the deepest step is the median, the most-read figure. */
+  --measure-median: var(--stage-testing);
+  --measure-p75: var(--stage-development);
+  --measure-p90: var(--stage-backlog);
+
+  /* Status inside charts. Breach and ok are the interface's own marks. A
+     breach segment beside a warning segment measured 11.3 in normal vision
+     with --warn, under the floor of 15, so charts step warning lighter
+     (16.4, and still 3.19:1 on paper). Labels keep the -ink steps. */
+  --chart-breach: var(--breach);
+  --chart-warn: #bf851e;
+  --chart-ok: var(--ok);
+
+  /* Chrome: recessive, solid hairlines, never dashed. */
+  --chart-surface: var(--paper-050);
+  --chart-grid: var(--rule-weak);
+  --chart-axis: var(--rule-strong);
+  --chart-tick: var(--text-low);
+  /* Hover aids, not data: visible, but quieter than any mark. */
+  --chart-crosshair: var(--text-dim);
+  --chart-now: var(--text-mid);
+  /* A meter's or bar's unfilled track: the fill's own hue, one light step. */
+  --chart-track: color-mix(in oklab, var(--series-1) 14%, var(--chart-surface));
+  --chart-area-opacity: 0.1;
+  /* A neutral meter's quietest part, the measures with too few tickets to compare (the person card's process
+     meter, beside --text-hi, --text-low and --text-dim): the --rule step on paper (1.48:1 on the raised ground);
+     on slate --rule all but vanishes on the raised ground (1.26:1), so the next step up. */
+  --chart-too-few: var(--rule);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Slate sheet #12181f. Worst adjacent pair: CVD ΔE 16.7, normal 21.2;
+       every slot clears 3:1. */
+    --series-1: #6a89d5;
+    --series-2: #8a943f;
+    --series-3: #98578b;
+    --series-4: #a79341;
+    --series-5: #9e80d1;
+    --series-6: #a16336;
+    --series-other: #6b7682;
+
+    --stage-backlog: #374973;
+    --stage-estimate: #43598e;
+    --stage-development: #516aa7;
+    --stage-code-review: #617cbd;
+    --stage-dev-signoff: #728fd1;
+    --stage-testing: #87a2df;
+    --stage-test-review: #9fb6eb;
+    --stage-test-signoff: #b8caf2;
+    --stage-done: #d1def9;
+
+    --measure-median: var(--stage-test-review);
+    --measure-p75: var(--stage-code-review);
+    --measure-p90: var(--stage-estimate);
+
+    --chart-warn: var(--warn);
+
+    --chart-track: color-mix(in oklab, var(--series-1) 22%, var(--chart-surface));
+    --chart-area-opacity: 0.14;
+    --chart-too-few: var(--rule-strong);
+  }
+}
+
+:root[data-theme="dark"] {
+  --series-1: #6a89d5;
+  --series-2: #8a943f;
+  --series-3: #98578b;
+  --series-4: #a79341;
+  --series-5: #9e80d1;
+  --series-6: #a16336;
+  --series-other: #6b7682;
+
+  --stage-backlog: #374973;
+  --stage-estimate: #43598e;
+  --stage-development: #516aa7;
+  --stage-code-review: #617cbd;
+  --stage-dev-signoff: #728fd1;
+  --stage-testing: #87a2df;
+  --stage-test-review: #9fb6eb;
+  --stage-test-signoff: #b8caf2;
+  --stage-done: #d1def9;
+
+  --measure-median: var(--stage-test-review);
+  --measure-p75: var(--stage-code-review);
+  --measure-p90: var(--stage-estimate);
+
+  --chart-warn: var(--warn);
+
+  --chart-track: color-mix(in oklab, var(--series-1) 22%, var(--chart-surface));
+  --chart-area-opacity: 0.14;
+  --chart-too-few: var(--rule-strong);
+}
+
+@layer components {
+  /* Axis and tick text: figures in Plex Mono, never in a series colour.
+     Recharts writes a grey fill attribute on its ticks; a rule outranks an
+     attribute, so the token wins. */
+  .jo-chart-text,
+  .recharts-cartesian-axis-tick-value {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-feature-settings:
+      "tnum" 1,
+      "zero" 1;
+    fill: var(--chart-tick);
+  }
+
+  /* One tooltip for every chart: the value leads, the name follows, and a
+     short stroke of the series colour keys the row (a box would be data ink
+     doing a label's job). */
+  .jo-chart-tooltip {
+    pointer-events: none;
+    min-width: 132px;
+    max-width: 280px;
+    padding: 8px 10px 9px;
+    border-radius: var(--r-md);
+    background: var(--paper-050);
+    box-shadow: var(--shadow-pop);
+    color: var(--text-hi);
+    font-size: var(--t-xs);
+    line-height: 1.4;
+  }
+  .jo-chart-tooltip-head {
+    margin-bottom: 5px;
+    color: var(--text-low);
+    font-size: var(--t-xs);
+  }
+  .jo-chart-tooltip-row {
+    display: grid;
+    grid-template-columns: 14px auto minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 8px;
+  }
+  .jo-chart-tooltip-row + .jo-chart-tooltip-row {
+    margin-top: 3px;
+  }
+  .jo-chart-tooltip-value {
+    font-family: var(--font-mono);
+    font-feature-settings:
+      "tnum" 1,
+      "zero" 1;
+    font-size: 0.92em;
+    font-weight: 500;
+    color: var(--text-hi);
+    white-space: nowrap;
+  }
+  .jo-chart-tooltip-name {
+    color: var(--text-mid);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Keys: a line for lines, a block for bars and areas. */
+  .jo-key-line {
+    display: inline-block;
+    width: 14px;
+    height: 2px;
+    border-radius: 1px;
+  }
+  /* Tooltip rows align on the text baseline; lift the key to the x-height. */
+  .jo-chart-tooltip .jo-key-line,
+  .jo-chart-tooltip .jo-key-block {
+    transform: translateY(-2px);
+  }
+  .jo-key-block {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  /* Recharts draws its surface focusable (arrow keys walk the points). Give
+     it the product's focus ring rather than the browser's. */
+  .jo-chart .recharts-surface:focus {
+    outline: none;
+  }
+  .jo-chart .recharts-surface:focus-visible {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: 2px;
+    border-radius: var(--r-xs);
+  }
+  .jo-chart .recharts-wrapper {
+    cursor: default !important;
+  }
+
+  /* A plot that is redrawing keeps its frame: the previous picture holds at
+     reduced opacity, never a skeleton flash. */
+  .jo-chart[data-refreshing="true"] {
+    opacity: 0.55;
+    transition: opacity var(--dur) ease;
+  }
+
+  /* A focusable mark inside an SVG (timeline segments, skip markers). */
+  .jo-mark-focus:focus {
+    outline: none;
+  }
+  .jo-mark-focus:focus-visible .jo-mark-ring {
+    stroke: var(--focus);
+    stroke-width: 2px;
+  }
+
+  /* Rows of the list charts lift on hover and focus, and show where they lead. */
+  .jo-bar-row {
+    transition: background-color var(--dur-fast) ease;
+  }
+  .jo-bar-row:hover .jo-bar-fill,
+  .jo-bar-row:focus-visible .jo-bar-fill {
+    filter: brightness(1.08) saturate(1.05);
+  }
+  .jo-bar-row .jo-row-affordance {
+    opacity: 0;
+    transform: translateX(-2px);
+    transition:
+      opacity var(--dur-fast) ease,
+      transform var(--dur-fast) ease;
+  }
+  .jo-bar-row:hover .jo-row-affordance,
+  .jo-bar-row:focus-visible .jo-row-affordance {
+    opacity: 1;
+    transform: none;
+  }
+  /* A row with its link behind it (a person's name holds a control of its own): the link's focus is the row's. */
+  .jo-bar-row:has(> .jo-bar-link:focus-visible) .jo-bar-fill {
+    filter: brightness(1.08) saturate(1.05);
+  }
+  .jo-bar-row:has(> .jo-bar-link:focus-visible) .jo-row-affordance {
+    opacity: 1;
+    transform: none;
+  }
+  .jo-segment:hover {
+    filter: brightness(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jo-chart .recharts-line-curve {
+    stroke-dasharray: none !important;
+  }
+}
+
+/* High contrast drops fills and tints; give every mark an edge and keep the
+   not-measurable hatch legible. */
+@media (forced-colors: active) {
+  .jo-chart-tooltip {
+    border: 1px solid CanvasText;
+  }
+  .jo-bar-fill,
+  .jo-segment,
+  .jo-meter-fill {
+    forced-color-adjust: none;
+    background: CanvasText !important;
+  }
+  .jo-key-line,
+  .jo-key-block {
+    forced-color-adjust: none;
+    background: CanvasText !important;
+  }
+}
+
+@media print {
+  .jo-chart-tooltip {
+    display: none !important;
+  }
+}

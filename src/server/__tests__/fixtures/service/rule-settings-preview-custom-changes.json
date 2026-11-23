@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "data_mode": "live",
+    "last_synced_at": "2026-11-17T10:00:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-17T10:30:00.000Z",
+    "report_timezone": "UTC"
+  },
+  "project": "DEMO",
+  "revision": 6,
+  "impact": [
+    {
+      "rule_id": "R-CUS-01",
+      "measurable": true,
+      "open_now": 12,
+      "would_open": 0,
+      "would_close": 3,
+      "would_stay": 9,
+      "examples": {
+        "open": [],
+        "close": [
+          "DEMO-818",
+          "DEMO-823",
+          "DEMO-831"
+        ]
+      },
+      "note": null
+    },
+    {
+      "rule_id": "R-CUS-02",
+      "measurable": true,
+      "open_now": 17,
+      "would_open": 0,
+      "would_close": 17,
+      "would_stay": 0,
+      "examples": {
+        "open": [],
+        "close": [
+          "DEMO-749",
+          "DEMO-784",
+          "DEMO-789",
+          "DEMO-798",
+          "DEMO-802"
+        ]
+      },
+      "note": null
+    },
+    {
+      "rule_id": "W-CUS-01",
+      "measurable": true,
+      "open_now": 33,
+      "would_open": 0,
+      "would_close": 23,
+      "would_stay": 10,
+      "examples": {
+        "open": [],
+        "close": [
+          "DEMO-494",
+          "DEMO-495",
+          "DEMO-507",
+          "DEMO-540",
+          "DEMO-543"
+        ]
+      },
+      "note": null
+    }
+  ],
+  "totals": {
+    "would_open": 0,
+    "would_close": 43
+  }
+}

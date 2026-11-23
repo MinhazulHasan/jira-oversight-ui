@@ -1,0 +1,501 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "items": [
+    {
+      "finding_id": "8ae4d3a4a2b1bfd819cd423004e7fa06",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 30 Jun 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-700",
+      "issue_summary": "Import scheduler misaligned on small screens",
+      "issue_type": "Bug",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-06-30T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-06-30T08:57:00.000Z",
+          "changelog_id": "315215"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "b6f1273dfe417f2c0eb539e695278afc",
+        "warned_at": "2026-06-29T12:59:00.000Z"
+      }
+    },
+    {
+      "finding_id": "20920af505d2b131f56c82265b9631d7",
+      "rule_id": "R-FLOW-02",
+      "rule_title": "Skipped a stage",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "To Do → Done skipped development",
+      "scope": "issue",
+      "issue_key": "DEMO-713",
+      "issue_summary": "Add logging to import throughput",
+      "issue_type": "Subtask",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-07-28T13:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Skipped",
+          "value": "To Do → Done",
+          "unit": null,
+          "from": "To Do",
+          "to": "Done",
+          "at": "2026-07-28T13:55:00.000Z",
+          "changelog_id": "316007"
+        },
+        {
+          "kind": "metric",
+          "label": "Stages skipped",
+          "value": "development",
+          "unit": null,
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "4fbc2b571071f0e212ee97c3d9035300",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 22 Jul 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-722",
+      "issue_summary": "Partial import resume misaligned on small screens",
+      "issue_type": "Bug",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "p7614b22410ea",
+        "name": "Ben Okafor",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-07-22T08:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-07-22T08:18:00.000Z",
+          "changelog_id": "315832"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "71bbfb7f43af0762b0571175a7f10076",
+        "warned_at": "2026-07-17T12:29:00.000Z"
+      }
+    },
+    {
+      "finding_id": "ea30592e231fe5a0604009dc2d5498fa",
+      "rule_id": "R-FLOW-02",
+      "rule_title": "Skipped a stage",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "To Do → Done skipped development",
+      "scope": "issue",
+      "issue_key": "DEMO-726",
+      "issue_summary": "Fix partial import resume",
+      "issue_type": "Bug",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-07-06T08:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Skipped",
+          "value": "To Do → Done",
+          "unit": null,
+          "from": "To Do",
+          "to": "Done",
+          "at": "2026-07-06T08:14:00.000Z",
+          "changelog_id": "315376"
+        },
+        {
+          "kind": "metric",
+          "label": "Stages skipped",
+          "value": "development",
+          "unit": null,
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "52bacd9b3bc8e47054c4d21e2d31bd2c",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 6 Jul 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-727",
+      "issue_summary": "Design import scheduler",
+      "issue_type": "Task",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "pe0f1fe0c54ec",
+        "name": "Hana Mori",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-07-06T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-07-06T08:52:00.000Z",
+          "changelog_id": "315420"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "f848b558a67c9738a4f1b48fca180cbe",
+        "warned_at": "2026-07-03T16:29:00.000Z"
+      }
+    }
+  ],
+  "total": 73,
+  "page": 1,
+  "page_size": 5,
+  "facets": {
+    "rules": [
+      {
+        "value": "R-EST-01",
+        "label": "Work started without an estimate",
+        "count": 44
+      },
+      {
+        "value": "R-EST-02",
+        "label": "Estimate first set after work started",
+        "count": 0
+      },
+      {
+        "value": "R-EFF-01",
+        "label": "Effort far beyond the estimate",
+        "count": 12
+      },
+      {
+        "value": "R-FLOW-01",
+        "label": "Reached testing without code review",
+        "count": 0
+      },
+      {
+        "value": "R-FLOW-02",
+        "label": "Skipped a stage",
+        "count": 17
+      },
+      {
+        "value": "R-FLOW-03",
+        "label": "Reopened after Done",
+        "count": 0
+      },
+      {
+        "value": "R-HYG-01",
+        "label": "In progress with no assignee",
+        "count": 0
+      },
+      {
+        "value": "W-EFF-01",
+        "label": "Effort burning fast",
+        "count": 0
+      },
+      {
+        "value": "W-AGE-01",
+        "label": "Stuck in a status",
+        "count": 0
+      },
+      {
+        "value": "W-REV-01",
+        "label": "No review evidence yet",
+        "count": 0
+      },
+      {
+        "value": "W-SPR-01",
+        "label": "Sprint at risk",
+        "count": 0
+      },
+      {
+        "value": "W-EST-01",
+        "label": "Unestimated work in the active sprint",
+        "count": 0
+      }
+    ],
+    "epics": [
+      {
+        "value": "DEMO-4",
+        "label": "Onboarding flow",
+        "count": 43
+      },
+      {
+        "value": "DEMO-37",
+        "label": "Account settings",
+        "count": 42
+      },
+      {
+        "value": "DEMO-89",
+        "label": "Search and filtering",
+        "count": 54
+      },
+      {
+        "value": "DEMO-178",
+        "label": "Reporting exports",
+        "count": 44
+      },
+      {
+        "value": "DEMO-245",
+        "label": "Notification preferences",
+        "count": 20
+      },
+      {
+        "value": "DEMO-351",
+        "label": "Billing and invoices",
+        "count": 40
+      },
+      {
+        "value": "DEMO-417",
+        "label": "Access and permissions",
+        "count": 41
+      },
+      {
+        "value": "DEMO-509",
+        "label": "Audit trail",
+        "count": 30
+      },
+      {
+        "value": "DEMO-598",
+        "label": "Document storage",
+        "count": 27
+      },
+      {
+        "value": "DEMO-704",
+        "label": "Data import pipeline",
+        "count": 73
+      },
+      {
+        "value": "DEMO-763",
+        "label": "Integrations API",
+        "count": 57
+      },
+      {
+        "value": "DEMO-847",
+        "label": "Scheduling engine",
+        "count": 8
+      },
+      {
+        "value": "DEMO-948",
+        "label": "Mobile layout",
+        "count": 6
+      },
+      {
+        "value": "DEMO-1053",
+        "label": "Performance tuning",
+        "count": 2
+      },
+      {
+        "value": "none",
+        "label": "No epic",
+        "count": 36
+      }
+    ],
+    "people": [
+      {
+        "value": "pbc7fe62842ca",
+        "label": "Ada Brooks",
+        "count": 7,
+        "avatar": null
+      },
+      {
+        "value": "p7614b22410ea",
+        "label": "Ben Okafor",
+        "count": 9,
+        "avatar": null
+      },
+      {
+        "value": "p599114b761a6",
+        "label": "Carmen Ruiz",
+        "count": 16,
+        "avatar": "55ea1804e5bd"
+      },
+      {
+        "value": "p7eadbe877710",
+        "label": "Dev Malhotra",
+        "count": 15,
+        "avatar": null
+      },
+      {
+        "value": "p15311a7e00f9",
+        "label": "Elif Aydin",
+        "count": 5,
+        "avatar": null
+      },
+      {
+        "value": "p0998d9f44491",
+        "label": "Finn Gallagher",
+        "count": 5,
+        "avatar": null
+      },
+      {
+        "value": "p65b14f7daa03",
+        "label": "Grace Lindqvist",
+        "count": 5,
+        "avatar": "37d44fa82021"
+      },
+      {
+        "value": "pe0f1fe0c54ec",
+        "label": "Hana Mori",
+        "count": 7,
+        "avatar": null
+      },
+      {
+        "value": "unassigned",
+        "label": "Unassigned",
+        "count": 4,
+        "avatar": null
+      }
+    ],
+    "severity": [
+      {
+        "value": "breach",
+        "label": "Breach",
+        "count": 73
+      },
+      {
+        "value": "warning",
+        "label": "Warning",
+        "count": 27
+      }
+    ],
+    "state": [
+      {
+        "value": "open",
+        "label": "Open",
+        "count": 73
+      },
+      {
+        "value": "resolved",
+        "label": "Resolved",
+        "count": 23
+      }
+    ]
+  }
+}

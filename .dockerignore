@@ -1,0 +1,25 @@
+# The Docker build context is an allowlist: only what `next build` needs. Anything not named here stays out,
+# so a new file (a secret, a dump, a screenshot) never reaches an image by accident.
+*
+!package.json
+!package-lock.json
+!next.config.ts
+!tsconfig.json
+!src/
+!public/
+!scripts/healthcheck.mjs
+
+# Never in the image, even inside an allowed folder: settings and secrets (.env.example is not needed either),
+# dependencies and build output (the Dockerfile makes its own), tests and their output.
+**/.env*
+**/node_modules
+**/.next
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/test-results
+**/playwright-report
+**/coverage
+**/shots
+**/*.tsbuildinfo
+**/.DS_Store

@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "status": "ok",
+  "message": null,
+  "data_mode": "sample",
+  "read_only": true,
+  "api_version": "0.1.0",
+  "last_synced_at": "2026-11-04T14:28:00.000Z",
+  "projects": [
+    "DEMO"
+  ],
+  "report_timezone": "Europe/London"
+}

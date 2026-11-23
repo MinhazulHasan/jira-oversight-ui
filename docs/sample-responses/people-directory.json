@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "people": [
+    {
+      "person": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "tickets": 219
+    },
+    {
+      "person": {
+        "id": "p7614b22410ea",
+        "name": "Ben Okafor",
+        "avatar": null
+      },
+      "tickets": 182
+    },
+    {
+      "person": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "tickets": 169
+    },
+    {
+      "person": {
+        "id": "p7eadbe877710",
+        "name": "Dev Malhotra",
+        "avatar": null
+      },
+      "tickets": 152
+    },
+    {
+      "person": {
+        "id": "p15311a7e00f9",
+        "name": "Elif Aydin",
+        "avatar": null
+      },
+      "tickets": 121
+    },
+    {
+      "person": {
+        "id": "p0998d9f44491",
+        "name": "Finn Gallagher",
+        "avatar": null
+      },
+      "tickets": 116
+    },
+    {
+      "person": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "tickets": 80
+    },
+    {
+      "person": {
+        "id": "pe0f1fe0c54ec",
+        "name": "Hana Mori",
+        "avatar": null
+      },
+      "tickets": 73
+    },
+    {
+      "person": {
+        "id": "pc3d7609d78d1",
+        "name": "Noor Haddad",
+        "avatar": null
+      },
+      "tickets": 0
+    },
+    {
+      "person": {
+        "id": "p612c407b515f",
+        "name": "Tomás Ferreira",
+        "avatar": null
+      },
+      "tickets": 0
+    },
+    {
+      "person": {
+        "id": "pe068f42bb810",
+        "name": "Yuki Tanabe",
+        "avatar": null
+      },
+      "tickets": 0
+    }
+  ]
+}

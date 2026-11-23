@@ -1,0 +1,319 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "period": {
+    "days": 30,
+    "from": "2026-10-05T14:28:00.000Z",
+    "to": "2026-11-04T14:28:00.000Z"
+  },
+  "basis": "current_assignee",
+  "comparison": "on",
+  "measures": [
+    {
+      "key": "open_tickets",
+      "label": "Open tickets",
+      "kind": "count",
+      "direction": "neutral",
+      "rule_ids": [],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "in_progress",
+      "label": "In progress now",
+      "kind": "count",
+      "direction": "neutral",
+      "rule_ids": [],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "done_in_period",
+      "label": "Done in the period",
+      "kind": "count",
+      "direction": "neutral",
+      "rule_ids": [],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "estimated_before_start",
+      "label": "Estimated before work started",
+      "kind": "rate",
+      "direction": "higher_is_closer",
+      "rule_ids": [
+        "R-EST-01",
+        "R-EST-02"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "time_logged",
+      "label": "Time logged on done work",
+      "kind": "rate",
+      "direction": "higher_is_closer",
+      "rule_ids": [],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "within_estimate",
+      "label": "Done within the effort limit",
+      "kind": "rate",
+      "direction": "higher_is_closer",
+      "rule_ids": [
+        "R-EFF-01"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "stuck_now",
+      "label": "Open tickets stuck in a status",
+      "kind": "rate",
+      "direction": "lower_is_closer",
+      "rule_ids": [
+        "W-AGE-01"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "reopened",
+      "label": "Reopened after Done",
+      "kind": "rate",
+      "direction": "lower_is_closer",
+      "rule_ids": [
+        "R-FLOW-03"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "skipped_stage",
+      "label": "Skipped a stage",
+      "kind": "rate",
+      "direction": "lower_is_closer",
+      "rule_ids": [
+        "R-FLOW-02"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "code_review",
+      "label": "Code review recorded",
+      "kind": "rate",
+      "direction": "higher_is_closer",
+      "rule_ids": [
+        "R-FLOW-01",
+        "W-REV-01"
+      ],
+      "measurable": false,
+      "reason": "This board doesn't record code review in Jira."
+    },
+    {
+      "key": "open_findings_per_10",
+      "label": "Open findings per 10 open tickets",
+      "kind": "ratio",
+      "direction": "lower_is_closer",
+      "rule_ids": [
+        "R-EST-01",
+        "R-EST-02",
+        "R-EFF-01",
+        "R-FLOW-01",
+        "R-FLOW-02",
+        "R-FLOW-03",
+        "R-HYG-01",
+        "W-EFF-01",
+        "W-AGE-01",
+        "W-REV-01",
+        "W-SPR-01",
+        "W-EST-01"
+      ],
+      "measurable": true,
+      "reason": null
+    }
+  ],
+  "board": {
+    "tickets": 1136,
+    "values": {
+      "open_tickets": {
+        "value": 68,
+        "numerator": null,
+        "denominator": null,
+        "enough": true,
+        "vs_board": null
+      },
+      "in_progress": {
+        "value": 29,
+        "numerator": null,
+        "denominator": null,
+        "enough": true,
+        "vs_board": null
+      },
+      "done_in_period": {
+        "value": 92,
+        "numerator": null,
+        "denominator": null,
+        "enough": true,
+        "vs_board": null
+      },
+      "estimated_before_start": {
+        "value": 51,
+        "numerator": 49,
+        "denominator": 97,
+        "enough": true,
+        "vs_board": null
+      },
+      "time_logged": {
+        "value": 87,
+        "numerator": 80,
+        "denominator": 92,
+        "enough": true,
+        "vs_board": null
+      },
+      "within_estimate": {
+        "value": 65,
+        "numerator": 33,
+        "denominator": 51,
+        "enough": true,
+        "vs_board": null
+      },
+      "stuck_now": {
+        "value": 21,
+        "numerator": 14,
+        "denominator": 68,
+        "enough": true,
+        "vs_board": null
+      },
+      "reopened": {
+        "value": 4,
+        "numerator": 4,
+        "denominator": 92,
+        "enough": true,
+        "vs_board": null
+      },
+      "skipped_stage": {
+        "value": 2,
+        "numerator": 2,
+        "denominator": 92,
+        "enough": true,
+        "vs_board": null
+      },
+      "code_review": {
+        "value": null,
+        "numerator": null,
+        "denominator": null,
+        "enough": false,
+        "vs_board": null
+      },
+      "open_findings_per_10": {
+        "value": 8.7,
+        "numerator": 59,
+        "denominator": 68,
+        "enough": true,
+        "vs_board": null
+      }
+    }
+  },
+  "people": [
+    {
+      "person": {
+        "id": "pe0f1fe0c54ec",
+        "name": "Hana Mori",
+        "avatar": null
+      },
+      "tickets": 73,
+      "values": {
+        "open_tickets": {
+          "value": 3,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 1,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 11,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 44,
+          "numerator": 4,
+          "denominator": 9,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "time_logged": {
+          "value": 82,
+          "numerator": 9,
+          "denominator": 11,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "within_estimate": {
+          "value": 60,
+          "numerator": 3,
+          "denominator": 5,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "stuck_now": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 3,
+          "enough": false,
+          "vs_board": null
+        },
+        "reopened": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 11,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "skipped_stage": {
+          "value": 9,
+          "numerator": 1,
+          "denominator": 11,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 3.3,
+          "numerator": 1,
+          "denominator": 3,
+          "enough": false,
+          "vs_board": null
+        }
+      }
+    }
+  ]
+}

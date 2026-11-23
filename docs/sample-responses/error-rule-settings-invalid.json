@@ -1,0 +1,10 @@
+{
+  "error": "rule_settings_invalid",
+  "message": "Some of these rule settings cannot be saved. Each problem is said beside its setting.",
+  "issues": [
+    {
+      "path": "W-EFF-01.params.threshold",
+      "message": "Must stay below R-EFF-01's 1.5× while both are on: the warning comes first."
+    }
+  ]
+}

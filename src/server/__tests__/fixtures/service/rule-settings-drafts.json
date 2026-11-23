@@ -1,0 +1,117 @@
+{
+  "drafted": {
+    "meta": {
+      "data_mode": "live",
+      "last_synced_at": "2026-11-17T10:00:00.000Z",
+      "projects": [
+        "DEMO"
+      ],
+      "rules_version": "0.1.0",
+      "process_version": "0.1.0",
+      "generated_at": "2026-11-17T10:25:00.000Z",
+      "report_timezone": "UTC"
+    },
+    "project": "DEMO",
+    "outcome": "drafted",
+    "draft": {
+      "title": "Bugs In Progress over 3 days",
+      "description": "Flags bugs In Progress for more than 3 days.",
+      "check": "time_in_status_over",
+      "params": {
+        "hours": 72.0,
+        "statuses": [
+          "In Progress"
+        ]
+      },
+      "applies_to": {
+        "status_category": [
+          "indeterminate"
+        ],
+        "issue_type": [
+          "Bug"
+        ]
+      },
+      "severity": "breach"
+    },
+    "explanation": "Flags bugs In Progress for more than 3 days.",
+    "note": null,
+    "problems": []
+  },
+  "not_supported": {
+    "meta": {
+      "data_mode": "live",
+      "last_synced_at": "2026-11-17T10:00:00.000Z",
+      "projects": [
+        "DEMO"
+      ],
+      "rules_version": "0.1.0",
+      "process_version": "0.1.0",
+      "generated_at": "2026-11-17T10:25:00.000Z",
+      "report_timezone": "UTC"
+    },
+    "project": "DEMO",
+    "outcome": "not_supported",
+    "draft": null,
+    "explanation": null,
+    "note": "None of the checks can do that. The closest is 'Time in a status'.",
+    "problems": []
+  },
+  "not_understood": {
+    "meta": {
+      "data_mode": "live",
+      "last_synced_at": "2026-11-17T10:00:00.000Z",
+      "projects": [
+        "DEMO"
+      ],
+      "rules_version": "0.1.0",
+      "process_version": "0.1.0",
+      "generated_at": "2026-11-17T10:25:00.000Z",
+      "report_timezone": "UTC"
+    },
+    "project": "DEMO",
+    "outcome": "not_understood",
+    "draft": null,
+    "explanation": null,
+    "note": "Describe the rule in a few words, such as \"Bugs in Code Review for more than 3 days\".",
+    "problems": []
+  },
+  "problems": {
+    "meta": {
+      "data_mode": "live",
+      "last_synced_at": "2026-11-17T10:00:00.000Z",
+      "projects": [
+        "DEMO"
+      ],
+      "rules_version": "0.1.0",
+      "process_version": "0.1.0",
+      "generated_at": "2026-11-17T10:25:00.000Z",
+      "report_timezone": "UTC"
+    },
+    "project": "DEMO",
+    "outcome": "drafted",
+    "draft": {
+      "title": "Work open over 5000 days",
+      "description": "Flags work still open more than 5000 days after it was created.",
+      "check": "open_longer_than",
+      "params": {
+        "days": 5000.0
+      },
+      "applies_to": {
+        "status_category": [
+          "new",
+          "indeterminate"
+        ],
+        "issue_type": null
+      },
+      "severity": "breach"
+    },
+    "explanation": "Flags work still open more than 5000 days after it was created.",
+    "note": null,
+    "problems": [
+      {
+        "field": "params.days",
+        "message": "Days open must be from 1 to 3650 days."
+      }
+    ]
+  }
+}

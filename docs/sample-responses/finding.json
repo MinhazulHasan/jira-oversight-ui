@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "finding": {
+    "finding_id": "0b7b3b0f61c477e61699982f24892735",
+    "rule_id": "R-EST-01",
+    "rule_title": "Work started without an estimate",
+    "rule_version": "0.1.0",
+    "kind": "rule",
+    "severity": "breach",
+    "state": "open",
+    "message": "Started on 4 Nov 2026 with no estimate (story points)",
+    "scope": "issue",
+    "issue_key": "DEMO-1098",
+    "issue_summary": "Build API rate limiting",
+    "issue_type": "Task",
+    "epic_key": "DEMO-763",
+    "epic_title": "Integrations API",
+    "assignee": {
+      "id": "p65b14f7daa03",
+      "name": "Grace Lindqvist",
+      "avatar": "37d44fa82021"
+    },
+    "sprint": null,
+    "first_seen_at": "2026-11-04T10:29:00.000Z",
+    "last_seen_at": "2026-11-04T14:29:00.000Z",
+    "resolved_at": null,
+    "resolved_why": null,
+    "threshold": null,
+    "evidence": [
+      {
+        "kind": "status_change",
+        "label": "Work started",
+        "value": "To Do → In Progress",
+        "unit": null,
+        "from": "To Do",
+        "to": "In Progress",
+        "at": "2026-11-04T10:11:00.000Z",
+        "changelog_id": "318706"
+      },
+      {
+        "kind": "metric",
+        "label": "Story points",
+        "value": null,
+        "unit": "points",
+        "from": null,
+        "to": null,
+        "at": null,
+        "changelog_id": null
+      }
+    ],
+    "warned_before": {
+      "warning_rule_id": "W-EST-01",
+      "warning_finding_id": "a59f6d27db353a9c64e3667e6e1e4e86",
+      "warned_at": "2026-10-23T12:29:00.000Z"
+    }
+  },
+  "timeline": [
+    {
+      "status": "To Do",
+      "stage": "backlog",
+      "status_category": "new",
+      "entered_at": "2026-10-21T09:49:00.000Z",
+      "left_at": "2026-11-04T10:11:00.000Z",
+      "hours": 336.3667
+    },
+    {
+      "status": "In Progress",
+      "stage": "development",
+      "status_category": "indeterminate",
+      "entered_at": "2026-11-04T10:11:00.000Z",
+      "left_at": null,
+      "hours": null
+    }
+  ]
+}

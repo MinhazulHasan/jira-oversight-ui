@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "data_mode": "live",
+    "last_synced_at": "2026-11-17T10:00:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-17T10:05:00.000Z",
+    "report_timezone": "UTC"
+  },
+  "project": "DEMO",
+  "revision": 0,
+  "impact": [
+    {
+      "rule_id": "R-FLOW-01",
+      "measurable": false,
+      "open_now": 0,
+      "would_open": 0,
+      "would_close": 0,
+      "would_stay": 0,
+      "examples": {
+        "open": [],
+        "close": []
+      },
+      "note": "Not measurable on this board, so this change has no effect until it can run."
+    }
+  ],
+  "totals": {
+    "would_open": 0,
+    "would_close": 0
+  }
+}

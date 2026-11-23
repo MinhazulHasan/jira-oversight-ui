@@ -1,0 +1,231 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "metadata": {
+    "project": "DEMO",
+    "as_of": "2026-11-04",
+    "window_days": 90,
+    "zone": "Europe/London",
+    "window": {
+      "start": "2026-08-05T23:00:00.000Z",
+      "end": "2026-11-04T00:00:00.000Z",
+      "start_local": "2026-08-06T00:00:00+01:00",
+      "end_local": "2026-11-04T00:00:00+00:00"
+    },
+    "generated_at": "2026-11-04T14:29:00.000Z",
+    "process_version": "0.1.0",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "metrics_computed_at": "2026-11-04T14:28:20.000Z",
+    "metrics_stale": false,
+    "issues_without_metrics": 0,
+    "comparison_status": "compared",
+    "comparison_note": "Sample data: the expected figures come from a fictional audit of DEMO, recorded so that this comparison can be shown.",
+    "run_id": "996e1dde0cc030043a243e55b13fa3fd"
+  },
+  "figures": {
+    "snapshot": {
+      "last_synced_at": "2026-11-04T14:28:00.000Z",
+      "total_issues": 1150,
+      "created_before_window_end": 1145,
+      "by_type": {
+        "Task": 685,
+        "Bug": 219,
+        "Subtask": 150,
+        "Test": 82,
+        "Epic": 14
+      },
+      "by_status": {
+        "Done": 1074,
+        "To Do": 39,
+        "In Progress": 37
+      },
+      "by_status_category": {
+        "done": 1074,
+        "new": 39,
+        "indeterminate": 37
+      }
+    },
+    "resolved": {
+      "in_window": 308,
+      "with_original_estimate": {
+        "count": 0,
+        "share": 0
+      },
+      "with_story_points": {
+        "count": 192,
+        "share": 0.6234
+      },
+      "with_logged_time": {
+        "timespent": {
+          "count": 260,
+          "share": 0.8442
+        },
+        "aggregate": {
+          "count": 264,
+          "share": 0.8571
+        },
+        "worklog_rows": {
+          "count": 260,
+          "share": 0.8442
+        }
+      },
+      "straight_todo_to_done": {
+        "count": 30,
+        "share": 0.0974,
+        "from_statuses": [
+          "To Do"
+        ],
+        "to_statuses": [
+          "Done"
+        ]
+      },
+      "created_in_done": {
+        "count": 0,
+        "share": 0
+      },
+      "done_entered_in_window": 308
+    },
+    "estimates": {
+      "hours_per_point": {
+        "n": 174,
+        "median": 8.325,
+        "p25": 7.3177,
+        "p75": 11
+      },
+      "within_25pct": {
+        "hours_per_point": 8,
+        "count": 100,
+        "share": 0.5747
+      },
+      "estimate_set_after_start": {
+        "count": 54,
+        "of": 178,
+        "share": 0.3034
+      }
+    },
+    "time_in_status": {
+      "To Do": {
+        "n": 319,
+        "median": 161.5667,
+        "p75": 395.9833,
+        "p90": 533.2933,
+        "stage": "backlog"
+      },
+      "In Progress": {
+        "n": 284,
+        "median": 96.3667,
+        "p75": 174.3667,
+        "p90": 336.43,
+        "stage": "development"
+      },
+      "Done": {
+        "n": 7,
+        "median": 71.6833,
+        "p75": 225.4,
+        "p90": 361.37,
+        "stage": "done"
+      }
+    },
+    "cycle_time": {
+      "n": 278,
+      "median": 100.7917,
+      "p75": 176.7875,
+      "p90": 359.435
+    },
+    "reopens": {
+      "count": 8,
+      "share": 0.026
+    },
+    "worklogs": {
+      "count": 1688,
+      "total_hours": 7005.5,
+      "authors": 1,
+      "top_author_share": {
+        "seconds": 1,
+        "count": 1
+      },
+      "tempo_share": {
+        "seconds": 1,
+        "count": 1
+      }
+    },
+    "evidence": {
+      "not_measurable": [
+        "code_review",
+        "dev_signoff",
+        "testing",
+        "test_review",
+        "test_signoff"
+      ],
+      "configured": []
+    },
+    "issue_links": {
+      "issues_with_issue_links": 678,
+      "issue_links": 1347,
+      "issue_links_by_title": {
+        "relates to": 592,
+        "blocks": 313,
+        "is blocked by": 220,
+        "is cloned by": 61,
+        "is duplicated by": 58,
+        "duplicates": 55,
+        "clones": 48
+      },
+      "remote_links": 0,
+      "remote_links_by_host": {}
+    }
+  },
+  "comparison": [
+    {
+      "metric": "total_issues",
+      "expected": 1150,
+      "actual": 1145,
+      "match": false,
+      "note": "the audit counted during 4 Nov; the window end is midnight before it"
+    },
+    {
+      "metric": "resolved_in_window",
+      "expected": 308,
+      "actual": 308,
+      "match": true,
+      "note": ""
+    },
+    {
+      "metric": "with_original_estimate",
+      "expected": 0,
+      "actual": 0,
+      "match": true,
+      "note": ""
+    },
+    {
+      "metric": "with_story_points",
+      "expected": 192,
+      "actual": 192,
+      "match": true,
+      "note": ""
+    },
+    {
+      "metric": "with_logged_time",
+      "expected": 264,
+      "actual": 260,
+      "match": false,
+      "note": "the audit may have counted logged time another way; other variants: aggregate 264, worklog_rows 260"
+    },
+    {
+      "metric": "straight_todo_to_done",
+      "expected": 30,
+      "actual": 30,
+      "match": true,
+      "note": ""
+    }
+  ]
+}

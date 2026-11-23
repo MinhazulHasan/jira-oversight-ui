@@ -1,0 +1,1762 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "items": [
+    {
+      "finding_id": "4f4dea9b42b76d4882fbb2db662287c3",
+      "rule_id": "W-SPR-01",
+      "rule_title": "Sprint at risk",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "Sprint 26 ends in 1.9 days with 33 of 94 issues (35%) not started",
+      "scope": "sprint",
+      "issue_key": null,
+      "issue_summary": null,
+      "issue_type": null,
+      "epic_key": null,
+      "epic_title": null,
+      "assignee": null,
+      "sprint": {
+        "sprint_id": 4426,
+        "name": "Sprint 26"
+      },
+      "first_seen_at": "2026-11-04T12:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "≤ 2 days left, > 30% not started",
+      "evidence": [
+        {
+          "kind": "sprint",
+          "label": "Sprint ends",
+          "value": "Sprint 26",
+          "unit": null,
+          "from": null,
+          "to": null,
+          "at": "2026-11-06T12:00:00.000Z",
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Days left",
+          "value": 1.8972,
+          "unit": "days",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Issues in the sprint",
+          "value": 94,
+          "unit": "count",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Not started",
+          "value": 33,
+          "unit": "count",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Share not started",
+          "value": 0.3511,
+          "unit": "share",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "0b7b3b0f61c477e61699982f24892735",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 4 Nov 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1098",
+      "issue_summary": "Build API rate limiting",
+      "issue_type": "Task",
+      "epic_key": "DEMO-763",
+      "epic_title": "Integrations API",
+      "assignee": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-04T10:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-04T10:11:00.000Z",
+          "changelog_id": "318706"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "a59f6d27db353a9c64e3667e6e1e4e86",
+        "warned_at": "2026-10-23T12:29:00.000Z"
+      }
+    },
+    {
+      "finding_id": "0c8945416f88697236f895dcbf942780",
+      "rule_id": "W-EFF-01",
+      "rule_title": "Effort burning fast",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "Logged 24.8 h of a 24.0 h estimate while in progress (1.03×, threshold 0.8×)",
+      "scope": "issue",
+      "issue_key": "DEMO-1127",
+      "issue_summary": "Load test for staging environment configuration",
+      "issue_type": "Test",
+      "epic_key": null,
+      "epic_title": null,
+      "assignee": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-04T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "0.8×",
+      "evidence": [
+        {
+          "kind": "metric",
+          "label": "Logged so far",
+          "value": 24.75,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Estimate",
+          "value": 24,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Effort ratio",
+          "value": 1.0313,
+          "unit": "ratio",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-02T08:11:00.000Z",
+          "changelog_id": "318609"
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "b7ab29c0aed0029b2ef20a74c06ebd37",
+      "rule_id": "W-EST-01",
+      "rule_title": "Unestimated work in the active sprint",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "In Sprint 26 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1145",
+      "issue_summary": "Clean up repeated queries in reports",
+      "issue_type": "Subtask",
+      "epic_key": "DEMO-1053",
+      "epic_title": "Performance tuning",
+      "assignee": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-03T17:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "sprint",
+          "label": "In the active sprint",
+          "value": "Sprint 26",
+          "unit": null,
+          "from": null,
+          "to": null,
+          "at": "2026-10-23T12:00:00.000Z",
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "df2e5ddd883f7d3d3cc1fc80198161a8",
+      "rule_id": "W-AGE-01",
+      "rule_title": "Stuck in a status",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "In 'In Progress' for 15.0 days; the project's p90 for 'In Progress' is 14.0 days",
+      "scope": "issue",
+      "issue_key": "DEMO-1084",
+      "issue_summary": "Fix import templates",
+      "issue_type": "Bug",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-03T14:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "p90 of In Progress: 335.4 h",
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-20T14:37:00.000Z",
+          "changelog_id": "318376"
+        },
+        {
+          "kind": "metric",
+          "label": "Time in status",
+          "value": 359.85,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Project p90",
+          "value": 335.4333,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Closed intervals measured",
+          "value": 536,
+          "unit": "count",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "0747f249107e3a362337b0b83c9a37b2",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 3 Nov 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1108",
+      "issue_summary": "Improve calendar view",
+      "issue_type": "Task",
+      "epic_key": "DEMO-847",
+      "epic_title": "Scheduling engine",
+      "assignee": {
+        "id": "p7eadbe877710",
+        "name": "Dev Malhotra",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-03T13:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-03T13:23:00.000Z",
+          "changelog_id": "318690"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "b0dbabe58f5060c035321288a86a6a5c",
+        "warned_at": "2026-10-23T12:29:00.000Z"
+      }
+    },
+    {
+      "finding_id": "5c6bcdc3cfe0d185e638a7c228e61bf3",
+      "rule_id": "R-EST-02",
+      "rule_title": "Estimate first set after work started",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "warning",
+      "state": "open",
+      "message": "Story points first set on 3 Nov 2026, 24.7 h after work started",
+      "scope": "issue",
+      "issue_key": "DEMO-1127",
+      "issue_summary": "Load test for staging environment configuration",
+      "issue_type": "Test",
+      "epic_key": null,
+      "epic_title": null,
+      "assignee": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-03T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "1 h grace",
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-02T08:11:00.000Z",
+          "changelog_id": "318609"
+        },
+        {
+          "kind": "field_change",
+          "label": "Story points set",
+          "value": "3",
+          "unit": "points",
+          "from": null,
+          "to": "3",
+          "at": "2026-11-03T08:52:00.000Z",
+          "changelog_id": "318676"
+        },
+        {
+          "kind": "metric",
+          "label": "Set after work started",
+          "value": 24.6833,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "68599faacc67d8814a34715c2b9aaa9b",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 3 Nov 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1140",
+      "issue_summary": "Design mobile print styles",
+      "issue_type": "Task",
+      "epic_key": "DEMO-948",
+      "epic_title": "Mobile layout",
+      "assignee": {
+        "id": "p7614b22410ea",
+        "name": "Ben Okafor",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-03T08:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-03T08:26:00.000Z",
+          "changelog_id": "318669"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "b7be78efa310b4b48452e54f5e59f797",
+        "warned_at": "2026-11-02T11:59:00.000Z"
+      }
+    },
+    {
+      "finding_id": "ff94ef7047dadf4f0952f8a63709ccb6",
+      "rule_id": "W-EST-01",
+      "rule_title": "Unestimated work in the active sprint",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "In Sprint 26 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1144",
+      "issue_summary": "Load test for job priority queue",
+      "issue_type": "Test",
+      "epic_key": "DEMO-847",
+      "epic_title": "Scheduling engine",
+      "assignee": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-03T08:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "sprint",
+          "label": "In the active sprint",
+          "value": "Sprint 26",
+          "unit": null,
+          "from": null,
+          "to": null,
+          "at": "2026-10-23T12:00:00.000Z",
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "93fe30f875b6d17daddf3ec4861d2416",
+      "rule_id": "W-EST-01",
+      "rule_title": "Unestimated work in the active sprint",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "In Sprint 26 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1143",
+      "issue_summary": "Document holiday calendar",
+      "issue_type": "Task",
+      "epic_key": "DEMO-847",
+      "epic_title": "Scheduling engine",
+      "assignee": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T18:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "sprint",
+          "label": "In the active sprint",
+          "value": "Sprint 26",
+          "unit": null,
+          "from": null,
+          "to": null,
+          "at": "2026-10-23T12:00:00.000Z",
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "f6c5eaefacc6af95dc0efd83187bd778",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 2 Nov 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1141",
+      "issue_summary": "API versioning breaks in Safari",
+      "issue_type": "Bug",
+      "epic_key": "DEMO-763",
+      "epic_title": "Integrations API",
+      "assignee": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T16:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-02T16:33:00.000Z",
+          "changelog_id": "318654"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "d003085e80929dd2a9f1004a04809f9d",
+        "warned_at": "2026-11-02T12:59:00.000Z"
+      }
+    },
+    {
+      "finding_id": "76ad59fe15c5750708479bbf99377bc7",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 2 Nov 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1109",
+      "issue_summary": "Build CSV import mapping",
+      "issue_type": "Task",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "pe0f1fe0c54ec",
+        "name": "Hana Mori",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T14:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-02T14:40:00.000Z",
+          "changelog_id": "318645"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "0899235c449327ce68f151954fefae82",
+        "warned_at": "2026-10-23T12:29:00.000Z"
+      }
+    },
+    {
+      "finding_id": "f40e7da555061b51df8e570ce1196519",
+      "rule_id": "W-AGE-01",
+      "rule_title": "Stuck in a status",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "In 'In Progress' for 16.0 days; the project's p90 for 'In Progress' is 14.0 days",
+      "scope": "issue",
+      "issue_key": "DEMO-1038",
+      "issue_summary": "Improve mobile sign-in",
+      "issue_type": "Task",
+      "epic_key": "DEMO-948",
+      "epic_title": "Mobile layout",
+      "assignee": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T14:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "p90 of In Progress: 335.4 h",
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-19T15:23:00.000Z",
+          "changelog_id": "318338"
+        },
+        {
+          "kind": "metric",
+          "label": "Time in status",
+          "value": 383.0833,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Project p90",
+          "value": 335.4333,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Closed intervals measured",
+          "value": 536,
+          "unit": "count",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "d003085e80929dd2a9f1004a04809f9d",
+      "rule_id": "W-EST-01",
+      "rule_title": "Unestimated work in the active sprint",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "In Sprint 26 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1141",
+      "issue_summary": "API versioning breaks in Safari",
+      "issue_type": "Bug",
+      "epic_key": "DEMO-763",
+      "epic_title": "Integrations API",
+      "assignee": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T12:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "sprint",
+          "label": "In the active sprint",
+          "value": "Sprint 26",
+          "unit": null,
+          "from": null,
+          "to": null,
+          "at": "2026-10-23T12:00:00.000Z",
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "b7be78efa310b4b48452e54f5e59f797",
+      "rule_id": "W-EST-01",
+      "rule_title": "Unestimated work in the active sprint",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "In Sprint 26 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1140",
+      "issue_summary": "Design mobile print styles",
+      "issue_type": "Task",
+      "epic_key": "DEMO-948",
+      "epic_title": "Mobile layout",
+      "assignee": {
+        "id": "p7614b22410ea",
+        "name": "Ben Okafor",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T11:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "sprint",
+          "label": "In the active sprint",
+          "value": "Sprint 26",
+          "unit": null,
+          "from": null,
+          "to": null,
+          "at": "2026-10-23T12:00:00.000Z",
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "1396b85409c5cbc6d316792e893d7701",
+      "rule_id": "R-HYG-01",
+      "rule_title": "In progress with no assignee",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "In 'In Progress' with nobody assigned for 2.1 days",
+      "scope": "issue",
+      "issue_key": "DEMO-1133",
+      "issue_summary": "Document image compression",
+      "issue_type": "Task",
+      "epic_key": "DEMO-1053",
+      "epic_title": "Performance tuning",
+      "assignee": null,
+      "sprint": null,
+      "first_seen_at": "2026-11-02T11:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-02T11:17:00.000Z",
+          "changelog_id": "318643"
+        },
+        {
+          "kind": "metric",
+          "label": "Unassigned for",
+          "value": 51.1833,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "2a0c2e45246597b2985bfd9bf232bf01",
+      "rule_id": "W-EFF-01",
+      "rule_title": "Effort burning fast",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "Logged 44.3 h of a 40.0 h estimate while in progress (1.11×, threshold 0.8×)",
+      "scope": "issue",
+      "issue_key": "DEMO-1105",
+      "issue_summary": "Improve retry queue for webhooks",
+      "issue_type": "Task",
+      "epic_key": "DEMO-763",
+      "epic_title": "Integrations API",
+      "assignee": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T10:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "0.8×",
+      "evidence": [
+        {
+          "kind": "metric",
+          "label": "Logged so far",
+          "value": 44.25,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Estimate",
+          "value": 40,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Effort ratio",
+          "value": 1.1063,
+          "unit": "ratio",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-26T08:17:00.000Z",
+          "changelog_id": "318451"
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "fc0aa8ddfeb2bd7cc2228025e33de6f7",
+      "rule_id": "W-EFF-01",
+      "rule_title": "Effort burning fast",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "Logged 38.5 h of a 24.0 h estimate while in progress (1.60×, threshold 0.8×)",
+      "scope": "issue",
+      "issue_key": "DEMO-1121",
+      "issue_summary": "Improve duplicate detection",
+      "issue_type": "Task",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "p15311a7e00f9",
+        "name": "Elif Aydin",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T09:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "0.8×",
+      "evidence": [
+        {
+          "kind": "metric",
+          "label": "Logged so far",
+          "value": 38.5,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Estimate",
+          "value": 24,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Effort ratio",
+          "value": 1.6042,
+          "unit": "ratio",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-29T08:07:00.000Z",
+          "changelog_id": "318557"
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "3f5c959e7a66d247c2e8f1409f742cf5",
+      "rule_id": "R-EFF-01",
+      "rule_title": "Effort far beyond the estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Logged 38.0 h against an estimate of 16.0 h (2.38×, threshold 1.5×)",
+      "scope": "issue",
+      "issue_key": "DEMO-1120",
+      "issue_summary": "Error when saving CSV import mapping",
+      "issue_type": "Bug",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "1.5×",
+      "evidence": [
+        {
+          "kind": "metric",
+          "label": "Logged time",
+          "value": 38,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Estimate",
+          "value": 16,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Effort ratio",
+          "value": 2.375,
+          "unit": "ratio",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "status_change",
+          "label": "Moved to Done",
+          "value": "In Progress → Done",
+          "unit": null,
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-11-02T08:51:00.000Z",
+          "changelog_id": "318637"
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EFF-01",
+        "warning_finding_id": "349760ee54533963f41d37dbb093b718",
+        "warned_at": "2026-10-30T11:59:00.000Z"
+      }
+    },
+    {
+      "finding_id": "47a6f0682693b0e899cc587739fe8b0f",
+      "rule_id": "R-EST-02",
+      "rule_title": "Estimate first set after work started",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "warning",
+      "state": "open",
+      "message": "Story points first set on 2 Nov 2026, 96.2 h after work started",
+      "scope": "issue",
+      "issue_key": "DEMO-1089",
+      "issue_summary": "Design thumbnail generation",
+      "issue_type": "Task",
+      "epic_key": "DEMO-598",
+      "epic_title": "Document storage",
+      "assignee": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "1 h grace",
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-29T08:40:00.000Z",
+          "changelog_id": "318576"
+        },
+        {
+          "kind": "field_change",
+          "label": "Story points set",
+          "value": "5",
+          "unit": "points",
+          "from": null,
+          "to": "5",
+          "at": "2026-11-02T08:53:00.000Z",
+          "changelog_id": "318640"
+        },
+        {
+          "kind": "metric",
+          "label": "Set after work started",
+          "value": 96.2167,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "6eaa31261d9ac3ca0ab85f2881466b8d",
+      "rule_id": "W-EFF-01",
+      "rule_title": "Effort burning fast",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "Logged 47.3 h of a 40.0 h estimate while in progress (1.18×, threshold 0.8×)",
+      "scope": "issue",
+      "issue_key": "DEMO-1084",
+      "issue_summary": "Fix import templates",
+      "issue_type": "Bug",
+      "epic_key": "DEMO-704",
+      "epic_title": "Data import pipeline",
+      "assignee": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "0.8×",
+      "evidence": [
+        {
+          "kind": "metric",
+          "label": "Logged so far",
+          "value": 47.25,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Estimate",
+          "value": 40,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Effort ratio",
+          "value": 1.1813,
+          "unit": "ratio",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-20T14:37:00.000Z",
+          "changelog_id": "318376"
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "71fb9d9327f4541789648a535885aaa8",
+      "rule_id": "W-EFF-01",
+      "rule_title": "Effort burning fast",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "Logged 101.5 h of a 64.0 h estimate while in progress (1.59×, threshold 0.8×)",
+      "scope": "issue",
+      "issue_key": "DEMO-1085",
+      "issue_summary": "Clean up render time of large tables",
+      "issue_type": "Subtask",
+      "epic_key": "DEMO-1053",
+      "epic_title": "Performance tuning",
+      "assignee": {
+        "id": "p0998d9f44491",
+        "name": "Finn Gallagher",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "0.8×",
+      "evidence": [
+        {
+          "kind": "metric",
+          "label": "Logged so far",
+          "value": 101.5,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Estimate",
+          "value": 64,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Effort ratio",
+          "value": 1.5859,
+          "unit": "ratio",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-26T08:48:00.000Z",
+          "changelog_id": "318484"
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "f29270892286712bd0cfb933fa817999",
+      "rule_id": "W-EFF-01",
+      "rule_title": "Effort burning fast",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "Logged 45.8 h of a 24.0 h estimate while in progress (1.91×, threshold 0.8×)",
+      "scope": "issue",
+      "issue_key": "DEMO-1097",
+      "issue_summary": "Review integration health page",
+      "issue_type": "Task",
+      "epic_key": "DEMO-763",
+      "epic_title": "Integrations API",
+      "assignee": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T08:59:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "0.8×",
+      "evidence": [
+        {
+          "kind": "metric",
+          "label": "Logged so far",
+          "value": 45.75,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Estimate",
+          "value": 24,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Effort ratio",
+          "value": 1.9063,
+          "unit": "ratio",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-29T16:13:00.000Z",
+          "changelog_id": "318592"
+        }
+      ],
+      "warned_before": null
+    },
+    {
+      "finding_id": "37dea47e9a872e68ad0b42abfef05874",
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "rule_version": "0.1.0",
+      "kind": "rule",
+      "severity": "breach",
+      "state": "open",
+      "message": "Started on 2 Nov 2026 with no estimate (story points)",
+      "scope": "issue",
+      "issue_key": "DEMO-1119",
+      "issue_summary": "Add events to thumbnail generation",
+      "issue_type": "Subtask",
+      "epic_key": "DEMO-598",
+      "epic_title": "Document storage",
+      "assignee": {
+        "id": "p7eadbe877710",
+        "name": "Dev Malhotra",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T08:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": null,
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Work started",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-11-02T08:26:00.000Z",
+          "changelog_id": "318618"
+        },
+        {
+          "kind": "metric",
+          "label": "Story points",
+          "value": null,
+          "unit": "points",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": {
+        "warning_rule_id": "W-EST-01",
+        "warning_finding_id": "876bbb252ba1f07bd3a45ef48e86b0ff",
+        "warned_at": "2026-10-27T08:59:00.000Z"
+      }
+    },
+    {
+      "finding_id": "6848f192c6397a8d198cbe729c0a5f87",
+      "rule_id": "W-AGE-01",
+      "rule_title": "Stuck in a status",
+      "rule_version": "0.1.0",
+      "kind": "warning",
+      "severity": "warning",
+      "state": "open",
+      "message": "In 'In Progress' for 16.2 days; the project's p90 for 'In Progress' is 14.0 days",
+      "scope": "issue",
+      "issue_key": "DEMO-1016",
+      "issue_summary": "Build integration logs",
+      "issue_type": "Task",
+      "epic_key": "DEMO-763",
+      "epic_title": "Integrations API",
+      "assignee": {
+        "id": "p7eadbe877710",
+        "name": "Dev Malhotra",
+        "avatar": null
+      },
+      "sprint": null,
+      "first_seen_at": "2026-11-02T08:29:00.000Z",
+      "last_seen_at": "2026-11-04T14:29:00.000Z",
+      "resolved_at": null,
+      "resolved_why": null,
+      "threshold": "p90 of In Progress: 335.4 h",
+      "evidence": [
+        {
+          "kind": "status_change",
+          "label": "Moved to In Progress",
+          "value": "To Do → In Progress",
+          "unit": null,
+          "from": "To Do",
+          "to": "In Progress",
+          "at": "2026-10-19T08:47:00.000Z",
+          "changelog_id": "318319"
+        },
+        {
+          "kind": "metric",
+          "label": "Time in status",
+          "value": 389.6833,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Project p90",
+          "value": 335.4333,
+          "unit": "hours",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        },
+        {
+          "kind": "metric",
+          "label": "Closed intervals measured",
+          "value": 536,
+          "unit": "count",
+          "from": null,
+          "to": null,
+          "at": null,
+          "changelog_id": null
+        }
+      ],
+      "warned_before": null
+    }
+  ],
+  "total": 809,
+  "page": 1,
+  "page_size": 25,
+  "facets": {
+    "rules": [
+      {
+        "value": "R-EST-01",
+        "label": "Work started without an estimate",
+        "count": 270
+      },
+      {
+        "value": "R-EST-02",
+        "label": "Estimate first set after work started",
+        "count": 180
+      },
+      {
+        "value": "R-EFF-01",
+        "label": "Effort far beyond the estimate",
+        "count": 76
+      },
+      {
+        "value": "R-FLOW-01",
+        "label": "Reached testing without code review",
+        "count": 0
+      },
+      {
+        "value": "R-FLOW-02",
+        "label": "Skipped a stage",
+        "count": 174
+      },
+      {
+        "value": "R-FLOW-03",
+        "label": "Reopened after Done",
+        "count": 56
+      },
+      {
+        "value": "R-HYG-01",
+        "label": "In progress with no assignee",
+        "count": 3
+      },
+      {
+        "value": "W-EFF-01",
+        "label": "Effort burning fast",
+        "count": 11
+      },
+      {
+        "value": "W-AGE-01",
+        "label": "Stuck in a status",
+        "count": 14
+      },
+      {
+        "value": "W-REV-01",
+        "label": "No review evidence yet",
+        "count": 0
+      },
+      {
+        "value": "W-SPR-01",
+        "label": "Sprint at risk",
+        "count": 1
+      },
+      {
+        "value": "W-EST-01",
+        "label": "Unestimated work in the active sprint",
+        "count": 24
+      }
+    ],
+    "epics": [
+      {
+        "value": "DEMO-4",
+        "label": "Onboarding flow",
+        "count": 64
+      },
+      {
+        "value": "DEMO-37",
+        "label": "Account settings",
+        "count": 69
+      },
+      {
+        "value": "DEMO-89",
+        "label": "Search and filtering",
+        "count": 81
+      },
+      {
+        "value": "DEMO-178",
+        "label": "Reporting exports",
+        "count": 80
+      },
+      {
+        "value": "DEMO-245",
+        "label": "Notification preferences",
+        "count": 26
+      },
+      {
+        "value": "DEMO-351",
+        "label": "Billing and invoices",
+        "count": 68
+      },
+      {
+        "value": "DEMO-417",
+        "label": "Access and permissions",
+        "count": 52
+      },
+      {
+        "value": "DEMO-509",
+        "label": "Audit trail",
+        "count": 43
+      },
+      {
+        "value": "DEMO-598",
+        "label": "Document storage",
+        "count": 45
+      },
+      {
+        "value": "DEMO-704",
+        "label": "Data import pipeline",
+        "count": 100
+      },
+      {
+        "value": "DEMO-763",
+        "label": "Integrations API",
+        "count": 88
+      },
+      {
+        "value": "DEMO-847",
+        "label": "Scheduling engine",
+        "count": 20
+      },
+      {
+        "value": "DEMO-948",
+        "label": "Mobile layout",
+        "count": 12
+      },
+      {
+        "value": "DEMO-1053",
+        "label": "Performance tuning",
+        "count": 8
+      },
+      {
+        "value": "none",
+        "label": "No epic",
+        "count": 53
+      }
+    ],
+    "people": [
+      {
+        "value": "pbc7fe62842ca",
+        "label": "Ada Brooks",
+        "count": 149,
+        "avatar": null
+      },
+      {
+        "value": "p7614b22410ea",
+        "label": "Ben Okafor",
+        "count": 124,
+        "avatar": null
+      },
+      {
+        "value": "p599114b761a6",
+        "label": "Carmen Ruiz",
+        "count": 124,
+        "avatar": "55ea1804e5bd"
+      },
+      {
+        "value": "p7eadbe877710",
+        "label": "Dev Malhotra",
+        "count": 119,
+        "avatar": null
+      },
+      {
+        "value": "p15311a7e00f9",
+        "label": "Elif Aydin",
+        "count": 88,
+        "avatar": null
+      },
+      {
+        "value": "p0998d9f44491",
+        "label": "Finn Gallagher",
+        "count": 82,
+        "avatar": null
+      },
+      {
+        "value": "p65b14f7daa03",
+        "label": "Grace Lindqvist",
+        "count": 64,
+        "avatar": "37d44fa82021"
+      },
+      {
+        "value": "pe0f1fe0c54ec",
+        "label": "Hana Mori",
+        "count": 42,
+        "avatar": null
+      },
+      {
+        "value": "unassigned",
+        "label": "Unassigned",
+        "count": 16,
+        "avatar": null
+      }
+    ],
+    "severity": [
+      {
+        "value": "breach",
+        "label": "Breach",
+        "count": 523
+      },
+      {
+        "value": "warning",
+        "label": "Warning",
+        "count": 286
+      }
+    ],
+    "state": [
+      {
+        "value": "open",
+        "label": "Open",
+        "count": 809
+      },
+      {
+        "value": "resolved",
+        "label": "Resolved",
+        "count": 737
+      }
+    ]
+  }
+}

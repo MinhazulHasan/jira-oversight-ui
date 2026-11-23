@@ -1,0 +1,410 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "01343f5c9b1aac014623ac18d37e3584",
+  "question": "What are @Carmen Ruiz's open findings?",
+  "outcome": "answered",
+  "answer": "Carmen Ruiz has 88 open breaches and 36 open warnings, on 117 tickets. The newest are on DEMO-1127, DEMO-1143 and DEMO-1097; the table lists the latest 20. Findings follow the ticket's current assignee.",
+  "citations": [
+    {
+      "marker": 1,
+      "text": "88",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "open_breaches"
+    },
+    {
+      "marker": 2,
+      "text": "36",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "open_warnings"
+    },
+    {
+      "marker": 3,
+      "text": "117",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "tickets_with_findings"
+    },
+    {
+      "marker": 4,
+      "text": "DEMO-1127",
+      "fact_ref": "F2",
+      "row_index": 0,
+      "column": "issue_key"
+    },
+    {
+      "marker": 5,
+      "text": "DEMO-1143",
+      "fact_ref": "F2",
+      "row_index": 2,
+      "column": "issue_key"
+    },
+    {
+      "marker": 6,
+      "text": "DEMO-1097",
+      "fact_ref": "F2",
+      "row_index": 3,
+      "column": "issue_key"
+    },
+    {
+      "marker": 7,
+      "text": "20",
+      "fact_ref": "F2",
+      "row_index": -1,
+      "column": "row_count"
+    }
+  ],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_query",
+      "params": {
+        "sql": "SELECT person_id, name, tickets, open_tickets, open_breaches, open_warnings, tickets_with_findings FROM people WHERE person_id = 'p599114b761a6' ORDER BY open_breaches DESC, name"
+      },
+      "columns": [
+        {
+          "key": "person_id",
+          "label": "Person id",
+          "kind": "text"
+        },
+        {
+          "key": "name",
+          "label": "Name",
+          "kind": "text"
+        },
+        {
+          "key": "tickets",
+          "label": "Tickets",
+          "kind": "count"
+        },
+        {
+          "key": "open_tickets",
+          "label": "Open tickets",
+          "kind": "count"
+        },
+        {
+          "key": "open_breaches",
+          "label": "Open breaches",
+          "kind": "count"
+        },
+        {
+          "key": "open_warnings",
+          "label": "Open warnings",
+          "kind": "count"
+        },
+        {
+          "key": "tickets_with_findings",
+          "label": "Tickets with findings",
+          "kind": "count"
+        }
+      ],
+      "rows": [
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "tickets": 169,
+          "open_tickets": 7,
+          "open_breaches": 88,
+          "open_warnings": 36,
+          "tickets_with_findings": 117
+        }
+      ],
+      "truncated": false,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "one row for each person asked about, by person id, who is assigned a ticket on this board now, by open breaches, most first, ties by name; a person's tickets are the board's work, Epics left out, as the scorecard counts them; findings follow the ticket's current assignee: a person's findings are those on the tickets they hold now, and a sprint finding is no one's"
+    },
+    {
+      "ref": "F2",
+      "tool": "oversight_query",
+      "params": {
+        "sql": "SELECT finding_id, rule_id, rule_title, severity, issue_key, summary, epic_key, first_seen_at FROM findings WHERE assignee_id = 'p599114b761a6' AND state = 'open' ORDER BY first_seen_at DESC LIMIT 20"
+      },
+      "columns": [
+        {
+          "key": "finding_id",
+          "label": "Finding",
+          "kind": "text"
+        },
+        {
+          "key": "rule_id",
+          "label": "Rule",
+          "kind": "text"
+        },
+        {
+          "key": "rule_title",
+          "label": "Rule title",
+          "kind": "text"
+        },
+        {
+          "key": "severity",
+          "label": "Severity",
+          "kind": "text"
+        },
+        {
+          "key": "issue_key",
+          "label": "Issue",
+          "kind": "issue_key"
+        },
+        {
+          "key": "summary",
+          "label": "Summary",
+          "kind": "text"
+        },
+        {
+          "key": "epic_key",
+          "label": "Epic",
+          "kind": "issue_key"
+        },
+        {
+          "key": "first_seen_at",
+          "label": "First seen",
+          "kind": "date"
+        }
+      ],
+      "rows": [
+        {
+          "finding_id": "0c8945416f88697236f895dcbf942780",
+          "rule_id": "W-EFF-01",
+          "rule_title": "Effort burning fast",
+          "severity": "warning",
+          "issue_key": "DEMO-1127",
+          "summary": "Load test for staging environment configuration",
+          "epic_key": null,
+          "first_seen_at": "2026-11-04T08:59:00.000Z"
+        },
+        {
+          "finding_id": "5c6bcdc3cfe0d185e638a7c228e61bf3",
+          "rule_id": "R-EST-02",
+          "rule_title": "Estimate first set after work started",
+          "severity": "warning",
+          "issue_key": "DEMO-1127",
+          "summary": "Load test for staging environment configuration",
+          "epic_key": null,
+          "first_seen_at": "2026-11-03T08:59:00.000Z"
+        },
+        {
+          "finding_id": "93fe30f875b6d17daddf3ec4861d2416",
+          "rule_id": "W-EST-01",
+          "rule_title": "Unestimated work in the active sprint",
+          "severity": "warning",
+          "issue_key": "DEMO-1143",
+          "summary": "Document holiday calendar",
+          "epic_key": "DEMO-847",
+          "first_seen_at": "2026-11-02T18:29:00.000Z"
+        },
+        {
+          "finding_id": "f29270892286712bd0cfb933fa817999",
+          "rule_id": "W-EFF-01",
+          "rule_title": "Effort burning fast",
+          "severity": "warning",
+          "issue_key": "DEMO-1097",
+          "summary": "Review integration health page",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-11-02T08:59:00.000Z"
+        },
+        {
+          "finding_id": "dd4fff8f6b0d80b7d52acd4a15b8bb9a",
+          "rule_id": "R-EFF-01",
+          "rule_title": "Effort far beyond the estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-799",
+          "summary": "Rework API error format",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-10-28T10:59:00.000Z"
+        },
+        {
+          "finding_id": "a728df76f242da11b66a987cc6820b50",
+          "rule_id": "R-EST-02",
+          "rule_title": "Estimate first set after work started",
+          "severity": "warning",
+          "issue_key": "DEMO-1063",
+          "summary": "Rework cache headers",
+          "epic_key": "DEMO-1053",
+          "first_seen_at": "2026-10-27T12:59:00.000Z"
+        },
+        {
+          "finding_id": "3da636d9dddebaf45b9ba2c50ef46bee",
+          "rule_id": "R-EFF-01",
+          "rule_title": "Effort far beyond the estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-1034",
+          "summary": "Add OAuth client registration",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-10-26T14:29:00.000Z"
+        },
+        {
+          "finding_id": "0acb4987f7dbb2183612cf771d350bbe",
+          "rule_id": "W-EST-01",
+          "rule_title": "Unestimated work in the active sprint",
+          "severity": "warning",
+          "issue_key": "DEMO-1099",
+          "summary": "Implement OAuth client registration",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-10-23T12:29:00.000Z"
+        },
+        {
+          "finding_id": "6004228de5c541a87aab6b28815fba7c",
+          "rule_id": "R-EFF-01",
+          "rule_title": "Effort far beyond the estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-1027",
+          "summary": "Implement duplicate detection",
+          "epic_key": "DEMO-704",
+          "first_seen_at": "2026-10-19T15:29:00.000Z"
+        },
+        {
+          "finding_id": "b8e741051cd33403a26e1227e7287397",
+          "rule_id": "R-EST-02",
+          "rule_title": "Estimate first set after work started",
+          "severity": "warning",
+          "issue_key": "DEMO-1036",
+          "summary": "Review API paging",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-10-12T08:59:00.000Z"
+        },
+        {
+          "finding_id": "233b8ce48fc473443d5e1c9c386afa3d",
+          "rule_id": "R-EFF-01",
+          "rule_title": "Effort far beyond the estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-1028",
+          "summary": "Document import rollback",
+          "epic_key": "DEMO-704",
+          "first_seen_at": "2026-10-12T08:29:00.000Z"
+        },
+        {
+          "finding_id": "94c90fbac3afd3ee239ea6b537775d08",
+          "rule_id": "R-EFF-01",
+          "rule_title": "Effort far beyond the estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-805",
+          "summary": "Wire up webhook delivery",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-10-07T09:59:00.000Z"
+        },
+        {
+          "finding_id": "5b519de54aa66b49395309e6975a463a",
+          "rule_id": "R-EST-01",
+          "rule_title": "Work started without an estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-1007",
+          "summary": "Implement schedule preview",
+          "epic_key": "DEMO-847",
+          "first_seen_at": "2026-10-05T08:59:00.000Z"
+        },
+        {
+          "finding_id": "00768554c9a905c7ef6bc270329f81a0",
+          "rule_id": "R-FLOW-03",
+          "rule_title": "Reopened after Done",
+          "severity": "warning",
+          "issue_key": "DEMO-1018",
+          "summary": "Fix sandbox environment",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-10-05T08:29:00.000Z"
+        },
+        {
+          "finding_id": "b7e0f85970e93f9a56c210ee63d484ad",
+          "rule_id": "R-EST-01",
+          "rule_title": "Work started without an estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-1024",
+          "summary": "Design encoding detection",
+          "epic_key": "DEMO-704",
+          "first_seen_at": "2026-10-05T08:29:00.000Z"
+        },
+        {
+          "finding_id": "6caa1c17c5f37f4d19a629d289528231",
+          "rule_id": "R-EST-01",
+          "rule_title": "Work started without an estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-1018",
+          "summary": "Fix sandbox environment",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-10-01T08:29:00.000Z"
+        },
+        {
+          "finding_id": "3f56bac39b2cd30efda3fc7f881ca39c",
+          "rule_id": "R-EST-02",
+          "rule_title": "Estimate first set after work started",
+          "severity": "warning",
+          "issue_key": "DEMO-972",
+          "summary": "Add logging to trash and restore",
+          "epic_key": "DEMO-598",
+          "first_seen_at": "2026-09-29T17:29:00.000Z"
+        },
+        {
+          "finding_id": "6aa4104b78f73c53e637fa8257fb887f",
+          "rule_id": "R-EST-01",
+          "rule_title": "Work started without an estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-976",
+          "summary": "Test plan for integration health page",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-09-28T11:29:00.000Z"
+        },
+        {
+          "finding_id": "520f62dfa56748ff9f932e27983fa116",
+          "rule_id": "R-EST-01",
+          "rule_title": "Work started without an estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-1013",
+          "summary": "Sandbox environment misaligned on small screens",
+          "epic_key": "DEMO-763",
+          "first_seen_at": "2026-09-28T08:59:00.000Z"
+        },
+        {
+          "finding_id": "78443a1db1960721d598f08908bfc6d1",
+          "rule_id": "R-EST-01",
+          "rule_title": "Work started without an estimate",
+          "severity": "breach",
+          "issue_key": "DEMO-952",
+          "summary": "Write unit tests for large file chunking",
+          "epic_key": "DEMO-704",
+          "first_seen_at": "2026-09-28T08:59:00.000Z"
+        }
+      ],
+      "truncated": true,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "open findings on the tickets assigned to the person now, newest first"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_query",
+      "params": {
+        "sql": "SELECT person_id, name, tickets, open_tickets, open_breaches, open_warnings, tickets_with_findings FROM people WHERE person_id = 'p599114b761a6' ORDER BY open_breaches DESC, name"
+      }
+    },
+    {
+      "tool": "oversight_query",
+      "params": {
+        "sql": "SELECT finding_id, rule_id, rule_title, severity, issue_key, summary, epic_key, first_seen_at FROM findings WHERE assignee_id = 'p599114b761a6' AND state = 'open' ORDER BY first_seen_at DESC LIMIT 20"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": null,
+  "suggestions": [],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [
+    {
+      "id": "p599114b761a6",
+      "name": "Carmen Ruiz",
+      "avatar": "55ea1804e5bd"
+    }
+  ],
+  "note": null
+}

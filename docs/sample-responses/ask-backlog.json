@@ -1,0 +1,196 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "572340ce539f9cd806c36b01290a5ccf",
+  "question": "What is @Carmen Ruiz's backlog?",
+  "outcome": "answered",
+  "answer": "Carmen Ruiz has 7 open tickets. The newest are DEMO-1143, DEMO-1135 and DEMO-1127; the table lists all 7.",
+  "citations": [
+    {
+      "marker": 1,
+      "text": "7",
+      "fact_ref": "F1",
+      "row_index": -1,
+      "column": "row_count"
+    },
+    {
+      "marker": 2,
+      "text": "DEMO-1143",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "issue_key"
+    },
+    {
+      "marker": 3,
+      "text": "DEMO-1135",
+      "fact_ref": "F1",
+      "row_index": 1,
+      "column": "issue_key"
+    },
+    {
+      "marker": 4,
+      "text": "DEMO-1127",
+      "fact_ref": "F1",
+      "row_index": 2,
+      "column": "issue_key"
+    },
+    {
+      "marker": 5,
+      "text": "7",
+      "fact_ref": "F1",
+      "row_index": -1,
+      "column": "row_count"
+    }
+  ],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_person_tickets",
+      "params": {
+        "project": "DEMO",
+        "person": "p599114b761a6",
+        "state": "open",
+        "n": 200
+      },
+      "columns": [
+        {
+          "key": "issue_key",
+          "label": "Issue",
+          "kind": "issue_key"
+        },
+        {
+          "key": "summary",
+          "label": "Summary",
+          "kind": "text"
+        },
+        {
+          "key": "issue_type",
+          "label": "Type",
+          "kind": "text"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "kind": "text"
+        },
+        {
+          "key": "epic_key",
+          "label": "Epic",
+          "kind": "issue_key"
+        },
+        {
+          "key": "assignee_id",
+          "label": "Person id",
+          "kind": "text"
+        },
+        {
+          "key": "assignee",
+          "label": "Assignee",
+          "kind": "text"
+        }
+      ],
+      "rows": [
+        {
+          "issue_key": "DEMO-1143",
+          "summary": "Document holiday calendar",
+          "issue_type": "Task",
+          "status": "To Do",
+          "epic_key": "DEMO-847",
+          "assignee_id": "p599114b761a6",
+          "assignee": "Carmen Ruiz"
+        },
+        {
+          "issue_key": "DEMO-1135",
+          "summary": "Responsive navigation times out",
+          "issue_type": "Bug",
+          "status": "In Progress",
+          "epic_key": "DEMO-948",
+          "assignee_id": "p599114b761a6",
+          "assignee": "Carmen Ruiz"
+        },
+        {
+          "issue_key": "DEMO-1127",
+          "summary": "Load test for staging environment configuration",
+          "issue_type": "Test",
+          "status": "In Progress",
+          "epic_key": null,
+          "assignee_id": "p599114b761a6",
+          "assignee": "Carmen Ruiz"
+        },
+        {
+          "issue_key": "DEMO-1103",
+          "summary": "Spelling on the settings page breaks in Safari",
+          "issue_type": "Bug",
+          "status": "To Do",
+          "epic_key": null,
+          "assignee_id": "p599114b761a6",
+          "assignee": "Carmen Ruiz"
+        },
+        {
+          "issue_key": "DEMO-1099",
+          "summary": "Implement OAuth client registration",
+          "issue_type": "Task",
+          "status": "To Do",
+          "epic_key": "DEMO-763",
+          "assignee_id": "p599114b761a6",
+          "assignee": "Carmen Ruiz"
+        },
+        {
+          "issue_key": "DEMO-1097",
+          "summary": "Review integration health page",
+          "issue_type": "Task",
+          "status": "In Progress",
+          "epic_key": "DEMO-763",
+          "assignee_id": "p599114b761a6",
+          "assignee": "Carmen Ruiz"
+        },
+        {
+          "issue_key": "DEMO-802",
+          "summary": "Tax number validation breaks in Safari",
+          "issue_type": "Bug",
+          "status": "To Do",
+          "epic_key": "DEMO-351",
+          "assignee_id": "p599114b761a6",
+          "assignee": "Carmen Ruiz"
+        }
+      ],
+      "truncated": false,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "open tickets (status not done, Epics left out, as the scorecard counts them) assigned to this person now, newest first; 7 in all"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_person_tickets",
+      "params": {
+        "project": "DEMO",
+        "person": "p599114b761a6",
+        "state": "open",
+        "n": 200
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": null,
+  "suggestions": [],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [
+    {
+      "id": "p599114b761a6",
+      "name": "Carmen Ruiz",
+      "avatar": "55ea1804e5bd"
+    }
+  ],
+  "note": null
+}

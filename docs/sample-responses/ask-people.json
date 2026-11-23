@@ -1,0 +1,198 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "a78e5af752ab12017d51ca1281bee438",
+  "question": "Who has the most open breaches?",
+  "outcome": "answered",
+  "answer": "Carmen Ruiz has the most open breaches, 88, with 36 open warnings on 117 tickets with findings. Next come Dev Malhotra with 84 and Ada Brooks with 82. Unassigned: 15 open breaches. Findings follow the ticket's current assignee.",
+  "citations": [
+    {
+      "marker": 1,
+      "text": "88",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "open_breaches"
+    },
+    {
+      "marker": 2,
+      "text": "36",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "open_warnings"
+    },
+    {
+      "marker": 3,
+      "text": "117",
+      "fact_ref": "F1",
+      "row_index": 0,
+      "column": "tickets_with_findings"
+    },
+    {
+      "marker": 4,
+      "text": "84",
+      "fact_ref": "F1",
+      "row_index": 1,
+      "column": "open_breaches"
+    },
+    {
+      "marker": 5,
+      "text": "82",
+      "fact_ref": "F1",
+      "row_index": 2,
+      "column": "open_breaches"
+    },
+    {
+      "marker": 6,
+      "text": "15",
+      "fact_ref": "F1",
+      "row_index": 5,
+      "column": "open_breaches"
+    }
+  ],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_query",
+      "params": {
+        "sql": "SELECT * FROM (SELECT person_id, name, tickets, open_tickets, open_breaches, open_warnings, tickets_with_findings FROM people WHERE person_id IS NOT NULL ORDER BY open_breaches DESC, name LIMIT 5) UNION ALL SELECT person_id, name, tickets, open_tickets, open_breaches, open_warnings, tickets_with_findings FROM people WHERE person_id IS NULL"
+      },
+      "columns": [
+        {
+          "key": "person_id",
+          "label": "Person id",
+          "kind": "text"
+        },
+        {
+          "key": "name",
+          "label": "Name",
+          "kind": "text"
+        },
+        {
+          "key": "tickets",
+          "label": "Tickets",
+          "kind": "count"
+        },
+        {
+          "key": "open_tickets",
+          "label": "Open tickets",
+          "kind": "count"
+        },
+        {
+          "key": "open_breaches",
+          "label": "Open breaches",
+          "kind": "count"
+        },
+        {
+          "key": "open_warnings",
+          "label": "Open warnings",
+          "kind": "count"
+        },
+        {
+          "key": "tickets_with_findings",
+          "label": "Tickets with findings",
+          "kind": "count"
+        }
+      ],
+      "rows": [
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "tickets": 169,
+          "open_tickets": 7,
+          "open_breaches": 88,
+          "open_warnings": 36,
+          "tickets_with_findings": 117
+        },
+        {
+          "person_id": "p7eadbe877710",
+          "name": "Dev Malhotra",
+          "tickets": 152,
+          "open_tickets": 13,
+          "open_breaches": 84,
+          "open_warnings": 35,
+          "tickets_with_findings": 109
+        },
+        {
+          "person_id": "pbc7fe62842ca",
+          "name": "Ada Brooks",
+          "tickets": 219,
+          "open_tickets": 10,
+          "open_breaches": 82,
+          "open_warnings": 67,
+          "tickets_with_findings": 137
+        },
+        {
+          "person_id": "p7614b22410ea",
+          "name": "Ben Okafor",
+          "tickets": 182,
+          "open_tickets": 6,
+          "open_breaches": 82,
+          "open_warnings": 42,
+          "tickets_with_findings": 114
+        },
+        {
+          "person_id": "p15311a7e00f9",
+          "name": "Elif Aydin",
+          "tickets": 121,
+          "open_tickets": 4,
+          "open_breaches": 56,
+          "open_warnings": 32,
+          "tickets_with_findings": 80
+        },
+        {
+          "person_id": null,
+          "name": "Unassigned",
+          "tickets": 24,
+          "open_tickets": 9,
+          "open_breaches": 15,
+          "open_warnings": 1,
+          "tickets_with_findings": 16
+        }
+      ],
+      "truncated": true,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "one row per person assigned a ticket on this board now, by open breaches, most first, ties by name; then one row for the tickets nobody holds (Unassigned), which is no one's and never ranked; a person's tickets are the board's work, Epics left out, as the scorecard counts them; findings follow the ticket's current assignee: a person's findings are those on the tickets they hold now, and a sprint finding is no one's"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_query",
+      "params": {
+        "sql": "SELECT * FROM (SELECT person_id, name, tickets, open_tickets, open_breaches, open_warnings, tickets_with_findings FROM people WHERE person_id IS NOT NULL ORDER BY open_breaches DESC, name LIMIT 5) UNION ALL SELECT person_id, name, tickets, open_tickets, open_breaches, open_warnings, tickets_with_findings FROM people WHERE person_id IS NULL"
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": null,
+  "suggestions": [],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [
+    {
+      "id": "p599114b761a6",
+      "name": "Carmen Ruiz",
+      "avatar": "55ea1804e5bd"
+    },
+    {
+      "id": "p7eadbe877710",
+      "name": "Dev Malhotra",
+      "avatar": null
+    },
+    {
+      "id": "pbc7fe62842ca",
+      "name": "Ada Brooks",
+      "avatar": null
+    }
+  ],
+  "note": null
+}

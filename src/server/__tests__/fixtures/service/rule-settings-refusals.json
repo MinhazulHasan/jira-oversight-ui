@@ -1,0 +1,646 @@
+{
+  "save_conflict": {
+    "status": 409,
+    "body": {
+      "detail": "Someone else changed this board's rule settings while you were editing them. Reload to see their changes, then make yours again.",
+      "code": "rule_settings_conflict"
+    }
+  },
+  "save422_array": {
+    "status": 422,
+    "body": {
+      "detail": "The request body must be a JSON object.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": null,
+          "message": "The request body must be a JSON object."
+        }
+      ]
+    }
+  },
+  "save422_bad_rule_id": {
+    "status": 422,
+    "body": {
+      "detail": "Change 1 must name its rule by id, such as R-EFF-01.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "rule_id",
+          "message": "Change 1 must name its rule by id, such as R-EFF-01."
+        }
+      ]
+    }
+  },
+  "save422_cross_rule_both": {
+    "status": 422,
+    "body": {
+      "detail": "W-EFF-01: Must stay below R-EFF-01's 1× while both are on: the warning comes first.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "W-EFF-01",
+          "field": "params.threshold",
+          "message": "Must stay below R-EFF-01's 1× while both are on: the warning comes first."
+        }
+      ]
+    }
+  },
+  "save422_cross_rule_breach": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: Must stay above W-EFF-01's 0.8× while both are on.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.threshold",
+          "message": "Must stay above W-EFF-01's 0.8× while both are on."
+        }
+      ]
+    }
+  },
+  "save422_cross_rule_warning": {
+    "status": 422,
+    "body": {
+      "detail": "W-EFF-01: Must stay below R-EFF-01's 1.5× while both are on: the warning comes first.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "W-EFF-01",
+          "field": "params.threshold",
+          "message": "Must stay below R-EFF-01's 1.5× while both are on: the warning comes first."
+        }
+      ]
+    }
+  },
+  "save422_custom_bad_status": {
+    "status": 422,
+    "body": {
+      "detail": "Not a status on this board: Code Review.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "params.statuses",
+          "message": "Not a status on this board: Code Review."
+        }
+      ]
+    }
+  },
+  "save422_custom_issue_type": {
+    "status": 422,
+    "body": {
+      "detail": "Not an issue type on this board: Epic.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "applies_to.issue_type",
+          "message": "Not an issue type on this board: Epic."
+        }
+      ]
+    }
+  },
+  "save422_custom_reset": {
+    "status": 422,
+    "body": {
+      "detail": "R-CUS-01: A custom rule has no catalogue settings to reset to.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-CUS-01",
+          "field": "reset",
+          "message": "A custom rule has no catalogue settings to reset to."
+        }
+      ]
+    }
+  },
+  "save422_custom_restore_live": {
+    "status": 422,
+    "body": {
+      "detail": "R-CUS-01 is not deleted.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-CUS-01",
+          "field": null,
+          "message": "R-CUS-01 is not deleted."
+        }
+      ]
+    }
+  },
+  "save422_custom_title_taken": {
+    "status": 422,
+    "body": {
+      "detail": "Another rule on this board already has this name.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "title",
+          "message": "Another rule on this board already has this name."
+        }
+      ]
+    }
+  },
+  "save422_decimals": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: Effort ratio can have at most 4 decimal places.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.threshold",
+          "message": "Effort ratio can have at most 4 decimal places."
+        }
+      ]
+    }
+  },
+  "draft422_email": {
+    "status": 422,
+    "body": {
+      "detail": "The description cannot hold an email address or an account id.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "text",
+          "message": "The description cannot hold an email address or an account id."
+        }
+      ]
+    }
+  },
+  "save422_empty": {
+    "status": 422,
+    "body": {
+      "detail": "Name at least one change.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "changes",
+          "message": "Name at least one change."
+        }
+      ]
+    }
+  },
+  "save422_enabled_not_bool": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: On or off must be true or false.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "enabled",
+          "message": "On or off must be true or false."
+        }
+      ]
+    }
+  },
+  "save422_foreign_param": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01 has no setting called pct that can be changed.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.pct",
+          "message": "R-EFF-01 has no setting called pct that can be changed."
+        }
+      ]
+    }
+  },
+  "save422_names_nothing": {
+    "status": 422,
+    "body": {
+      "detail": "The change to R-EFF-01 names nothing to change.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": null,
+          "message": "The change to R-EFF-01 names nothing to change."
+        }
+      ]
+    }
+  },
+  "save422_no_op": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01 already has these settings on this board.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": null,
+          "message": "R-EFF-01 already has these settings on this board."
+        }
+      ]
+    }
+  },
+  "save422_not_a_number": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: Effort ratio must be a number.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.threshold",
+          "message": "Effort ratio must be a number."
+        }
+      ]
+    }
+  },
+  "save422_not_json": {
+    "status": 422,
+    "body": {
+      "detail": "The request body must be a JSON object.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": null,
+          "message": "The request body must be a JSON object."
+        }
+      ]
+    }
+  },
+  "save422_out_of_bounds": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: Effort ratio must be from 0.1 to 10.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.threshold",
+          "message": "Effort ratio must be from 0.1 to 10."
+        }
+      ]
+    }
+  },
+  "save422_params_empty": {
+    "status": 422,
+    "body": {
+      "detail": "The change to R-EFF-01 names nothing to change.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": null,
+          "message": "The change to R-EFF-01 names nothing to change."
+        }
+      ]
+    }
+  },
+  "save422_params_not_object": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: Its thresholds must be an object of numbers, by name.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params",
+          "message": "Its thresholds must be an object of numbers, by name."
+        }
+      ]
+    }
+  },
+  "save422_reason_account": {
+    "status": 422,
+    "body": {
+      "detail": "The reason cannot hold an email address or an account id.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "reason",
+          "message": "The reason cannot hold an email address or an account id."
+        }
+      ]
+    }
+  },
+  "save422_reason_email": {
+    "status": 422,
+    "body": {
+      "detail": "The reason cannot hold an email address or an account id.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "reason",
+          "message": "The reason cannot hold an email address or an account id."
+        }
+      ]
+    }
+  },
+  "save422_reason_long": {
+    "status": 422,
+    "body": {
+      "detail": "The reason can be at most 500 characters.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "reason",
+          "message": "The reason can be at most 500 characters."
+        }
+      ]
+    }
+  },
+  "save422_reset_and_more": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: A reset cannot be combined with other changes to the same rule.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "reset",
+          "message": "A reset cannot be combined with other changes to the same rule."
+        }
+      ]
+    }
+  },
+  "save422_reset_noop": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01 already has these settings on this board.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": null,
+          "message": "R-EFF-01 already has these settings on this board."
+        }
+      ]
+    }
+  },
+  "save422_revision_missing": {
+    "status": 422,
+    "body": {
+      "detail": "The revision the changes were made from must be a whole number.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "revision",
+          "message": "The revision the changes were made from must be a whole number."
+        }
+      ]
+    }
+  },
+  "save422_severity_bad": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: Severity must be breach or warning.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "severity",
+          "message": "Severity must be breach or warning."
+        }
+      ]
+    }
+  },
+  "save422_too_large": {
+    "status": 422,
+    "body": {
+      "detail": "The request body is larger than 16 KB.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": null,
+          "message": "The request body is larger than 16 KB."
+        }
+      ]
+    }
+  },
+  "save422_twice": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01 is named more than once: make one change per rule.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": null,
+          "message": "R-EFF-01 is named more than once: make one change per rule."
+        }
+      ]
+    }
+  },
+  "save422_undo_bad": {
+    "status": 422,
+    "body": {
+      "detail": "The change to undo must be named by its change_id.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "undo_of",
+          "message": "The change to undo must be named by its change_id."
+        }
+      ]
+    }
+  },
+  "save422_undo_unknown": {
+    "status": 422,
+    "body": {
+      "detail": "The change to undo is not one of this board's.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "undo_of",
+          "message": "The change to undo is not one of this board's."
+        }
+      ]
+    }
+  },
+  "save422_unknown_change_key": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: A change cannot set title.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "title",
+          "message": "A change cannot set title."
+        }
+      ]
+    }
+  },
+  "save422_unknown_key": {
+    "status": 422,
+    "body": {
+      "detail": "extra is not something this request takes.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": null,
+          "field": "extra",
+          "message": "extra is not something this request takes."
+        }
+      ]
+    }
+  },
+  "save422_unknown_rule": {
+    "status": 422,
+    "body": {
+      "detail": "R-XYZ-01 is not a rule in the catalogue.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-XYZ-01",
+          "field": null,
+          "message": "R-XYZ-01 is not a rule in the catalogue."
+        }
+      ]
+    }
+  },
+  "save_busy": {
+    "status": 503,
+    "body": {
+      "detail": "The rules are running on this board right now, so the settings could not be saved. Nothing was changed: try again in a moment.",
+      "code": "rule_settings_busy"
+    }
+  },
+  "settings_board_not_synced": {
+    "status": 409,
+    "body": {
+      "detail": "AILED hasn't been synced yet.",
+      "code": "board_not_synced"
+    }
+  },
+  "rules_board_not_synced": {
+    "status": 409,
+    "body": {
+      "detail": "AILED hasn't been synced yet.",
+      "code": "board_not_synced"
+    }
+  },
+  "preview422_cross_rule_both": {
+    "status": 422,
+    "body": {
+      "detail": "W-EFF-01: Must stay below R-EFF-01's 1× while both are on: the warning comes first.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "W-EFF-01",
+          "field": "params.threshold",
+          "message": "Must stay below R-EFF-01's 1× while both are on: the warning comes first."
+        }
+      ]
+    }
+  },
+  "preview422_cross_rule_breach": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01: Must stay above W-EFF-01's 0.8× while both are on.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.threshold",
+          "message": "Must stay above W-EFF-01's 0.8× while both are on."
+        }
+      ]
+    }
+  },
+  "preview422_cross_rule_warning": {
+    "status": 422,
+    "body": {
+      "detail": "W-EFF-01: Must stay below R-EFF-01's 1.5× while both are on: the warning comes first.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "W-EFF-01",
+          "field": "params.threshold",
+          "message": "Must stay below R-EFF-01's 1.5× while both are on: the warning comes first."
+        }
+      ]
+    }
+  },
+  "preview422_foreign_param": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01 has no setting called pct that can be changed.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": "params.pct",
+          "message": "R-EFF-01 has no setting called pct that can be changed."
+        }
+      ]
+    }
+  },
+  "preview422_no_op": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01 already has these settings on this board.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": null,
+          "message": "R-EFF-01 already has these settings on this board."
+        }
+      ]
+    }
+  },
+  "preview422_reset_noop": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01 already has these settings on this board.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": null,
+          "message": "R-EFF-01 already has these settings on this board."
+        }
+      ]
+    }
+  },
+  "preview422_twice": {
+    "status": 422,
+    "body": {
+      "detail": "R-EFF-01 is named more than once: make one change per rule.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-EFF-01",
+          "field": null,
+          "message": "R-EFF-01 is named more than once: make one change per rule."
+        }
+      ]
+    }
+  },
+  "preview422_unknown_rule": {
+    "status": 422,
+    "body": {
+      "detail": "R-XYZ-01 is not a rule in the catalogue.",
+      "code": "rule_settings_invalid",
+      "errors": [
+        {
+          "rule_id": "R-XYZ-01",
+          "field": null,
+          "message": "R-XYZ-01 is not a rule in the catalogue."
+        }
+      ]
+    }
+  }
+}

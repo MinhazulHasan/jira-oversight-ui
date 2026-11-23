@@ -1,0 +1,4 @@
+{
+  "error": "rule_settings_conflict",
+  "message": "Someone else changed this board's rule settings while you were editing. Reload them to see what changed: nothing was saved."
+}

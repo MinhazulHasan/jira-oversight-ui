@@ -1,0 +1,389 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "7f2413aff61f33e9ff645c9ff2f30605",
+  "question": "Is @Carmen Ruiz doing well?",
+  "outcome": "answered",
+  "answer": "Carmen Ruiz, last 90 days, next to the board: closer to the process on Open tickets stuck in a status; further from it on Done within the effort limit; level on Estimated before work started, Time logged on done work, Reopened after Done, Skipped a stage and Open findings per 10 open tickets. Not measurable on this board: Code review recorded.\n\nFigures from Jira over the last 90 days, next to the whole board, by each ticket's current assignee. Code review isn't recorded on this board, so reviewers' work doesn't show.",
+  "citations": [
+    {
+      "marker": 1,
+      "text": "90",
+      "fact_ref": "F1",
+      "row_index": -1,
+      "column": "params"
+    },
+    {
+      "marker": 2,
+      "text": "90",
+      "fact_ref": "F1",
+      "row_index": -1,
+      "column": "params"
+    }
+  ],
+  "facts": [
+    {
+      "ref": "F1",
+      "tool": "oversight_person_scorecard",
+      "params": {
+        "project": "DEMO",
+        "person_ids": [
+          "p599114b761a6"
+        ],
+        "days": 90
+      },
+      "columns": [
+        {
+          "key": "person_id",
+          "label": "Person id",
+          "kind": "text"
+        },
+        {
+          "key": "name",
+          "label": "Person",
+          "kind": "text"
+        },
+        {
+          "key": "measure",
+          "label": "Measure id",
+          "kind": "text"
+        },
+        {
+          "key": "label",
+          "label": "Measure",
+          "kind": "text"
+        },
+        {
+          "key": "kind",
+          "label": "Kind",
+          "kind": "text"
+        },
+        {
+          "key": "value",
+          "label": "Value",
+          "kind": "number"
+        },
+        {
+          "key": "numerator",
+          "label": "Numerator",
+          "kind": "count"
+        },
+        {
+          "key": "denominator",
+          "label": "Denominator",
+          "kind": "count"
+        },
+        {
+          "key": "shown",
+          "label": "Shown",
+          "kind": "text"
+        },
+        {
+          "key": "enough",
+          "label": "Enough tickets",
+          "kind": "text"
+        },
+        {
+          "key": "vs_board",
+          "label": "Next to the board",
+          "kind": "text"
+        },
+        {
+          "key": "board_value",
+          "label": "Board value",
+          "kind": "number"
+        },
+        {
+          "key": "board_numerator",
+          "label": "Board numerator",
+          "kind": "count"
+        },
+        {
+          "key": "board_denominator",
+          "label": "Board denominator",
+          "kind": "count"
+        },
+        {
+          "key": "board_shown",
+          "label": "Board shown",
+          "kind": "text"
+        },
+        {
+          "key": "measurable",
+          "label": "Measurable",
+          "kind": "text"
+        },
+        {
+          "key": "reason",
+          "label": "Not measurable because",
+          "kind": "text"
+        },
+        {
+          "key": "rule_ids",
+          "label": "Rules",
+          "kind": "text"
+        }
+      ],
+      "rows": [
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "open_tickets",
+          "label": "Open tickets",
+          "kind": "count",
+          "value": 7,
+          "numerator": null,
+          "denominator": null,
+          "shown": "7",
+          "enough": true,
+          "vs_board": null,
+          "board_value": 68,
+          "board_numerator": null,
+          "board_denominator": null,
+          "board_shown": "68",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": null
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "in_progress",
+          "label": "In progress now",
+          "kind": "count",
+          "value": 3,
+          "numerator": null,
+          "denominator": null,
+          "shown": "3",
+          "enough": true,
+          "vs_board": null,
+          "board_value": 29,
+          "board_numerator": null,
+          "board_denominator": null,
+          "board_shown": "29",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": null
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "done_in_period",
+          "label": "Done in the period",
+          "kind": "count",
+          "value": 57,
+          "numerator": null,
+          "denominator": null,
+          "shown": "57",
+          "enough": true,
+          "vs_board": null,
+          "board_value": 303,
+          "board_numerator": null,
+          "board_denominator": null,
+          "board_shown": "303",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": null
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "estimated_before_start",
+          "label": "Estimated before work started",
+          "kind": "rate",
+          "value": 49,
+          "numerator": 26,
+          "denominator": 53,
+          "shown": "49% · 26 of 53",
+          "enough": true,
+          "vs_board": "level",
+          "board_value": 48,
+          "board_numerator": 137,
+          "board_denominator": 288,
+          "board_shown": "48% · 137 of 288",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": "R-EST-01, R-EST-02"
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "time_logged",
+          "label": "Time logged on done work",
+          "kind": "rate",
+          "value": 88,
+          "numerator": 50,
+          "denominator": 57,
+          "shown": "88% · 50 of 57",
+          "enough": true,
+          "vs_board": "level",
+          "board_value": 86,
+          "board_numerator": 262,
+          "board_denominator": 303,
+          "board_shown": "86% · 262 of 303",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": null
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "within_estimate",
+          "label": "Done within the effort limit",
+          "kind": "rate",
+          "value": 72,
+          "numerator": 26,
+          "denominator": 36,
+          "shown": "72% · 26 of 36",
+          "enough": true,
+          "vs_board": "further",
+          "board_value": 81,
+          "board_numerator": 141,
+          "board_denominator": 174,
+          "board_shown": "81% · 141 of 174",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": "R-EFF-01"
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "stuck_now",
+          "label": "Open tickets stuck in a status",
+          "kind": "rate",
+          "value": 14,
+          "numerator": 1,
+          "denominator": 7,
+          "shown": "14% · 1 of 7",
+          "enough": true,
+          "vs_board": "closer",
+          "board_value": 21,
+          "board_numerator": 14,
+          "board_denominator": 68,
+          "board_shown": "21% · 14 of 68",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": "W-AGE-01"
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "reopened",
+          "label": "Reopened after Done",
+          "kind": "rate",
+          "value": 2,
+          "numerator": 1,
+          "denominator": 57,
+          "shown": "2% · 1 of 57",
+          "enough": true,
+          "vs_board": "level",
+          "board_value": 2,
+          "board_numerator": 7,
+          "board_denominator": 303,
+          "board_shown": "2% · 7 of 303",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": "R-FLOW-03"
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "skipped_stage",
+          "label": "Skipped a stage",
+          "kind": "rate",
+          "value": 7,
+          "numerator": 4,
+          "denominator": 57,
+          "shown": "7% · 4 of 57",
+          "enough": true,
+          "vs_board": "level",
+          "board_value": 10,
+          "board_numerator": 30,
+          "board_denominator": 303,
+          "board_shown": "10% · 30 of 303",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": "R-FLOW-02"
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "code_review",
+          "label": "Code review recorded",
+          "kind": "rate",
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "shown": null,
+          "enough": false,
+          "vs_board": null,
+          "board_value": null,
+          "board_numerator": null,
+          "board_denominator": null,
+          "board_shown": null,
+          "measurable": false,
+          "reason": "This board doesn't record code review in Jira.",
+          "rule_ids": "R-FLOW-01, W-REV-01"
+        },
+        {
+          "person_id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "measure": "open_findings_per_10",
+          "label": "Open findings per 10 open tickets",
+          "kind": "ratio",
+          "value": 8.6,
+          "numerator": 6,
+          "denominator": 7,
+          "shown": "8.6",
+          "enough": true,
+          "vs_board": "level",
+          "board_value": 8.7,
+          "board_numerator": 59,
+          "board_denominator": 68,
+          "board_shown": "8.7",
+          "measurable": true,
+          "reason": null,
+          "rule_ids": "R-EST-01, R-EST-02, R-EFF-01, R-FLOW-01, R-FLOW-02, R-FLOW-03, R-HYG-01, W-EFF-01, W-AGE-01, W-REV-01, W-SPR-01, W-EST-01"
+        }
+      ],
+      "truncated": false,
+      "as_of": "2026-11-04T14:28:00.000Z",
+      "note": "each person's figures over the last 90 days (6 Aug 2026 to 4 Nov 2026), next to the whole board's, by each ticket's current assignee, Epics left out; a rate's value is a percentage of its denominator, a count's value is the count, and open findings per 10 open tickets is the open breaches and warnings on the person's open tickets for every 10 of those tickets; enough tickets means the figure rests on at least 5 tickets; next to the board says closer to the process than the board, further from it, or level with it (within 5 points, 0.5 for the ratio), only when both sides have enough"
+    }
+  ],
+  "plan": [
+    {
+      "tool": "oversight_person_scorecard",
+      "params": {
+        "project": "DEMO",
+        "person_ids": [
+          "p599114b761a6"
+        ],
+        "days": 90
+      }
+    }
+  ],
+  "missing_evidence": [],
+  "message": null,
+  "suggestions": [],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [
+    {
+      "id": "p599114b761a6",
+      "name": "Carmen Ruiz",
+      "avatar": "55ea1804e5bd"
+    }
+  ],
+  "note": null
+}

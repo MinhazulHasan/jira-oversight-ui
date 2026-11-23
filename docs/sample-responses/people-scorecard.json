@@ -1,0 +1,928 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "period": {
+    "days": 90,
+    "from": "2026-08-06T14:28:00.000Z",
+    "to": "2026-11-04T14:28:00.000Z"
+  },
+  "basis": "current_assignee",
+  "comparison": "on",
+  "measures": [
+    {
+      "key": "open_tickets",
+      "label": "Open tickets",
+      "kind": "count",
+      "direction": "neutral",
+      "rule_ids": [],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "in_progress",
+      "label": "In progress now",
+      "kind": "count",
+      "direction": "neutral",
+      "rule_ids": [],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "done_in_period",
+      "label": "Done in the period",
+      "kind": "count",
+      "direction": "neutral",
+      "rule_ids": [],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "estimated_before_start",
+      "label": "Estimated before work started",
+      "kind": "rate",
+      "direction": "higher_is_closer",
+      "rule_ids": [
+        "R-EST-01",
+        "R-EST-02"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "time_logged",
+      "label": "Time logged on done work",
+      "kind": "rate",
+      "direction": "higher_is_closer",
+      "rule_ids": [],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "within_estimate",
+      "label": "Done within the effort limit",
+      "kind": "rate",
+      "direction": "higher_is_closer",
+      "rule_ids": [
+        "R-EFF-01"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "stuck_now",
+      "label": "Open tickets stuck in a status",
+      "kind": "rate",
+      "direction": "lower_is_closer",
+      "rule_ids": [
+        "W-AGE-01"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "reopened",
+      "label": "Reopened after Done",
+      "kind": "rate",
+      "direction": "lower_is_closer",
+      "rule_ids": [
+        "R-FLOW-03"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "skipped_stage",
+      "label": "Skipped a stage",
+      "kind": "rate",
+      "direction": "lower_is_closer",
+      "rule_ids": [
+        "R-FLOW-02"
+      ],
+      "measurable": true,
+      "reason": null
+    },
+    {
+      "key": "code_review",
+      "label": "Code review recorded",
+      "kind": "rate",
+      "direction": "higher_is_closer",
+      "rule_ids": [
+        "R-FLOW-01",
+        "W-REV-01"
+      ],
+      "measurable": false,
+      "reason": "This board doesn't record code review in Jira."
+    },
+    {
+      "key": "open_findings_per_10",
+      "label": "Open findings per 10 open tickets",
+      "kind": "ratio",
+      "direction": "lower_is_closer",
+      "rule_ids": [
+        "R-EST-01",
+        "R-EST-02",
+        "R-EFF-01",
+        "R-FLOW-01",
+        "R-FLOW-02",
+        "R-FLOW-03",
+        "R-HYG-01",
+        "W-EFF-01",
+        "W-AGE-01",
+        "W-REV-01",
+        "W-SPR-01",
+        "W-EST-01"
+      ],
+      "measurable": true,
+      "reason": null
+    }
+  ],
+  "board": {
+    "tickets": 1136,
+    "values": {
+      "open_tickets": {
+        "value": 68,
+        "numerator": null,
+        "denominator": null,
+        "enough": true,
+        "vs_board": null
+      },
+      "in_progress": {
+        "value": 29,
+        "numerator": null,
+        "denominator": null,
+        "enough": true,
+        "vs_board": null
+      },
+      "done_in_period": {
+        "value": 303,
+        "numerator": null,
+        "denominator": null,
+        "enough": true,
+        "vs_board": null
+      },
+      "estimated_before_start": {
+        "value": 48,
+        "numerator": 137,
+        "denominator": 288,
+        "enough": true,
+        "vs_board": null
+      },
+      "time_logged": {
+        "value": 86,
+        "numerator": 262,
+        "denominator": 303,
+        "enough": true,
+        "vs_board": null
+      },
+      "within_estimate": {
+        "value": 81,
+        "numerator": 141,
+        "denominator": 174,
+        "enough": true,
+        "vs_board": null
+      },
+      "stuck_now": {
+        "value": 21,
+        "numerator": 14,
+        "denominator": 68,
+        "enough": true,
+        "vs_board": null
+      },
+      "reopened": {
+        "value": 2,
+        "numerator": 7,
+        "denominator": 303,
+        "enough": true,
+        "vs_board": null
+      },
+      "skipped_stage": {
+        "value": 10,
+        "numerator": 30,
+        "denominator": 303,
+        "enough": true,
+        "vs_board": null
+      },
+      "code_review": {
+        "value": null,
+        "numerator": null,
+        "denominator": null,
+        "enough": false,
+        "vs_board": null
+      },
+      "open_findings_per_10": {
+        "value": 8.7,
+        "numerator": 59,
+        "denominator": 68,
+        "enough": true,
+        "vs_board": null
+      }
+    }
+  },
+  "people": [
+    {
+      "person": {
+        "id": "pbc7fe62842ca",
+        "name": "Ada Brooks",
+        "avatar": null
+      },
+      "tickets": 219,
+      "values": {
+        "open_tickets": {
+          "value": 10,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 4,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 56,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 60,
+          "numerator": 31,
+          "denominator": 52,
+          "enough": true,
+          "vs_board": "closer"
+        },
+        "time_logged": {
+          "value": 82,
+          "numerator": 46,
+          "denominator": 56,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "within_estimate": {
+          "value": 86,
+          "numerator": 31,
+          "denominator": 36,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "stuck_now": {
+          "value": 40,
+          "numerator": 4,
+          "denominator": 10,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "reopened": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 56,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "skipped_stage": {
+          "value": 9,
+          "numerator": 5,
+          "denominator": 56,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 9,
+          "numerator": 9,
+          "denominator": 10,
+          "enough": true,
+          "vs_board": "level"
+        }
+      }
+    },
+    {
+      "person": {
+        "id": "p7614b22410ea",
+        "name": "Ben Okafor",
+        "avatar": null
+      },
+      "tickets": 182,
+      "values": {
+        "open_tickets": {
+          "value": 6,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 1,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 43,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 49,
+          "numerator": 19,
+          "denominator": 39,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "time_logged": {
+          "value": 86,
+          "numerator": 37,
+          "denominator": 43,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "within_estimate": {
+          "value": 80,
+          "numerator": 20,
+          "denominator": 25,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "stuck_now": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 6,
+          "enough": true,
+          "vs_board": "closer"
+        },
+        "reopened": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 43,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "skipped_stage": {
+          "value": 7,
+          "numerator": 3,
+          "denominator": 43,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 8.3,
+          "numerator": 5,
+          "denominator": 6,
+          "enough": true,
+          "vs_board": "level"
+        }
+      }
+    },
+    {
+      "person": {
+        "id": "p599114b761a6",
+        "name": "Carmen Ruiz",
+        "avatar": "55ea1804e5bd"
+      },
+      "tickets": 169,
+      "values": {
+        "open_tickets": {
+          "value": 7,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 3,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 57,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 49,
+          "numerator": 26,
+          "denominator": 53,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "time_logged": {
+          "value": 88,
+          "numerator": 50,
+          "denominator": 57,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "within_estimate": {
+          "value": 72,
+          "numerator": 26,
+          "denominator": 36,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "stuck_now": {
+          "value": 14,
+          "numerator": 1,
+          "denominator": 7,
+          "enough": true,
+          "vs_board": "closer"
+        },
+        "reopened": {
+          "value": 2,
+          "numerator": 1,
+          "denominator": 57,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "skipped_stage": {
+          "value": 7,
+          "numerator": 4,
+          "denominator": 57,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 8.6,
+          "numerator": 6,
+          "denominator": 7,
+          "enough": true,
+          "vs_board": "level"
+        }
+      }
+    },
+    {
+      "person": {
+        "id": "p7eadbe877710",
+        "name": "Dev Malhotra",
+        "avatar": null
+      },
+      "tickets": 152,
+      "values": {
+        "open_tickets": {
+          "value": 13,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 8,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 41,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 37,
+          "numerator": 16,
+          "denominator": 43,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "time_logged": {
+          "value": 88,
+          "numerator": 36,
+          "denominator": 41,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "within_estimate": {
+          "value": 83,
+          "numerator": 10,
+          "denominator": 12,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "stuck_now": {
+          "value": 38,
+          "numerator": 5,
+          "denominator": 13,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "reopened": {
+          "value": 2,
+          "numerator": 1,
+          "denominator": 41,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "skipped_stage": {
+          "value": 12,
+          "numerator": 5,
+          "denominator": 41,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 10.8,
+          "numerator": 14,
+          "denominator": 13,
+          "enough": true,
+          "vs_board": "further"
+        }
+      }
+    },
+    {
+      "person": {
+        "id": "p15311a7e00f9",
+        "name": "Elif Aydin",
+        "avatar": null
+      },
+      "tickets": 121,
+      "values": {
+        "open_tickets": {
+          "value": 4,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 2,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 33,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 38,
+          "numerator": 11,
+          "denominator": 29,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "time_logged": {
+          "value": 82,
+          "numerator": 27,
+          "denominator": 33,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "within_estimate": {
+          "value": 82,
+          "numerator": 14,
+          "denominator": 17,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "stuck_now": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 4,
+          "enough": false,
+          "vs_board": null
+        },
+        "reopened": {
+          "value": 9,
+          "numerator": 3,
+          "denominator": 33,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "skipped_stage": {
+          "value": 18,
+          "numerator": 6,
+          "denominator": 33,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 5,
+          "numerator": 2,
+          "denominator": 4,
+          "enough": false,
+          "vs_board": null
+        }
+      }
+    },
+    {
+      "person": {
+        "id": "p0998d9f44491",
+        "name": "Finn Gallagher",
+        "avatar": null
+      },
+      "tickets": 116,
+      "values": {
+        "open_tickets": {
+          "value": 3,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 1,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 30,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 54,
+          "numerator": 13,
+          "denominator": 24,
+          "enough": true,
+          "vs_board": "closer"
+        },
+        "time_logged": {
+          "value": 100,
+          "numerator": 30,
+          "denominator": 30,
+          "enough": true,
+          "vs_board": "closer"
+        },
+        "within_estimate": {
+          "value": 84,
+          "numerator": 21,
+          "denominator": 25,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "stuck_now": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 3,
+          "enough": false,
+          "vs_board": null
+        },
+        "reopened": {
+          "value": 7,
+          "numerator": 2,
+          "denominator": 30,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "skipped_stage": {
+          "value": 13,
+          "numerator": 4,
+          "denominator": 30,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 6.7,
+          "numerator": 2,
+          "denominator": 3,
+          "enough": false,
+          "vs_board": null
+        }
+      }
+    },
+    {
+      "person": {
+        "id": "p65b14f7daa03",
+        "name": "Grace Lindqvist",
+        "avatar": "37d44fa82021"
+      },
+      "tickets": 80,
+      "values": {
+        "open_tickets": {
+          "value": 13,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 6,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 15,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 42,
+          "numerator": 8,
+          "denominator": 19,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "time_logged": {
+          "value": 73,
+          "numerator": 11,
+          "denominator": 15,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "within_estimate": {
+          "value": 75,
+          "numerator": 6,
+          "denominator": 8,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "stuck_now": {
+          "value": 31,
+          "numerator": 4,
+          "denominator": 13,
+          "enough": true,
+          "vs_board": "further"
+        },
+        "reopened": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 15,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "skipped_stage": {
+          "value": 7,
+          "numerator": 1,
+          "denominator": 15,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 13.1,
+          "numerator": 17,
+          "denominator": 13,
+          "enough": true,
+          "vs_board": "further"
+        }
+      }
+    },
+    {
+      "person": {
+        "id": "pe0f1fe0c54ec",
+        "name": "Hana Mori",
+        "avatar": null
+      },
+      "tickets": 73,
+      "values": {
+        "open_tickets": {
+          "value": 3,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "in_progress": {
+          "value": 1,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "done_in_period": {
+          "value": 21,
+          "numerator": null,
+          "denominator": null,
+          "enough": true,
+          "vs_board": null
+        },
+        "estimated_before_start": {
+          "value": 53,
+          "numerator": 10,
+          "denominator": 19,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "time_logged": {
+          "value": 90,
+          "numerator": 19,
+          "denominator": 21,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "within_estimate": {
+          "value": 87,
+          "numerator": 13,
+          "denominator": 15,
+          "enough": true,
+          "vs_board": "closer"
+        },
+        "stuck_now": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 3,
+          "enough": false,
+          "vs_board": null
+        },
+        "reopened": {
+          "value": 0,
+          "numerator": 0,
+          "denominator": 21,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "skipped_stage": {
+          "value": 10,
+          "numerator": 2,
+          "denominator": 21,
+          "enough": true,
+          "vs_board": "level"
+        },
+        "code_review": {
+          "value": null,
+          "numerator": null,
+          "denominator": null,
+          "enough": false,
+          "vs_board": null
+        },
+        "open_findings_per_10": {
+          "value": 3.3,
+          "numerator": 1,
+          "denominator": 3,
+          "enough": false,
+          "vs_board": null
+        }
+      }
+    }
+  ]
+}

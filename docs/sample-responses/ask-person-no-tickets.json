@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "qa_id": "8ede7bca1feea4adf55e8a657048d363",
+  "question": "What is @Noor Haddad working on?",
+  "outcome": "no_data",
+  "answer": "Noor Haddad has no tickets on this board.",
+  "citations": [],
+  "facts": [],
+  "plan": [],
+  "missing_evidence": [],
+  "message": null,
+  "suggestions": [
+    "Who follows the process most closely?",
+    "Who has the most open breaches?",
+    "Who finished the most work this month?"
+  ],
+  "latency_ms": 0,
+  "model": null,
+  "asked_at": "2026-11-04T14:30:00.000Z",
+  "people": [
+    {
+      "id": "pc3d7609d78d1",
+      "name": "Noor Haddad",
+      "avatar": null
+    }
+  ],
+  "note": null
+}

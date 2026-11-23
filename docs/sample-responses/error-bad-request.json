@@ -1,0 +1,10 @@
+{
+  "error": "bad_request",
+  "message": "The findings filters are not valid.",
+  "issues": [
+    {
+      "path": "colour",
+      "message": "is not a parameter of this endpoint"
+    }
+  ]
+}

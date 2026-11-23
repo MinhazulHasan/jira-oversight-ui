@@ -1,0 +1,157 @@
+{
+  "meta": {
+    "data_mode": "live",
+    "last_synced_at": "2026-11-17T10:00:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-17T10:05:00.000Z",
+    "report_timezone": "UTC"
+  },
+  "project": "DEMO",
+  "revision": 0,
+  "impact": [
+    {
+      "rule_id": "R-EST-02",
+      "measurable": true,
+      "open_now": 33,
+      "would_open": 0,
+      "would_close": 0,
+      "would_stay": 33,
+      "examples": {
+        "open": [],
+        "close": []
+      },
+      "note": null
+    },
+    {
+      "rule_id": "R-EFF-01",
+      "measurable": true,
+      "open_now": 51,
+      "would_open": 0,
+      "would_close": 31,
+      "would_stay": 20,
+      "examples": {
+        "open": [],
+        "close": [
+          "DEMO-367",
+          "DEMO-375",
+          "DEMO-394",
+          "DEMO-396",
+          "DEMO-401"
+        ]
+      },
+      "note": null
+    },
+    {
+      "rule_id": "R-FLOW-01",
+      "measurable": false,
+      "open_now": 0,
+      "would_open": 0,
+      "would_close": 0,
+      "would_stay": 0,
+      "examples": {
+        "open": [],
+        "close": []
+      },
+      "note": null
+    },
+    {
+      "rule_id": "R-FLOW-03",
+      "measurable": true,
+      "open_now": 13,
+      "would_open": 13,
+      "would_close": 13,
+      "would_stay": 0,
+      "examples": {
+        "open": [
+          "DEMO-373",
+          "DEMO-387",
+          "DEMO-389",
+          "DEMO-391",
+          "DEMO-398"
+        ],
+        "close": [
+          "DEMO-373",
+          "DEMO-387",
+          "DEMO-389",
+          "DEMO-391",
+          "DEMO-398"
+        ]
+      },
+      "note": null
+    },
+    {
+      "rule_id": "R-HYG-01",
+      "measurable": true,
+      "open_now": 7,
+      "would_open": 0,
+      "would_close": 7,
+      "would_stay": 0,
+      "examples": {
+        "open": [],
+        "close": [
+          "DEMO-825",
+          "DEMO-844",
+          "DEMO-864",
+          "DEMO-892",
+          "DEMO-963"
+        ]
+      },
+      "note": null
+    },
+    {
+      "rule_id": "W-AGE-01",
+      "measurable": true,
+      "open_now": 54,
+      "would_open": 0,
+      "would_close": 12,
+      "would_stay": 42,
+      "examples": {
+        "open": [],
+        "close": [
+          "DEMO-749",
+          "DEMO-768",
+          "DEMO-781",
+          "DEMO-787",
+          "DEMO-791"
+        ]
+      },
+      "note": null
+    },
+    {
+      "rule_id": "W-REV-01",
+      "measurable": false,
+      "open_now": 0,
+      "would_open": 0,
+      "would_close": 0,
+      "would_stay": 0,
+      "examples": {
+        "open": [],
+        "close": []
+      },
+      "note": "Not measurable on this board, so this change has no effect until it can run."
+    },
+    {
+      "rule_id": "W-SPR-01",
+      "measurable": true,
+      "open_now": 1,
+      "would_open": 0,
+      "would_close": 1,
+      "would_stay": 0,
+      "examples": {
+        "open": [],
+        "close": [
+          "sprint:4414"
+        ]
+      },
+      "note": null
+    }
+  ],
+  "totals": {
+    "would_open": 13,
+    "would_close": 64
+  }
+}
