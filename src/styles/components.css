@@ -171,9 +171,15 @@
   }
   .jo-scroller {
     position: relative;
-    overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color: var(--rule) transparent;
+  }
+  /* Contain only the scroller's own axis, so a wide table never traps the page's vertical wheel. */
+  .jo-scroll-frame[data-axis="x"] > .jo-scroller {
+    overscroll-behavior-x: contain;
+  }
+  .jo-scroll-frame[data-axis="y"] > .jo-scroller {
+    overscroll-behavior-y: contain;
   }
 
   .jo-table {
