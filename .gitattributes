@@ -1,0 +1,2 @@
+# Line endings stay LF on every machine, whatever core.autocrlf says: the code, scripts and tests expect LF.
+* text=auto eol=lf
