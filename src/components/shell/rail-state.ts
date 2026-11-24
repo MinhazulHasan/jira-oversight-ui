@@ -1,10 +1,3 @@
-/*
- * The rail's collapsed state lives in a cookie rather than localStorage so the
- * server can render the rail at the right width: no flash of a wide rail
- * snapping narrow after hydration. This module has no "use client" so the
- * server layout can read the same name.
- */
-
 export const RAIL_COOKIE = "jo-rail";
 const ONE_YEAR_S = 60 * 60 * 24 * 365;
 

@@ -9,11 +9,6 @@ const page = pageByKey("process");
 
 export const metadata: Metadata = { title: page.label };
 
-/**
- * Process: the agreed delivery process against what Jira can prove, and the
- * catalogue of rules that check it. The data regions are client components
- * (every data hook is); the frame renders on the server.
- */
 export default function ProcessPage() {
   return (
     <PageSheet>

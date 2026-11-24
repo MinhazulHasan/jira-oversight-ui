@@ -10,12 +10,7 @@ import { boardSettings, revisionOf, settingsGeneration, type BoardSettings } fro
 import { floorToMinute, iso } from "./time";
 import { buildWorld, type World } from "./world";
 
-/**
- * One of the sample's boards (boards.ts) for one "now" and one revision of
- * its rule settings: the world, the findings the rule engine gave it, and
- * every view computed from those two, once. Views read only the dataset, so
- * they cannot disagree with each other about the facts.
- */
+/** One of the sample's boards (boards.ts) for one "now" and one revision of */
 export interface Dataset {
   /** The board this is: DEMO, unless another was asked for. */
   board: SampleBoard;
@@ -23,13 +18,13 @@ export interface Dataset {
   world: World;
   engine: Engine;
   memo: Map<string, unknown>;
-  /** Every catalogue rule as the board's settings make it (JO-15), in catalogue order, then its own rules that stand (JO-20). */
+  /** Every catalogue rule as the board's settings make it, in catalogue order, then its own rules that stand. */
   rules: readonly BoardRule[];
   /** The board's settings revision the findings reflect: 0 while it runs the catalogue's. */
   revision: number;
 }
 
-/** What a board's settings are at a revision: what differs from the catalogue, and (JO-20) its own rules, deleted ones too. */
+/** What a board's settings are at a revision: what differs from the catalogue, and its own rules, deleted ones too. */
 export interface BoardState {
   overrides: BoardOverrides;
   custom: readonly CustomRuleRecord[];
@@ -85,11 +80,7 @@ function engineFor(build: Build, state: BoardState): Engine {
   return build.cached ? remember(engines, key, engine, 8 * SAMPLE_BOARD_COUNT) : engine;
 }
 
-/**
- * When a revision's re-check ran, in the world's time: the save's moment, but
- * never before the last rules run (a world built later than the save has run
- * the rules since) nor after "now".
- */
+/** When a revision's re-check ran, in the world's time: the save's moment, but */
 function recheckTime(world: World, now: number, savedAt: number): number {
   return Math.min(Math.max(savedAt, lastRun(world)), now);
 }
@@ -124,10 +115,6 @@ function assemble(board: SampleBoard, now: number, history: SettingsHistory, cac
   return { board, now: minute, world, engine, memo: new Map(), rules, revision: history.revisions.length };
 }
 
-/**
- * A fresh dataset, never cached: what the cache holds, and what determinism is tested on. Settings: the
- * catalogue's; the board: DEMO unless another is named.
- */
 export function buildDataset(now: number, history: SettingsHistory = CATALOGUE_SETTINGS, board: SampleBoard = DEFAULT_BOARD): Dataset {
   return assemble(board, now, history, false);
 }
@@ -143,10 +130,7 @@ export function sampleDataset(now: number, board: SampleBoard = DEFAULT_BOARD): 
   return datasets.get(key) ?? remember(datasets, key, assemble(board, now, historyOf(settings), true), KEEP * SAMPLE_BOARD_COUNT);
 }
 
-/**
- * What a re-check under `overrides` would do to the dataset's findings at `at`,
- * without keeping anything: a preview, and the counts a save reports.
- */
+/** What a re-check under `overrides` would do to the dataset's findings at `at`, */
 export function simulateRecheck(dataset: Dataset, state: BoardState, at: number): RecheckOutcome & { rules: BoardRule[] } {
   const build: Build = { board: dataset.board, minute: dataset.now, world: dataset.world, cached: true, generation: settingsGeneration() };
   const rules = boardRules(state.overrides, state.custom);

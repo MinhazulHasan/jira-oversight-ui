@@ -22,10 +22,7 @@ export function useAriaShortcut(keys: KeyName[]): string {
     .join("+");
 }
 
-/**
- * Keys as the reader's keyboard labels them. Decorative to assistive tech:
- * the control that owns the shortcut announces it through aria-keyshortcuts.
- */
+/** Keys as the reader's keyboard labels them. */
 export function Keys({
   keys,
   joiner,

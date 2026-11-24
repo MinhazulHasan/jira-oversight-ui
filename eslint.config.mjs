@@ -15,8 +15,6 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    // WCAG 2.2 AA from the first line. eslint-config-next registers jsx-a11y but
-    // enables only a few of its rules, as warnings; this is its recommended set.
     rules: {
       "jsx-a11y/alt-text": "error",
       "jsx-a11y/anchor-has-content": "error",

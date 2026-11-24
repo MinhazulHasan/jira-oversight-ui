@@ -8,16 +8,7 @@ import { formatDateTime, formatRelative } from "@/lib/format";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 
-/*
- * The board picker's list (JO-17): every Jira board the service serves, which
- * may be dozens, in two groups, "Synced" and "Not synced yet", each in the
- * service's order. A search field at the top narrows both by name or key as
- * one types, and keeps the focus: the list is a listbox reached through
- * aria-activedescendant, so the arrow keys, Page Up and Page Down move, Enter
- * picks and Escape (in the popover around it) clears the search, then closes.
- * A synced board says when it last synced; one not synced yet can be picked
- * all the same, and every page on it offers its first sync.
- */
+/* The board picker's list. */
 
 export interface BoardGroup {
   id: "synced" | "not-synced";
@@ -153,8 +144,6 @@ export function BoardPickerPanel({ boards, current, onPick, query, onQueryChange
                     const index = visible.indexOf(board);
                     const chosen = board.key === current;
                     return (
-                      // Options are reached through the field's aria-activedescendant (the listbox pattern), so they
-                      // take pointer events but never focus; the keyboard path is the field's own onKeyDown.
                       // eslint-disable-next-line jsx-a11y/click-events-have-key-events
                       <div
                         key={board.key}

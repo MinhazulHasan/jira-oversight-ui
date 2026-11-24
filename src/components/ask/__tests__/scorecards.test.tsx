@@ -19,13 +19,6 @@ import { PlanSteps } from "../plan-steps";
 import { comparisonFromFacts, comparisonOrderWords, peoplePageOrder, scorecardsFromFacts } from "../scorecard-facts";
 import { TraceProvider } from "../trace";
 
-/*
- * Ask at people level (JO-11): a scorecard or comparison answer draws its
- * figures compact under the words; and wherever the facts or the plan carry a
- * person, the page shows the person by name and picture, never the id (the
- * JO-09 polish item).
- */
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), back: vi.fn() }),
   usePathname: () => "/ask",
@@ -192,7 +185,7 @@ describe("the scorecard facts, read back", () => {
     const read = scorecardsFromFacts(scorecard.facts[0])!;
     expect(read.days).toBe(90);
     expect(read.people.map((row) => row.person.name)).toEqual(["Carmen Ruiz"]);
-    // Skipped stages are measured where the rules engine measures R-FLOW-02, as on DEMO (JO-12, G11).
+    // Skipped stages are measured where the rules engine measures R-FLOW-02, as on DEMO.
     expect(read.measures.filter((measure) => !measure.measurable).map((measure) => measure.key)).toEqual(["code_review"]);
     expect(read.measures.find((measure) => measure.key === "code_review")?.reason).toBe("This board doesn't record code review in Jira.");
     expect(read.board.open_tickets?.value).toBeGreaterThan(0);

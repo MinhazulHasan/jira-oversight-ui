@@ -16,10 +16,7 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-/**
- * Nothing to show, said calmly and specifically. An empty result is an
- * answer, not a failure, so it never looks like an error.
- */
+/** Nothing to show, said calmly and specifically. */
 export function EmptyState({
   title,
   description,

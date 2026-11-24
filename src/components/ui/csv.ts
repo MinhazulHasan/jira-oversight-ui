@@ -1,15 +1,4 @@
-/**
- * CSV for exports, written in the browser from the rows on screen.
- *
- * RFC 4180: comma separated, CRLF line ends, a field quoted when it holds a
- * comma, a quote or a line break, quotes doubled. A byte order mark makes
- * Excel read it as UTF-8 (en dashes, ×, accented project names).
- *
- * Ticket text is untrusted (anyone who can edit a ticket writes it), and a
- * spreadsheet runs a cell that starts with = + - @ as a formula. Text cells
- * that start that way are prefixed with an apostrophe so they open as text;
- * numbers are written as numbers and are never prefixed.
- */
+/** CSV for exports, written in the browser from the rows on screen. */
 
 export type CsvValue = string | number | boolean | null | undefined | Date;
 

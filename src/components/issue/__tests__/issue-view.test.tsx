@@ -238,8 +238,6 @@ describe("the Issue page's assignee", () => {
     await screen.findByRole("heading", { level: 1, name: /Document help tooltips/ });
 
     const link = screen.getByRole("link", { name: "Ada Brooks: show their open findings" });
-    // A decoration set on the link reaches every descendant's text, initials drawn by ::before included, and no
-    // descendant can take it off; so the link carries none, and the name's own span takes it from the group.
     expect([...link.classList].filter((name) => /(^|:)underline$/.test(name))).toEqual([]);
     expect(link).toHaveClass("group");
     expect(within(link).getByText("Ada Brooks")).toHaveClass("group-hover:underline");

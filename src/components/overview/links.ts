@@ -1,13 +1,6 @@
 import { NO_EPIC } from "@/lib/api/params";
 import { UNASSIGNED, type HotSpot, type Person, type RuleSummary } from "@/lib/api/schemas";
 
-/*
- * Where each figure on the Overview leads. Every headline number and every
- * bar opens the rows behind it, in the query form the Findings page reads
- * (docs/API_CONTRACT.md 4.3), so the count on the tile is the count in the
- * list it opens.
- */
-
 /** The findings behind each headline tile. */
 export const TILE_HREF = {
   /** Breach findings open now. */
@@ -16,10 +9,6 @@ export const TILE_HREF = {
   open_warnings: "/findings?severity=warning&state=open",
   /** First seen in the last 7 days, whether or not they have been resolved since. */
   new_7d: "/findings?state=all&first_seen=7d",
-  /**
-   * Resolved findings, most recently resolved first. The contract has no
-   * "resolved in the last 7 days" filter, so the week's resolutions lead the list.
-   */
   resolved_7d: "/findings?state=resolved&sort=resolved_at",
   /** A rule that cannot be measured has no findings to list; the process map says what Jira lacks. */
   rules_not_measurable: "/process",
@@ -30,10 +19,6 @@ export function hotSpotHref(spot: Pick<HotSpot, "epic_key">): string {
   return `/findings?state=open&epic=${encodeURIComponent(spot.epic_key ?? NO_EPIC)}`;
 }
 
-/**
- * The open findings on one person's work now, or (null) on the tickets nobody
- * is assigned to: exactly the row's breaches and warnings (docs/API_CONTRACT.md 4.12).
- */
 export function personHref(person: Pick<Person, "id"> | null): string {
   return `/findings?state=open&person=${encodeURIComponent(person?.id ?? UNASSIGNED)}`;
 }
@@ -41,10 +26,6 @@ export function personHref(person: Pick<Person, "id"> | null): string {
 /** Everyone's open findings, with the Person menu open on their counts. */
 export const PEOPLE_HREF = "/findings?state=open&menu=person";
 
-/**
- * A rule's open findings. A rule Jira cannot evaluate has none, so it leads
- * to the process map, which names the evidence it would need.
- */
 export function ruleHref(rule: Pick<RuleSummary, "rule_id" | "measurable">): string {
   return rule.measurable ? `/findings?rule=${encodeURIComponent(rule.rule_id)}` : "/process";
 }

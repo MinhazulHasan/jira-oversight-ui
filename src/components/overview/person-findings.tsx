@@ -39,11 +39,6 @@ export function personName(row: Pick<PersonSummary, "person">): string {
 
 const open = (row: PersonSummary) => row.open_breaches + row.open_warnings;
 
-/**
- * The rows the panel shows: the first eight in the API's order (most open
- * breaches, then warnings, then open tickets), and the unassigned tickets
- * whatever their rank, since work nobody holds is a finding in itself.
- */
 export function topPeople(rows: readonly PersonSummary[], max = MAX_PEOPLE): PersonSummary[] {
   // Only people with something open: a row of 0 breaches and 0 warnings informs no one (SQA: four of eight rows did).
   const holding = rows.filter((row) => open(row) > 0);
@@ -63,14 +58,12 @@ export function personItems(rows: readonly PersonSummary[], { cards = false }: {
       muted: person === null,
       values: { breach: row.open_breaches, warning: row.open_warnings },
       href: personHref(person),
-      // At people level a person's picture and name open their card (JO-13); the rest of the row, their open findings.
+      // At people level a person's picture and name open their card; the rest of the row, their open findings.
       wrapLabel:
         cards && person
           ? (label) => (
               <PersonCardTrigger
                 person={person}
-                // 24 px tall, the least a target beside the row's link may be (WCAG 2.5.8), in the 20 px the
-                // name takes, so the row keeps its height.
                 className={cn(NAME_TRIGGER, "relative z-[1] -my-0.5 min-h-6 items-center gap-2")}
                 // The row's tooltip (its breaches and warnings) is the bar's: over the name, the card speaks instead.
                 onPointerMove={(event) => event.stopPropagation()}
@@ -83,10 +76,6 @@ export function personItems(rows: readonly PersonSummary[], { cards = false }: {
   });
 }
 
-/**
- * A person's cell in the table view at people level: their picture and name open their card (JO-13), as in the chart
- * (the table has no row press, so the name is a stop of its own in the Tab order).
- */
 function personCell(person: NonNullable<PersonSummary["person"]>): ReactNode {
   return (
     <PersonCardTrigger person={person} className={cn(NAME_TRIGGER, "-my-0.5 min-h-6 gap-2")}>
@@ -133,17 +122,9 @@ export interface PersonFindingsProps {
   className?: string;
 }
 
-/**
- * Who is carrying the open findings: the people the board's tickets are
- * assigned to now, most open breaches first, then warnings, as stacked bars
- * in the hot spots' language, and the unassigned tickets as a row of their
- * own. Each row opens exactly that person's open findings. Each name is
- * text, as the API gives it, with the person's Jira picture (or initials)
- * beside it; nothing else about a person is shown.
- */
 export function PersonFindings({ data, error, onRetry, retrying, className }: PersonFindingsProps) {
   const locale = useFigureLocale();
-  // People level (an admin, or sign-in off): each person's scorecard is a step away, on the People page (JO-11).
+  // People level (an admin, or sign-in off): each person's scorecard is a step away, on the People page.
   const peopleLevel = usePeopleLevel();
   const rows = data?.people ?? [];
   const shown = topPeople(rows);

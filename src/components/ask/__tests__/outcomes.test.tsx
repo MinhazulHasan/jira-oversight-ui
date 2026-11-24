@@ -29,7 +29,7 @@ const answered = askResponseSchema.parse(answeredJson);
 const trend = askResponseSchema.parse(trendJson);
 const noData = askResponseSchema.parse(noDataJson);
 const notMeasurable = askResponseSchema.parse(notMeasurableJson);
-/** JO-09 judgement words, as an older service would still send them (since JO-11 the sample answers with figures). */
+/** Judgement words, as an older service would still send them. */
 const judgement = {
   ...askResponseSchema.parse(notUnderstoodJson),
   question: "Who is the slowest developer?",

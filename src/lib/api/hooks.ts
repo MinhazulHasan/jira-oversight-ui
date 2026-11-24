@@ -87,13 +87,6 @@ import {
   type Usage,
 } from "./schemas";
 
-/**
- * TanStack Query hooks for every endpoint. Pages read data only through
- * these, so caching, retries and freshness are decided in one place: the
- * figures change when Jira is synced (every 30 minutes), so a minute of
- * freshness costs nothing, and slow-moving reports are kept far longer.
- */
-
 export type {
   AccessLog,
   AccessLogEntry,
@@ -133,17 +126,11 @@ export { ApiError, isApiError } from "./client";
 const SECOND = 1_000;
 const MINUTE = 60 * SECOND;
 
-/**
- * Query keys, one factory so invalidation can never miss a variant.
- * `oversightKeys.all` clears everything; `findings()` every findings list and
- * finding. Findings lists are keyed by their normalised query (defaults filled
- * in, lists sorted), so equivalent filters share one cache entry.
- */
 export const oversightKeys = {
   all: ["oversight"] as const,
   health: () => [...oversightKeys.all, "health"] as const,
   projects: () => [...oversightKeys.all, "projects"] as const,
-  /** A board's sync (JO-18), by the board it is about: the board picked in the top bar. */
+  /** A board's sync, by the board it is about: the board picked in the top bar. */
   refresh: (board: string | null) => [...oversightKeys.all, "refresh", board] as const,
   overview: () => [...oversightKeys.all, "overview"] as const,
   people: () => [...oversightKeys.all, "people"] as const,
@@ -163,7 +150,7 @@ export const oversightKeys = {
   governance: () => [...oversightKeys.all, "governance"] as const,
   accessLog: (query: AccessLogQuery) => [...oversightKeys.governance(), "access-log", query] as const,
   usage: () => [...oversightKeys.governance(), "usage"] as const,
-  /** A board's rule settings (JO-15): a sync changes whether they are applied, so they are not kept with governance. */
+  /** A board's rule settings: a sync changes whether they are applied, so they are not kept with governance. */
   ruleSettings: () => [...oversightKeys.all, "rule-settings"] as const,
   trends: () => [...oversightKeys.all, "trends"] as const,
   issues: () => [...oversightKeys.all, "issues"] as const,
@@ -180,30 +167,12 @@ function namesSomeone(query: FindingsQuery): boolean {
   return query.person.some((id) => id !== UNASSIGNED);
 }
 
-/**
- * How a read of person-level data that the service records in its access log
- * (JO-12) behaves: a scorecard or a comparison, findings filtered by a
- * person, a person card (JO-13), the access log itself. Each is an entry in
- * "who looked at whom", so
- * it happens when the reader asks (opening the page, a change of filter,
- * period or person, Try again) and never on its own: not on focus, a
- * reconnect or a timer. It is retried only when the request never left the
- * browser (a dropped connection): a failure the service may have answered
- * after recording the read (a 5xx, a timeout) is shown with Try again, so one
- * look is never logged twice.
- */
 const RECORDED_READ = {
   refetchOnWindowFocus: false,
   refetchOnReconnect: false,
   retry: (failureCount: number, error: ApiError) => error.status === 0 && failureCount < 2,
 } as const;
 
-/**
- * After a sync, every figure on every page was computed from the old snapshot: every query is marked stale and those
- * on screen are read again. Governance (the access log, Ask's usage) is not Jira's and no sync changes it; the access
- * log's every read is recorded, so it is never read again on its own here (one press of Sync now would otherwise log
- * a view for every page of it read).
- */
 export function invalidateAfterSync(queryClient: QueryClient): Promise<void> {
   const governance = oversightKeys.governance();
   return queryClient.invalidateQueries({
@@ -230,11 +199,6 @@ export function useOverview(): UseQueryResult<Overview, ApiError> {
   });
 }
 
-/**
- * Everyone assigned a ticket on the board now, with their open work and
- * findings; it changes with a sync. `enabled: false` holds it back (Ask asks
- * for the board's people only for a reader who may mention them).
- */
 export function usePeople({ enabled = true }: { enabled?: boolean } = {}): UseQueryResult<People, ApiError> {
   return useQuery({
     queryKey: oversightKeys.people(),
@@ -244,12 +208,6 @@ export function usePeople({ enabled = true }: { enabled?: boolean } = {}): UseQu
   });
 }
 
-/**
- * Everyone on the board, as Jira's assignee picker lists them: the people
- * assigned its tickets now and its members who hold none, each with how many
- * tickets are theirs. It changes with a sync. Ask's @ list reads it, and only
- * for a reader who may mention people (`enabled: false` holds it back).
- */
 export function usePeopleDirectory({ enabled = true }: { enabled?: boolean } = {}): UseQueryResult<PeopleDirectory, ApiError> {
   return useQuery({
     queryKey: oversightKeys.peopleDirectory(),
@@ -259,15 +217,6 @@ export function usePeopleDirectory({ enabled = true }: { enabled?: boolean } = {
   });
 }
 
-/**
- * Scorecards: how each person's tickets are handled next to the whole board's,
- * over the period asked for (people level only: `enabled: false` holds it
- * back for anyone else). No person: everyone who holds a ticket, or with
- * comparison turned off, the board's figures alone; with people, those people.
- * It changes with a sync. The figures already on screen stay while another
- * period loads (isPlaceholderData tells them apart), so the page never jumps.
- * Every read is recorded in the access log, so it is a RECORDED_READ.
- */
 export function usePeopleScorecard(
   input: ScorecardQueryInput = {},
   { enabled = true }: { enabled?: boolean } = {},
@@ -286,18 +235,9 @@ export function usePeopleScorecard(
   });
 }
 
-/** How long a person card is kept fresh: moving back and forth over a name within it costs nothing (JO-13). */
+/** How long a person card is kept fresh: moving back and forth over a name within it costs nothing. */
 export const PERSON_CARD_FRESH_MS = MINUTE;
 
-/**
- * One person's card (people level only), fetched when the card opens (the
- * hover's intent, a click) and kept fresh for a minute, so moving back and
- * forth over a name costs nothing. Each read is a person-level read the
- * service records (at most once in ten minutes for one person, board and
- * reader), so it is a RECORDED_READ: read only when someone opens the card,
- * never on focus, a reconnect or a timer, and a 5xx or a timeout shows the
- * card's Try again at once. `enabled: false` holds it back.
- */
 export function usePersonCard(
   personId: string,
   input: PersonCardQueryInput = {},
@@ -313,13 +253,6 @@ export function usePersonCard(
   });
 }
 
-/**
- * One page of findings, filtered by any of the API's parameters (`person`
- * among them). The previous page stays on screen while the next one loads
- * (isPlaceholderData tells them apart), so paging and filtering never
- * collapse the table into a skeleton. Filtered by someone, the read is
- * recorded in the access log, so it is a RECORDED_READ.
- */
 export function useFindings(input: FindingsQueryInput = {}): UseQueryResult<FindingsPage, ApiError> {
   const query = normalizeFindingsQuery(input);
   return useQuery({
@@ -359,11 +292,6 @@ export interface AskVariables {
   mentions: readonly string[];
 }
 
-/**
- * Ask a question. A mutation, not a query: every question is its own audited
- * request, and asking the same thing twice should ask twice. Never retried,
- * because an answer that failed may already have been logged.
- */
 export function useAsk(): UseMutationResult<AskResponse, ApiError, AskVariables> {
   return useMutation({
     mutationKey: oversightKeys.ask(),
@@ -391,11 +319,6 @@ export function useTrend(metric: TrendMetric, lastN?: number): UseQueryResult<Tr
   });
 }
 
-/**
- * The boards to switch between: every board the service's Jira account can browse (JO-17), which it looks for
- * again every half hour, and whether each has synced. A sync changes the list (a board's first sync makes it synced),
- * so a sync reads it again with every other figure (invalidateAfterSync).
- */
 export function useProjects(): UseQueryResult<Projects, ApiError> {
   return useQuery({
     queryKey: oversightKeys.projects(),
@@ -421,16 +344,6 @@ export interface BoardSync {
   starting: boolean;
 }
 
-/**
- * The sync of the board picked in the top bar (JO-18), `board` its key (null
- * while it is not known: nothing is asked). Its state is read once, then every
- * SYNC_POLL_MS while it is queued or running, so the top bar's Sync, a page
- * offering a board's first sync and the shell's SyncFollower all see one
- * state; starting it puts the service's answer in its place at once. The board
- * is the top bar's pick, which the server sends on (?project=); `board` keys
- * the state, so another board's never stands for it. Never retried: a press
- * the service did not answer is the reader's to make again.
- */
 export function useBoardSync(board: string | null): BoardSync {
   const queryClient = useQueryClient();
   const key = oversightKeys.refresh(board);
@@ -470,11 +383,6 @@ export function useBaseline(): UseQueryResult<Baseline, ApiError> {
   });
 }
 
-/**
- * The Portfolio: every board the reader may open, with the Overview's own
- * figures for each, and the oldest open breaches across them. It changes with
- * a sync, like the Overview.
- */
 export function usePortfolio(): UseQueryResult<Portfolio, ApiError> {
   return useQuery({
     queryKey: oversightKeys.portfolio(),
@@ -486,18 +394,6 @@ export function usePortfolio(): UseQueryResult<Portfolio, ApiError> {
 /** The access log's filters, as the page holds them: where a page starts is the hook's, and an export is never a view. */
 export type AccessLogFilters = Omit<AccessLogQueryInput, "cursor" | "export">;
 
-/**
- * The access log (people level only), a page at a time, newest first: the
- * next page is fetched on demand (fetchNextPage) and joins the list. Every
- * read of it is itself recorded by the service, so it is read only when the
- * reader asks: opening the page, the filters change, a next page, Refresh,
- * Try again; never on its own (a RECORDED_READ: no refetch on focus,
- * reconnect or a timer, and the pages read stay fresh while the page is
- * open). Leaving the page lets the pages go (gcTime 0), so coming back reads
- * the first page anew, never every page that was read, and shows what was
- * recorded meanwhile. The entries on screen stay while other filters load
- * (isPlaceholderData).
- */
 export function useAccessLog(
   filters: AccessLogFilters,
   { enabled = true }: { enabled?: boolean } = {},
@@ -516,10 +412,6 @@ export function useAccessLog(
   });
 }
 
-/**
- * Refresh, on the access log: its first page read again, and only it, so the newest entries show (recorded as one
- * view, whatever was read before); the entries on screen stay until it arrives.
- */
 export function useAccessLogRefresh(filters: AccessLogFilters): () => Promise<void> {
   const queryClient = useQueryClient();
   const key = oversightKeys.accessLog(normalizeAccessLogQuery({ ...filters, cursor: undefined, export: false }));
@@ -546,13 +438,6 @@ export function useUsage({ enabled = true }: { enabled?: boolean } = {}): UseQue
 /** How often a board's rule settings are read again while the service re-checks its findings after a save. */
 export const RULE_SETTINGS_POLL_MS = 2_000;
 
-/**
- * A board's rule settings (JO-15, people level only: `enabled: false` holds it
- * back for anyone else), on the board picked in the top bar. While the service
- * re-checks the board after a save (`apply.state` running) it is read every
- * two seconds, so the page sees the findings settle; otherwise only when it
- * goes stale.
- */
 export function useRuleSettings({ enabled = true }: { enabled?: boolean } = {}): UseQueryResult<RuleSettings, ApiError> {
   return useQuery({
     queryKey: oversightKeys.ruleSettings(),
@@ -563,14 +448,6 @@ export function useRuleSettings({ enabled = true }: { enabled?: boolean } = {}):
   });
 }
 
-/**
- * Every figure the rules decide, after a board's rule settings change: the
- * catalogue, the Overview, findings (by person too), people and their
- * scorecards and cards, the Portfolio, the weekly series and the ticket pages.
- * Marked stale, and read again where they are on screen. Called on a save, and
- * again when its re-check has finished (useRecheckFollower), since only then
- * has the service moved the findings.
- */
 export function invalidateAfterRuleSettings(queryClient: QueryClient): Promise<void> {
   const figures = [
     oversightKeys.rules(),
@@ -584,18 +461,6 @@ export function invalidateAfterRuleSettings(queryClient: QueryClient): Promise<v
   return Promise.all(figures.map((queryKey) => queryClient.invalidateQueries({ queryKey }))).then(() => undefined);
 }
 
-/**
- * Follows a board's re-check after a save to its end, whichever page the
- * reader is on by then (JO-15). While the settings this client last read say
- * the service is re-checking (apply.state running), they are read every two
- * seconds: by the settings page itself while it is open, here once it is not.
- * When the re-check has ended, every figure the rules decide is read afresh
- * (invalidateAfterRuleSettings): the save's own refresh came before the
- * service moved the findings, and the pages read since would otherwise keep
- * those counts for as long as they stay fresh. Mounted once, in the app's
- * shell (RecheckFollower), for a reader at people level; it starts no read of
- * its own while no re-check runs.
- */
 export function useRecheckFollower(): void {
   const queryClient = useQueryClient();
   const { data } = useQuery({
@@ -623,11 +488,6 @@ export function useRecheckFollower(): void {
   }, [state, queryClient]);
 }
 
-/**
- * What changes to the board's rule settings would do to its open findings: a
- * mutation, since it carries the changes, though the service writes nothing.
- * Never retried: the reader asks again.
- */
 export function useRuleSettingsPreview(): UseMutationResult<RuleSettingsPreview, ApiError, RuleSettingsPreviewRequest> {
   return useMutation({
     mutationKey: [...oversightKeys.ruleSettings(), "preview"],
@@ -636,12 +496,6 @@ export function useRuleSettingsPreview(): UseMutationResult<RuleSettingsPreview,
   });
 }
 
-/**
- * The AI's draft of a rule from an admin's words (JO-20): a mutation, since it
- * carries the words, though the service saves nothing and nothing on screen
- * changes because of it (it invalidates nothing). Never retried: each draft is
- * a model call the service counts against the day's budget.
- */
 export function useRuleDraft(): UseMutationResult<RuleDraft, ApiError, string> {
   return useMutation({
     mutationKey: [...oversightKeys.ruleSettings(), "draft"],
@@ -650,14 +504,6 @@ export function useRuleDraft(): UseMutationResult<RuleDraft, ApiError, string> {
   });
 }
 
-/**
- * Saves changes to the board's rule settings. Never retried: a save that
- * failed on its way back may have been made, and the next attempt carries the
- * same revision, which the service would then refuse. On success the settings
- * on screen are the answer, and every figure the rules decide is read afresh:
- * the catalogue, findings, the Overview and the Portfolio among them, since a
- * rule added or deleted (JO-20) changes what each of them counts.
- */
 export function useSaveRuleSettings(): UseMutationResult<RuleSettings, ApiError, RuleSettingsSaveRequest> {
   const queryClient = useQueryClient();
   return useMutation({

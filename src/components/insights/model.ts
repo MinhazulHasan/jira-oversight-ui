@@ -6,22 +6,11 @@ import {
   type InsightSentence,
 } from "@/lib/api/schemas";
 
-/*
- * What the Insights page reads off a briefing, kept free of React so every
- * rule here is tested on its own: how a tone and a kind are named, where the
- * findings behind a candidate are, and which way it is moving.
- */
-
 export type Tone = InsightSentence["tone"];
 export type CandidateKind = Candidate["kind"];
 export type CandidateSeverity = Candidate["severity"];
 export type CandidateDetail = Candidate["detail"][number];
 
-/**
- * The briefing's three tones in plain words (go-live: the prototype's "Blatantly bad" and "On its way to being bad"
- * read as unprofessional in front of a client): a mark and words, never colour alone. The Overview's teaser reads
- * these too.
- */
 export const TONES: Record<Tone, { mark: "breach" | "warning" | "neutral"; label: string }> = {
   blatantly_bad: { mark: "breach", label: "Serious" },
   trending_bad: { mark: "warning", label: "Getting worse" },
@@ -39,11 +28,6 @@ export const KIND_LABELS: Record<CandidateKind, string> = {
   coverage: "Coverage",
 };
 
-/**
- * What a candidate's `affected` counts, which differs by kind: a hot spot
- * counts its open breaches (not its issues), a week-on-week change the status
- * intervals that closed this week. Named on screen so "26" never reads as "26 issues".
- */
 const AFFECTED_UNITS: Record<CandidateKind, [one: string, many: string]> = {
   breach_hot_spot: ["open breach", "open breaches"],
   rising_rule: ["new finding", "new findings"],
@@ -92,14 +76,6 @@ export function ruleIdOf(candidate: Candidate): string | null {
   return fromId && RULE_ID_PATTERN.test(fromId) ? fromId : null;
 }
 
-/**
- * The Findings view that holds exactly a candidate's findings. A hot spot is
- * its epic's open breaches; a rising rule is that rule's findings first seen
- * this week. Any other kind is filtered by the rule its findings were raised
- * under (`ruleHint`, read from its first finding) and, until that is known,
- * opens the first finding's evidence. Null when the candidate has no findings
- * (a week-on-week change or an outlier is about issues, not findings).
- */
 export function findingsTarget(candidate: Candidate, ruleHint?: string | null): FindingsTarget | null {
   const ids = candidate.finding_ids;
   const count = ids.length;
@@ -164,10 +140,6 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 /** What a briefing from a week that is over says beside its date: its figures are that week's, not today's. */
 export const EARLIER_WEEK = "From an earlier week. Figures may have changed since.";
 
-/**
- * Whether a briefing's week (its Monday, as the service dates it, in UTC) is over by `now`: then the page says so,
- * rather than passing an old briefing off as this week's (SQA, 17 Nov 2026).
- */
 export function fromEarlierWeek(weekOf: string, now: number): boolean {
   const monday = Date.parse(`${weekOf}T00:00:00Z`);
   return Number.isFinite(monday) && now >= monday + WEEK_MS;
@@ -184,11 +156,6 @@ export function candidatesOf(sentence: InsightSentence, candidates: readonly Can
   return candidates.filter((candidate) => wanted.has(candidate.id));
 }
 
-/**
- * A sentence that names no candidate still clicks through, to its own
- * findings or issues: read as a candidate of no particular kind, so its link
- * is found the generic way (by the rule of its first finding).
- */
 export function sentenceSource(sentence: InsightSentence): Candidate | null {
   if (sentence.finding_ids.length === 0 && sentence.issue_keys.length === 0) return null;
   return {

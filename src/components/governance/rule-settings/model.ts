@@ -23,20 +23,6 @@ import {
   type StatusCategory,
 } from "@/lib/api/schemas";
 
-/*
- * The rule settings page's arithmetic (JO-15), kept apart from its components
- * so the rows, the review, the history and the tests read the same words: the
- * draft a reader edits, what is wrong with it, the request it makes, and each
- * change in words. JO-20 adds the board's own rules: a custom rule's
- * definition in the draft (its name, check, params and scope), the rules an
- * admin adds and deletes before saving, and their words and undo.
- */
-
-/**
- * A custom rule's definition as the page edits it (JO-20): what the sheet's form holds and the row reads. Its number
- * params are the rule's `params`, as every rule's are; its other params (statuses, a stage, an evidence name, a field)
- * are its choices.
- */
 export interface CustomDraft {
   title: string;
   description: string;
@@ -53,19 +39,19 @@ export interface DraftRule {
   severity: Severity;
   /** By the threshold's name: the text in its field (a share as a whole percentage, "30"). */
   params: Readonly<Record<string, string>>;
-  /** A board's own rule's definition (JO-20); none for a catalogue rule. */
+  /** A board's own rule's definition; none for a catalogue rule. */
   custom?: CustomDraft;
 }
 
 export type Draft = Readonly<Record<string, DraftRule>>;
 
-/** A rule added in the draft (JO-20), not saved yet: a key of its own on the page, until the service gives it an id. */
+/** A rule added in the draft, not saved yet: a key of its own on the page, until the service gives it an id. */
 export interface NewRule {
   key: string;
   rule: DraftRule & { custom: CustomDraft };
 }
 
-/** What the draft does beyond the rules' fields (JO-20): the rules it adds, and the board's own rules it deletes. */
+/** What the draft does beyond the rules' fields: the rules it adds, and the board's own rules it deletes. */
 export interface DraftExtras {
   added: readonly NewRule[];
   deleted: readonly string[];
@@ -116,10 +102,6 @@ function plain(value: number, locale?: string): string {
   return format.format(value);
 }
 
-/**
- * A threshold in words, as its unit reads: "1.5×", "1 h", "90%", "2 days", "30%". A percentile reads as the share
- * of finished work it is above ("90%"), never "p90", which a project manager does not read (SQA).
- */
 export function paramWords(param: UnitHolder, value: number, locale?: string): string {
   return param.unit === null ? plain(value, locale) : unitWords(param.unit, value, locale);
 }
@@ -191,7 +173,7 @@ export const appliesOf = (custom: Pick<CustomDraft, "categories" | "issueTypes">
 /** One field the draft has changed: a rule's switch, its severity or one of its thresholds; a custom rule's definition. */
 export interface FieldEdit {
   ruleId: string;
-  /** enabled, severity, params.<name>; and (JO-20) title, description, applies_to. */
+  /** enabled, severity, params.<name>; and title, description, applies_to. */
   field: string;
 }
 
@@ -207,10 +189,6 @@ function customEdits(ruleId: string, was: CustomDraft, now: CustomDraft): FieldE
   ];
 }
 
-/**
- * Every field the draft changes from `base`, in catalogue order: what the bar counts and the review lists. A custom
- * rule marked for deletion (JO-20) is one change of its own, so its fields are not counted.
- */
 export function editsOf(rules: readonly RuleSettingsRule[], base: Draft, draft: Draft, extras: DraftExtras = NO_EXTRAS): FieldEdit[] {
   const deleted = new Set(extras.deleted);
   return rules.flatMap((rule) => {
@@ -253,17 +231,6 @@ function paramsOf(rule: RuleSettingsRule | null, check: RuleCheck | undefined, d
   return params;
 }
 
-/**
- * The request's changes: for each rule, the fields the draft changes. A rule a
- * board had made its own, set back to the catalogue's every setting, is a
- * reset. Only fields that read as numbers are sent (the page sends nothing
- * while any field cannot be saved). JO-20: a custom rule's definition changed
- * is an edit (its name, description, settings or what it looks at; its switch
- * and severity are a setting change's, never an edit's, and the page holds a
- * save back while a rule has both, oneChangeProblems); a rule marked for
- * deletion is a delete; a rule added is a create, after the board's rules, in
- * the order added.
- */
 export function requestChanges(
   rules: readonly RuleSettingsRule[],
   base: Draft,
@@ -355,7 +322,7 @@ interface ProblemOptions {
   /** The fields the reader has left: an empty one is wrong only once left. */
   touched?: ReadonlySet<string>;
   locale?: string;
-  /** The rules the draft adds and deletes (JO-20): a rule marked for deletion holds nothing back. */
+  /** The rules the draft adds and deletes: a rule marked for deletion holds nothing back. */
   extras?: DraftExtras;
 }
 
@@ -369,11 +336,6 @@ export function numberProblem(param: RuleSettingsNumberParam, text: string, touc
   return null;
 }
 
-/**
- * What is wrong with each threshold's field: empty (once left), not a number,
- * outside its bounds (a value rules.yaml set outside them too, said where it
- * stands), or with too many decimals.
- */
 export function fieldProblems(rules: readonly RuleSettingsRule[], draft: Draft, options: ProblemOptions = {}): Map<string, string> {
   const problems = new Map<string, string>();
   const { touched, locale } = options;
@@ -389,13 +351,6 @@ export function fieldProblems(rules: readonly RuleSettingsRule[], draft: Draft, 
   return problems;
 }
 
-/**
- * The cross-rule rule, as the service checks it: a warning that escalates to a
- * breach rule of the same check keeps its threshold strictly below the
- * breach's while both run. Checked for a pair the draft touches (either rule
- * changed), so an untouched pair is never held against an unrelated change.
- * The message stands on the threshold the reader moved, or on the warning's.
- */
 export function crossRuleProblems(rules: readonly RuleSettingsRule[], draft: Draft, options: ProblemOptions = {}): Map<string, string> {
   const problems = new Map<string, string>();
   const { base, locale } = options;
@@ -427,16 +382,9 @@ export function crossRuleProblems(rules: readonly RuleSettingsRule[], draft: Dra
   return problems;
 }
 
-/** A rule's edit and its switch or severity in one draft (JO-20): what the page says beside the rule. */
+/** A rule's edit and its switch or severity in one draft: what the page says beside the rule. */
 export const ONE_CHANGE_WORDS = "Save the edit first, then change its On/Off or severity.";
 
-/**
- * A custom rule whose definition and whose switch or severity the draft both
- * change (JO-20): a request names each rule once, and an edit carries the
- * definition alone, so the two are saved one after the other. Said at the
- * rule's switch, which stands for the rule; a rule marked for deletion is only
- * deleted.
- */
 export function oneChangeProblems(rules: readonly RuleSettingsRule[], base: Draft, draft: Draft, extras: DraftExtras = NO_EXTRAS): Map<string, string> {
   const problems = new Map<string, string>();
   const deleted = new Set(extras.deleted);
@@ -450,10 +398,6 @@ export function oneChangeProblems(rules: readonly RuleSettingsRule[], base: Draf
   return problems;
 }
 
-/**
- * What is wrong with the draft, by the field it is wrong in: each field's own problem first, then the cross-rule
- * rule, then (given the settings it started from) a custom rule edited and switched in one draft.
- */
 export function draftProblems(rules: readonly RuleSettingsRule[], draft: Draft, options: ProblemOptions = {}): Map<string, string> {
   const problems = fieldProblems(rules, draft, options);
   for (const [path, message] of crossRuleProblems(rules, draft, options)) if (!problems.has(path)) problems.set(path, message);
@@ -463,13 +407,6 @@ export function draftProblems(rules: readonly RuleSettingsRule[], draft: Draft, 
   return problems;
 }
 
-/**
- * What stops the draft from being saved: a problem in a field it changes
- * (empty ones too, left or not), the cross-rule rule, and (JO-20) a custom
- * rule edited and switched in one draft. A field it leaves as it was is not
- * sent, so it never holds a save back; nor does a field of a rule marked for
- * deletion, whose delete is all that is sent of it.
- */
 export function blockingProblems(rules: readonly RuleSettingsRule[], base: Draft, draft: Draft, locale?: string, extras: DraftExtras = NO_EXTRAS): Map<string, string> {
   const edited = new Set(editsOf(rules, base, draft, extras).map((edit) => fieldPath(edit.ruleId, edit.field)));
   const every = new Set(rules.flatMap((rule) => numberParams(rule).map((param) => fieldPath(rule.rule_id, `params.${param.name}`))));
@@ -483,10 +420,6 @@ export function blockingProblems(rules: readonly RuleSettingsRule[], base: Draft
 
 const isDefinition = (value: unknown): value is CustomRuleDefinition => typeof value === "object" && value !== null && !Array.isArray(value) && "check" in value;
 
-/**
- * What undoing a change sends: each field it set, back to what it was. A custom rule added is deleted again, one
- * deleted is brought back, and its definition edited is edited back (JO-20).
- */
 export function undoChanges(entry: Pick<RuleSettingsHistoryEntry, "changes">): RuleSettingsChange[] {
   const byRule = new Map<string, RuleSettingsFieldChange[]>();
   for (const change of entry.changes) byRule.set(change.rule_id, [...(byRule.get(change.rule_id) ?? []), change]);
@@ -518,8 +451,6 @@ export function undoChanges(entry: Pick<RuleSettingsHistoryEntry, "changes">): R
       }
     }
     const params = Object.keys(back.params).length > 0 ? { params: back.params } : {};
-    // A save changes a custom rule's definition or its switch and severity, never both (oneChangeProblems): so does
-    // the change that undoes it.
     if (defined) return { op: "edit", rule_id: ruleId, ...edit, ...params };
     const settings = { ...(back.enabled !== undefined ? { enabled: back.enabled } : {}), ...(back.severity !== undefined ? { severity: back.severity } : {}) };
     return { rule_id: ruleId, ...settings, ...(params as { params?: Record<string, number> }) };
@@ -528,7 +459,7 @@ export function undoChanges(entry: Pick<RuleSettingsHistoryEntry, "changes">): R
 
 export const SEVERITY_WORDS: Record<Severity, string> = { breach: "Breach", warning: "Warning" };
 
-/** The words a custom rule's own fields go by (JO-20). */
+/** The words a custom rule's own fields go by. */
 const CUSTOM_FIELD_LABELS: Record<string, string> = {
   title: "Name",
   description: "Description",
@@ -536,10 +467,6 @@ const CUSTOM_FIELD_LABELS: Record<string, string> = {
   rule: "Rule",
 };
 
-/**
- * A rule's field by its label: "On this board", "Severity", a threshold's own ("Effort ratio"), and a custom rule's
- * own ("Name"); null for no such field (a catalogue rule has no name to change).
- */
 function fieldLabel(rules: readonly RuleSettingsRule[], ruleId: string, field: string): string | null {
   if (field === "enabled") return "On this board";
   if (field === "severity") return "Severity";
@@ -587,11 +514,6 @@ export function fieldWords(
   return { label, from: words(change.from), to: words(change.to) };
 }
 
-/**
- * A custom rule added, deleted or brought back, in a sentence, as the history says it: "Added rule “Bugs in review
- * over 3 days”", "Deleted rule …", "Brought back rule …". In an undo's question it says what the undo will do:
- * "Deletes rule …", "Brings back rule …".
- */
 export function ruleChangeWords(change: Pick<RuleSettingsFieldChange, "from" | "to">, options: { undo?: boolean; restore?: boolean } = {}): string | null {
   const added = change.from === null && isDefinition(change.to);
   const gone = change.to === null && isDefinition(change.from);
@@ -611,10 +533,6 @@ export function definitionWords(definition: CustomRuleDefinition, checks: readon
     .join(" · ");
 }
 
-/**
- * A custom rule's settings in words, as its row reads them: "Stays in “In Progress” for over 3 days", "Open for over
- * 30 days", "No epic"; the catalogue's checks with their thresholds in their units. Empty for a check with none.
- */
 export function settingsWords(check: string, params: Readonly<Record<string, ParamValue>>, spec?: RuleCheck, locale?: string): string {
   const number = (name: string) => Number(params[name]);
   const unit = (name: string) => spec?.params.find((param) => param.name === name)?.unit ?? null;
@@ -647,13 +565,6 @@ export function settingsWords(check: string, params: Readonly<Record<string, Par
   }
 }
 
-/**
- * Where a refusal stands, in words: the rule it names (by id and title) and,
- * for one of the rule's fields, the field's label; the rule alone for a
- * problem with the rule as a whole. A new rule (JO-20) by its title, its id
- * "New". Null for a place that is no rule's (the reason, the settings as a
- * whole).
- */
 export function placeWords(
   rules: readonly RuleSettingsRule[],
   path: string,

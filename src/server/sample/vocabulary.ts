@@ -1,10 +1,3 @@
-/**
- * Words for the sample project: epics a product team might plausibly run, and
- * ticket summaries built from them. Domain-neutral on purpose, free of digits
- * (ticket text is never a source of figures), and free of people: nothing
- * here names, describes or pictures anyone.
- */
-
 import type { Rng } from "./random";
 
 export type IssueType = "Task" | "Bug" | "Subtask" | "Test" | "Epic";
@@ -17,11 +10,7 @@ export interface EpicDef {
   endWeeksAgo: number | null;
   /** How much of the team's new work it draws while open. */
   weight: number;
-  /**
-   * One of the two big current epics: run under pressure, so more of its work
-   * starts before anyone sizes it, and effort against estimate has been
-   * climbing for the last five weeks.
-   */
+  /** One of the two big current epics: run under pressure, so more of its work */
   drifting: boolean;
   objects: readonly string[];
 }

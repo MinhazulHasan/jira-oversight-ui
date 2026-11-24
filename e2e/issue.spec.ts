@@ -3,14 +3,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { cutText } from "./cut-text";
 
-/*
- * The Issue page against the sample server (pinned to SAMPLE_NOW in
- * playwright.config.ts), with the browser's clock frozen just after it.
- * DEMO-1 is the showcase: an estimate set five days into development, a
- * reopen, and 1.82× its estimate logged. DEMO-3 skipped development;
- * DEMO-1016 is still in development; DEMO-9999 does not exist.
- */
-
 const NOW = new Date("2026-11-04T14:32:00Z");
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const EFFORT_FINDING = "45834de40a31472113e2898410f13062";
@@ -209,8 +201,6 @@ test("a failed load is inline, and Try again brings the issue back", async ({ pa
 
 for (const width of [390, 1440]) {
   test(`the changelog and the findings read whole at ${width} px: values, claims and headers wrap rather than being cut (JO-14)`, async ({ page }) => {
-    // Regression: "To Do → In…", "FROM → TO" and "CHANG…" in the changelog, and the findings' titles and claims
-    // ("…(1.82×, threshol…"), cut with no tooltip, at 390 px and at 1440 px.
     await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
     await openDemo1(page);
     const changelog = page.getByRole("table", { name: "Changelog of DEMO-1" });
@@ -246,10 +236,6 @@ interface TimelineFinding {
   evidence: { changelog_id?: string | null }[];
 }
 
-/**
- * DEMO-1's timeline as live data gives it after a rules version bump: one finding superseded (the sample only ever
- * clears), and one change cited by two findings (a superseded finding and its replacement cite the same entry).
- */
 async function supersededAndCitedTwice(page: Page) {
   await page.route("**/api/oversight/issues/DEMO-1/timeline", async (route) => {
     const response = await route.fetch();
@@ -273,9 +259,6 @@ for (const { locale, timezoneId } of [
 
     for (const width of [390, 1440]) {
       test(`the changelog's times, a superseded finding and a change cited twice read whole at ${width} px (the JO-14 review)`, async ({ page }) => {
-        // Regression: "Nov 14, 2026, 12:28 P…" in the changelog's When column, "superseded 12 Nov 2…" in the findings'
-        // State, and a second rule id clipped in Cited by, with no way to read them; en-GB, the only locale tested,
-        // fitted.
         await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
         await supersededAndCitedTwice(page);
         await openDemo1(page);
@@ -287,10 +270,6 @@ for (const { locale, timezoneId } of [
         await expect(changelog.locator("tbody td").filter({ hasText: /[RW]-[A-Z]+-\d{2}.*[RW]-[A-Z]+-\d{2}/ }).first()).toBeVisible();
         expect(await cutText(changelog)).toEqual([]);
         expect(await cutText(findings)).toEqual([]);
-        // The time in the reader's conventions and zone, whole, on the 12-hour clock with no zone named, as every time
-        // in the dashboard reads (src/lib/format.ts): the same change, at 11:12 UTC, reads 6:12 AM in New York, and
-        // 12:12 PM in Berlin in English words with German conventions (en-DE, as format.ts reads a German browser).
-        // Never the server's first render (UTC, en-GB: "12 Nov 2025, 11:12 AM").
         const when = changelog.locator("tbody time").first();
         await expect(when).toHaveAttribute("datetime", "2025-11-12T11:12:00.000Z");
         await expect(when).toHaveText(locale === "en-US" ? /^Nov 12, 2025, 6:12\sAM$/ : /^12 Nov 2025, 12:12\sPM$/);

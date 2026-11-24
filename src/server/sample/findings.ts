@@ -31,10 +31,6 @@ export function intervalsOf(issue: Issue): Interval[] {
   }));
 }
 
-/**
- * The rules that hold findings on the board but no longer run there (JO-20: a custom rule since deleted), each by
- * the title its findings carry, by id: its findings keep it a place in the filter, after the board's rules.
- */
 function formerRules(dataset: Dataset): [string, string][] {
   const running = new Set(dataset.rules.map((rule) => rule.def.id));
   const former = new Map<string, string>();
@@ -125,10 +121,7 @@ function personKey(finding: Finding): string | null {
 const KEY_QUERY = /^[A-Z][A-Z0-9_]+-\d+$/;
 const NUMBER_QUERY = /^#?(\d{1,9})$/;
 
-/**
- * Search: an exact key ("DEMO-142", any case), a bare number ("142" or "#142"),
- * or words found in the key, the summary or the sprint's name.
- */
+/** Search: an exact key ("DEMO-142", any case), a bare number ("142" or "#142"), */
 function searchMatcher(q: string | undefined): (finding: Finding) => boolean {
   if (!q) return () => true;
   const text = q.trim().toLowerCase();
@@ -199,8 +192,6 @@ function facets(dataset: Dataset, query: FindingsQuery): FindingsPage["facets"] 
   });
 
   return {
-    // Every rule and every epic, always in the same order, so a filter menu never reshuffles: the board's rules (its own,
-    // JO-20, after the catalogue's, by their own titles), then a rule since deleted that still holds findings, by its id.
     rules: [
       ...dataset.rules.map((rule) => entry(rule.def.id, rule.def.title, byRule)),
       ...formerRules(dataset).map(([id, title]) => entry(id, title, byRule)),
@@ -209,8 +200,6 @@ function facets(dataset: Dataset, query: FindingsQuery): FindingsPage["facets"] 
       ...dataset.world.epics.map((epic) => entry(epic.key, epic.summary, byEpic)),
       entry(NO_EPIC, "No epic", byEpic),
     ],
-    // Everyone with a ticket on the board, by name, then the unassigned: listed even at 0, like "No epic".
-    // Each with their picture's version, for the Person menu; the unassigned tickets have none.
     people: [
       ...boardPeople(dataset).map((person) => ({ ...entry(person.id, person.name, byPerson), avatar: person.avatar })),
       { ...entry(UNASSIGNED, UNASSIGNED_LABEL, byPerson), avatar: null },

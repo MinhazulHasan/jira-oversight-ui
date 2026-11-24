@@ -8,11 +8,6 @@ import { insightsSchema, type Insights } from "@/lib/api/schemas";
 import findingSample from "../../../../docs/sample-responses/finding.json";
 import insightsSample from "../../../../docs/sample-responses/insights.json";
 
-/*
- * Test helpers for the Insights page: the real sample briefing, a query
- * client that never retries, and a fetch that answers from a table of paths.
- */
-
 export function sampleBriefing(overrides: Partial<Insights> = {}): Insights {
   return { ...insightsSchema.parse(insightsSample), ...overrides };
 }

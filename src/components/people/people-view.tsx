@@ -31,15 +31,6 @@ import { firstOrder, SORT_KEYS, type SortOrder } from "./model";
 import { PersonPicker } from "./person-picker";
 import { CaveatSkeleton, MarkKey, Scorecard, ScorecardSkeleton } from "./scorecard";
 
-/*
- * The People page (JO-11, people level only): how tickets are handled, person
- * by person, next to the whole board. The address holds the period, the
- * person whose scorecard is open and the table's sort, so a link is the view
- * and Back walks the choices. With comparison on (the default), everyone who
- * holds a ticket is in a table above the scorecard; where an organisation has
- * turned it off, one person at a time, picked from the board.
- */
-
 const ORDERS = ["asc", "desc"] as const;
 const TOAST = "people-view";
 
@@ -105,12 +96,8 @@ export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["co
   const everyone = usePeopleScorecard({ days });
   const data = everyone.data;
   const comparison = data?.comparison ?? null;
-  // The page's shape before the figures say it: the setting this server expects (the sample's, or the service's as it
-  // last reported it), so the loading state stands where the figures will (the JO-11 check, G2).
   const shape = comparison ?? expected;
   const fromEveryone = comparison === "on" && person ? (data?.people.find((row) => row.person.id === person) ?? null) : null;
-  // One person's figures are asked for apart only when the everyone table does not hold them (comparison off, or a
-  // member with no tickets opened from a link).
   const needsOne = person !== null && data !== undefined && fromEveryone === null;
   const one = usePeopleScorecard({ days, person: person ? [person] : [] }, { enabled: needsOne });
   const directory = usePeopleDirectory({ enabled: shape === "off" });
@@ -125,8 +112,6 @@ export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["co
     [setUrl],
   );
 
-  // A link to someone's scorecard (Findings, the Overview, Ask) lands on it, not on the table above it: once, when
-  // the figures arrive.
   const landed = useRef(false);
   const scorecardReady = person !== null && data !== undefined && (fromEveryone !== null || (needsOne && one.data !== undefined));
   useEffect(() => {
@@ -202,8 +187,6 @@ export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["co
           <ScorecardRegion person={person} source={null} loading error={null} onRetry={() => undefined} retrying={false} prompt={OFF_PROMPT} />
         </>
       ) : !data ? (
-        // The sections in their final places, headings, the marks' key and the caveat's lines and all, so nothing moves
-        // when the figures arrive.
         <>
           <Section id="everyone" title="Everyone with tickets" description={EVERYONE_DESCRIPTION}>
             <MarkKey className="text-xs" />

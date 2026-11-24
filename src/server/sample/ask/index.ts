@@ -88,25 +88,7 @@ import { countAnswer, ISSUE_SCRIPT, SCRIPTS, SUGGESTED_QUESTIONS, type ScriptRes
 /** The most catalogue calls one question makes (the service's router MAX_CALLS). */
 const MAX_CALLS = 3;
 
-/**
- * Ask, in sample mode: the backend's pipeline with a script in the model's
- * place. A question is matched to a plan, the plan's catalogue calls run over
- * the sample project, the answer is written from those facts only, and the
- * same validator the service uses decides whether it may be shown.
- *
- * At the level this interface's server decides (team, or people for an admin
- * and with sign-in off), as the service answers: team level names no one and
- * declines any question about a person. People level names people and counts
- * their tickets and findings, by the people the question mentions (picked
- * with @, or typed in full: JO-11), and declines nothing: a question that
- * evaluates someone is answered with their scorecard, several people's side
- * by side, or everyone in order of how closely they follow the process; a
- * personnel question gets the same figures, then "The figures are above; the
- * decision is yours." The answers order and summarise; they never label
- * anyone. A mention of a member of the board who holds none of its tickets is
- * answered in code, as the service answers it: "<Name> has no tickets on this
- * board." (JO-10).
- */
+/** Ask, in sample mode: the backend's pipeline with a script in the model's */
 
 export const NOT_VERIFIED_MESSAGE = "The written answer could not be verified against the facts, so only the facts are shown.";
 const NOT_UNDERSTOOD_MESSAGE = "That question can't be answered from the Jira data; try one of the suggestions.";
@@ -147,11 +129,7 @@ interface NoTickets {
   people: readonly Person[];
 }
 
-/**
- * The people a question names (all on the board): picked with @, then typed in
- * full (JO-11), split into those who hold a ticket on it now and those who
- * hold none; and any typed name more than one person on the board shares.
- */
+/** The people a question names (all on the board): picked with @, then typed in */
 interface Mentioned {
   all: readonly Person[];
   holding: readonly Person[];
@@ -174,28 +152,17 @@ function teamResult(dataset: Dataset, question: string, options: AskOptions): Sc
   return script ? script.run(dataset, question) : declined(NOT_UNDERSTOOD_MESSAGE, FIRST_SUGGESTIONS);
 }
 
-/**
- * How a people-level question evaluates people, as the service reads it
- * (oversight/ask/router.py, judging): "personnel", "scorecard", or null when
- * it evaluates no one, is about no one, or ranks people by one of the people
- * view's counts ("top 5 people by breaches", "compare @A and @B by open
- * breaches"), which stays JO-09's raw-count ranking.
- */
+/** How a people-level question evaluates people, as the service reads it */
 function judging(question: string, aboutPeople: boolean): "personnel" | "scorecard" | null {
   if (!aboutPeople || !(asksToEvaluate(question) || asksPersonnel(question))) return null;
   const measure = measureIn(question);
-  // "Top 5 people by breaches" (JO-09's ranking) and "rank people by backlog" (the count): a ranking by a count.
+  // "Top 5 people by breaches" and "rank people by backlog" (the count): a ranking by a count.
   if (ranksOnly(question) && (peopleTopic(question) !== null || asksForACount(question)) && (measure === null || measure === "open_findings_per_10")) {
     return null;
   }
   return asksPersonnel(question) ? "personnel" : "scorecard";
 }
 
-/**
- * A question's "top 5", "bottom 3", "the lowest 3", "which 3 people" or "the 5 developers": at most that many people
- * (up to 50), as the service reads it (_TOP_N); null for everyone. Which end comes first is the question's order
- * (orderIn: top is most first, bottom fewest first, where no other direction word stands).
- */
 const TOP_N = new RegExp(
   String.raw`\b(?:top|bottom|highest|lowest)\s+(${N_WORDS})\b|\b(?:which|the|first)\s+(${N_WORDS})\s+(?:people|persons|developers|devs|engineers|programmers|testers|assignees|members|team\s*-?\s*members|teammates|colleagues|performers|users|staff|employees|of\s+(?:them|us|the\s+team))\b`,
 );
@@ -208,18 +175,7 @@ function topIn(question: string): number | null {
   return Math.max(1, Math.min(NUMBER_WORDS[said] ?? Number(said), 50));
 }
 
-/**
- * People level: the same, and facts about people by the people the question
- * names, as the service's catalogue path routes them (oversight/ask/router.py,
- * _route_people): nothing about people is declined. A question that evaluates
- * someone gets their scorecard, several side by side, or everyone in order of
- * how closely they follow the process. Finished work, work in progress and a
- * measure named put everyone in order by it; one ticket's assignee, the people
- * view's rankings and one person's tickets and findings are as JO-09 answers
- * them. With comparison off (an organisation's choice) only setting people
- * side by side is refused, in the contract's words; one person's scorecard is
- * always there. The help is only for what no figure answers per person.
- */
+/** People level: the same, and facts about people by the people the question */
 function peopleResult(dataset: Dataset, question: string, mentioned: readonly Person[], comparison: PeopleComparison): ScriptResult {
   const aboutPeople = mentioned.length > 0 || asksAboutPeopleAtPeopleLevel(question) || namesSomeone(question, dataset);
   const judged = judging(question, aboutPeople);
@@ -229,14 +185,10 @@ function peopleResult(dataset: Dataset, question: string, mentioned: readonly Pe
   const offOr = (answer: () => ScriptResult): ScriptResult => (comparison === "off" ? declined(ASK_DECLINES.comparisonOff, ONE_AT_A_TIME_SUGGESTIONS) : answer());
   const everyoneBy = (measure: ComparedKey | RankedCount | typeof OVERALL, options: { order?: CompareOrder; members?: boolean } = {}) =>
     offOr(() => comparisonAnswer(dataset, measure, days, personnel, { ...options, n }));
-  // A measure's comparison in the order the question asks (JO-14): most, highest first; fewest, lowest first; else
-  // closer to the process first (orderFor turns a measure named the other way round, "who overruns the most?").
   const everyoneByMeasure = (measure: ComparedKey | typeof OVERALL) => everyoneBy(measure, { order: orderFor(question, measure) ?? "closer" });
   if (judged !== null) {
     if (mentioned.length === 1) return scorecardAnswer(dataset, mentioned, days, personnel);
     if (mentioned.length > 1) {
-      // "Rank @A and @B by reopened tickets, highest first", "who is worse on reopened tickets, @A or @B?": that
-      // measure's comparison, those people only, in the order asked, as the service plans it (_scorecard_calls).
       const named = scorecardMeasureIn(question, mentioned);
       if (named === null) return offOr(() => scorecardAnswer(dataset, mentioned, days, personnel));
       const only = mentioned.map((person) => person.id);
@@ -245,20 +197,14 @@ function peopleResult(dataset: Dataset, question: string, mentioned: readonly Pe
     return everyoneByMeasure(measureIn(question) ?? OVERALL);
   }
   const finished = asksForFinishedWork(question);
-  // "Who reopens the least work?", "who has the least work in progress?": the figure named, in the order asked, never
-  // the open tickets a word of room would give (JO-14, the service's _route_people). A word of room itself still is.
   const spoken = loadIn(question);
   const load = spoken === "spare" && saysOnlyHowLittle(question) && namesAFigure(question, finished) ? null : spoken;
   if (mentioned.length > 1) return sideBySide(dataset, question, mentioned, { finished, load, days, comparison });
   if (mentioned.length === 1) {
-    // A scorecard measure named ("does @A skip stages?", "time logged by @A"): their scorecard, that measure next to
-    // the whole board's with the rest, never their tickets and findings (the JO-12 check).
     if (scorecardMeasureIn(question, mentioned) !== null) return scorecardAnswer(dataset, mentioned, days, personnel);
     if (asksForBacklog(question) || asksAboutOverload(question) || load === "spare" || load === "busiest") return backlogAnswer(dataset, mentioned[0]);
     if (finished) return doneAnswer(dataset, mentioned[0], days);
     if (asksWhatTheyWorkOn(question) || asksWhoIsIdle(question)) return workingOnAnswer(dataset, mentioned[0]);
-    // One person's tickets ("how many open tickets does @X have?"): their open tickets, as the service answers it,
-    // never their findings.
     return peopleTopic(question) === "tickets" ? backlogAnswer(dataset, mentioned[0]) : personFindingsAnswer(dataset, question, mentioned[0]);
   }
   if (aboutPeople) {
@@ -267,23 +213,15 @@ function peopleResult(dataset: Dataset, question: string, mentioned: readonly Pe
     // A count most first, or fewest first when the question asks for the fewest (orderIn).
     const fewest = asksForFewest(question);
     const counted: CompareOrder = fewest ? "fewest" : "most";
-    // Who is idle, or has nothing to do, room for more or the least work (the synonym table, JO-12 G3/G4): the count
-    // fewest first, and the members who hold no ticket at all; the qualifiers and negations read first ("not idle",
-    // "at full capacity", "not overloaded"), so an answer is never ordered against its question.
     if (load === "idle") return everyoneBy("in_progress", { order: "fewest", members: true });
     if (load === "active") return everyoneBy("in_progress", { order: "most" });
     if (load === "spare") return everyoneBy("open_tickets", { order: "fewest", members: true });
     if (load === "busiest") return everyoneBy("open_tickets", { order: "most" });
-    // A measure named: its comparison in the order asked; the ratio only when named as one (findings alone are a count).
-    // Read before work done or in progress, whose words name the tickets a rate is of ("reopened after Done", "time
-    // logged on done work", "stuck tickets in progress"): the rate is the figure asked for, as the service reads it.
     const measure = measureIn(question);
     if (measure !== null && (measure !== "open_findings_per_10" || namesTheRatio(question))) return everyoneByMeasure(measure);
     if (finished) return everyoneBy("done_in_period", { order: counted });
     if (asksAboutWorkInProgress(question)) return everyoneBy("in_progress", { order: counted });
     if (asksWhoHasNoTickets(question)) return boardPeopleAnswer(dataset, "none");
-    // The busiest, the most work: the open tickets, most first; and for what someone is doing ("who is doing the
-    // most?"), the tickets done in the period, most first, beside them.
     if (asksWhoIsBusiest(question)) return offOr(() => busiestAnswer(dataset, days, personnel, { n, doing: asksWhatTheyAreDoing(question) }));
     // The biggest backlog, or a heavy load: the scorecard's open tickets, as one person's backlog is counted.
     if (asksForBacklog(question) || asksAboutOverload(question)) return everyoneBy("open_tickets", { order: counted });
@@ -304,10 +242,6 @@ function peopleResult(dataset: Dataset, question: string, mentioned: readonly Pe
   return script ? script.run(dataset, question) : declined(NOT_UNDERSTOOD_MESSAGE, FIRST_SUGGESTIONS);
 }
 
-/**
- * Whether a question names a figure of its own, as the service reads it (_figure_named): work finished, work in
- * progress, a rate, or the ratio named as one.
- */
 function namesAFigure(question: string, finished: boolean): boolean {
   const measure = measureIn(question);
   return finished || asksAboutWorkInProgress(question) || (measure !== null && (measure !== "open_findings_per_10" || namesTheRatio(question)));
@@ -316,12 +250,7 @@ function namesAFigure(question: string, finished: boolean): boolean {
 /** A letter, a mark, a digit or an underscore: what a name may not run into (as src/lib/names.ts finds names). */
 const NAME_EDGE = "[\\p{L}\\p{M}\\p{N}_]";
 
-/**
- * The question without the names of the people it mentions (and the @ before
- * them), longest first and in any case, as the service's router reads it
- * (oversight/ask/people.py: strip_names): a name is no topic, and stands
- * between no words ("how much time do @A and @B log").
- */
+/** The question without the names of the people it mentions (and the @ before */
 function withoutNames(question: string, people: readonly Person[]): string {
   const names = [...new Set(people.map((person) => person.name).filter((name) => name.trim().length > 0))].sort((a, b) => b.length - a.length);
   return names.reduce((text, name) => {
@@ -330,32 +259,14 @@ function withoutNames(question: string, people: readonly Person[]): string {
   }, question);
 }
 
-/**
- * The scorecard measure a question about the people it mentions names, one
- * only the scorecard holds (time logged, stuck, reopened, skipped a stage,
- * estimates, effort, code review, and the ratio when it is named as one:
- * "findings per 10 tickets"), as the service's router reads it
- * (_scorecard_measure); null for none, and for findings named alone, which
- * the people view's rows count for them (their open breaches and warnings).
- */
+/** The scorecard measure a question about the people it mentions names, one */
 function scorecardMeasureIn(question: string, mentioned: readonly Person[]): ComparedKey | null {
   const words = withoutNames(question, mentioned);
   const measure = measureIn(words);
   return measure === "open_findings_per_10" && !namesTheRatio(words) ? null : measure;
 }
 
-/**
- * Two to ten people side by side, by the figure the question names, as the
- * service's router plans it (_side_by_side): a scorecard measure (that
- * measure's comparison, those people only, then the board; read first, so
- * "the time they log on their done work" is time logged, not work done; with
- * comparison off, the comparison-off sentence); what they finished or have in
- * progress (their tickets, for a few people asked what they work on or with
- * comparison off; else the comparison of that count, those people only);
- * their open tickets, findings, tickets with findings or warnings (the people
- * view's rows for them: a raw count, never a comparison); their open breaches
- * and warnings when it names none of these, or both.
- */
+/** Two to ten people side by side, by the figure the question names, as the */
 function sideBySide(
   dataset: Dataset,
   question: string,
@@ -366,7 +277,7 @@ function sideBySide(
   const measure = scorecardMeasureIn(question, mentioned);
   if (measure !== null) {
     if (comparison === "off") return declined(ASK_DECLINES.comparisonOff, ONE_AT_A_TIME_SUGGESTIONS);
-    // In the order asked (JO-14): "who has more reopened tickets, @A or @B?" is the highest first.
+    // In the order asked: "who has more reopened tickets, @A or @B?" is the highest first.
     return comparisonAnswer(dataset, measure, days, false, { only: ids, order: orderFor(withoutNames(question, mentioned), measure) ?? "closer" });
   }
   const fewest = orderIn(withoutNames(question, mentioned)) === "fewest";
@@ -416,21 +327,11 @@ function combined(results: readonly ScriptResult[]): ScriptResult {
 /** The messages of a question nothing placed: the last resort and a name no one has are read only after them. */
 const UNPLACED: readonly string[] = [NOT_UNDERSTOOD_MESSAGE, PEOPLE_HELP_MESSAGE];
 
-/**
- * The last resort for a question about people that nothing here places
- * (JO-12, G3/G4), as the service's router.last_resort plans it: the overall
- * comparison of everyone, or the scorecards of the people it mentions, over
- * the period its words give, the figures it uses said first. Null for a
- * question about no one, and where comparing people is turned off and the
- * comparison is what it needs: the help stands.
- */
+/** The last resort for a question about people that nothing here places */
 function lastResort(dataset: Dataset, question: string, mentioned: readonly Person[], comparison: PeopleComparison): ScriptResult | null {
   if (mentioned.length === 0 && !asksAboutPeopleAtPeopleLevel(question)) return null;
   if (comparison === "off" && mentioned.length !== 1) return null;
   const days = daysIn(question);
-  // Closer to the process first: a direction word alone ("who writes the most comments?") is about something no figure
-  // counts. A question about the other side of the process ("who makes the most mistakes?") is further from it first,
-  // and the least of that closer first, as everywhere (orderFor).
   const order = asksAboutTheFurtherSide(question) ? (orderFor(question, OVERALL) ?? "closer") : "closer";
   const answer = mentioned.length > 0 ? scorecardAnswer(dataset, mentioned, days, false) : comparisonAnswer(dataset, OVERALL, days, false, { order });
   if (answer.outcome !== "answered") return answer;
@@ -477,14 +378,12 @@ export function askSample(dataset: Dataset, question: string, latencyMs: number,
     note: null,
   };
   const empty = { answer: null, citations: [], facts: [], plan: [], missing_evidence: [], message: null, suggestions: [], people: [] };
-  // Everyone on the board: the people assigned its tickets now and its members who hold none. A ticket holder holds
-  // work (JO-12, G5): someone who holds only Epics holds none of its tickets.
   const board = directoryPeople(dataset);
   const holders = new Set(workPeople(dataset).map((person) => person.id));
   const found = options.mentions.map((id) => board.find((person) => person.id === id));
   // Null when anyone mentioned is not on the board at all.
   const picked = found.every((person): person is Person => person !== undefined) ? found : null;
-  // At people level a name typed in full is that person, as if picked with @ (JO-11); team level never reads names.
+  // At people level a name typed in full is that person, as if picked with @; team level never reads names.
   const typed = options.level === "people" && picked ? typedPeople(asked, board) : { people: [], ambiguous: [], ambiguousFirst: null };
   const all = picked && [...picked, ...typed.people.filter((person) => !picked.some((other) => other.id === person.id))];
   const split = (people: readonly Person[]) => ({
@@ -494,11 +393,6 @@ export function askSample(dataset: Dataset, question: string, latencyMs: number,
   });
   let mentioned: Mentioned | null = all && { ...split(all), ambiguous: typed.ambiguous, ambiguousFirst: typed.ambiguousFirst };
   let outcome = result(dataset, asked, options, mentioned);
-  // A first name typed in lower case where a name stands ("how is ada doing?"), read only when nothing else made sense
-  // of a question that asks something of one person, as the service reads it (oversight/ask/service.py): that person,
-  // as if picked with @, when only one person on the board goes by it; a name two people share asks for @.
-  // What nothing placed: not understood, the help, or comparing people refused for a question that judges no one (one
-  // that judges people is refused before any name is read, as the service refuses it).
   const aboutPeople = (mentioned?.holding.length ?? 0) > 0 || asksAboutPeopleAtPeopleLevel(asked) || namesSomeone(asked, dataset);
   const unplaced = (answer: ScriptResult | NoTickets) =>
     answer.outcome === "not_understood" &&
@@ -517,9 +411,6 @@ export function askSample(dataset: Dataset, question: string, latencyMs: number,
       }
     }
   }
-  // Never turn an admin away (JO-12, G3/G4), as the service does once the loose name found no one: a name typed where
-  // a person's name stands that no one on the board goes by is said so; any other question about people gets the
-  // overall comparison (or the scorecards of the people it mentions), with a sentence first saying which figures.
   if (options.level === "people" && mentioned !== null && !resolved && unplaced(outcome)) {
     const unknown = mentioned.all.length === 0 ? unknownName(asked, board, asksOfSomeone(asked)) : null;
     if (unknown !== null) {
@@ -537,8 +428,6 @@ export function askSample(dataset: Dataset, question: string, latencyMs: number,
 
   /** An answer passes when its figures and its names are in its facts: then it names the people it names. */
   const answered = (answer: string, facts: FactSet[], plan: PlanStep[]): AskResponse | null => {
-    // At people level a name also places the figures beside it in the rows that hold only that person's id, as the
-    // service's check does (oversight/ask/service.py, verify).
     const check = verify(answer, facts, plan, options.level === "people" ? { people: board } : {});
     // Team level names no one; people level names only people its facts or mentions hold.
     const people = options.level === "people" ? verifiedPeople(answer, facts, mentioned?.all ?? [], board) : [];

@@ -12,12 +12,6 @@ export interface KbdProps {
   className?: string;
 }
 
-/**
- * Key caps, labelled the way the reader's keyboard is (the platform comes
- * from the request, so the server already renders ⌘ or Ctrl correctly).
- * Decorative to assistive technology: the control that owns the shortcut
- * announces it with aria-keyshortcuts.
- */
 export function Kbd({ keys, joiner, className }: KbdProps) {
   return <Keys keys={Array.isArray(keys) ? keys : [keys]} joiner={joiner} className={className} />;
 }

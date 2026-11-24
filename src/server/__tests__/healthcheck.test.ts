@@ -3,14 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { healthy } from "../../../scripts/healthcheck.mjs";
 
-/*
- * The dashboard container's health check (scripts/healthcheck.mjs, the
- * Dockerfile's HEALTHCHECK). The compose stack pins sign-in on, so the
- * dashboard's own health route answers 401 without ever asking the API: the
- * check must also ask the API with the dashboard's own settings, or a stopped
- * API or a wrong service key would show the dashboard healthy while every page
- * fails.
- */
+/** The dashboard container's health check (scripts/healthcheck.mjs, the */
 
 const KEY = "k".repeat(64);
 const LIVE = { PORT: "3400", OVERSIGHT_DATA: "live", OVERSIGHT_API_URL: "http://api:3300", OVERSIGHT_SERVICE_KEY: KEY };

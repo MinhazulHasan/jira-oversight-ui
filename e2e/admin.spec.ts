@@ -1,15 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Request } from "@playwright/test";
 
-/*
- * Governance (JO-12): the Access log and Usage, for people level (an admin;
- * here sign-in is off, which reads at people level too). Against the sample
- * server: its access log is a fixed, made-up history (fictional viewers, the
- * sample's own people); its usage is made up, with no budget set. The
- * team-level side (no Governance in the rail, the not-found page, the
- * refusals) is in e2e-auth/sign-in.spec.ts, where sign-in is on.
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function axeBlocking(page: Page) {
@@ -37,11 +28,6 @@ function inFlight(page: Page): () => number {
   return () => pending.size;
 }
 
-/**
- * A page settled: hydrated, the shell's data source answered (its pill), then nothing in flight for half a second.
- * (Playwright's networkidle is reached once per page load, and under a full run's load WebKit can reach it before it
- * has hydrated at all.)
- */
 async function settled(page: Page, pending: () => number) {
   await expect(page.getByRole("banner").getByRole("button", { name: /Sample data/ })).toBeVisible();
   let quietSince = Date.now();
@@ -79,10 +65,6 @@ test("Governance's own address is a real redirect to the access log, before anyt
   page,
   request,
 }) => {
-  // Regression: under the app's loading boundary the redirect streamed after the shell, so WebKit drew the page, began
-  // fetching the rail's links ahead, and logged each fetch the move then cancelled as an uncaught error (4 to 10 a
-  // time). (Leaving any page with fetches in flight logs the same in WebKit, whatever the next address: here the
-  // page is opened from nothing, so what is counted is its own.)
   const answer = await request.get("/governance", { maxRedirects: 0 });
   expect(answer.status()).toBe(307);
   expect(new URL(answer.headers().location, "http://localhost").pathname).toBe("/governance/access-log");
@@ -95,10 +77,6 @@ test("Governance's own address is a real redirect to the access log, before anyt
   await expect(page.getByRole("heading", { level: 1, name: "Access log" })).toBeVisible();
   await expect(rows(page).first()).toBeVisible();
   await page.waitForLoadState("networkidle");
-  // And typed in from the Overview or a ticket, as the final check opened it: each page settled first, so a fetch of
-  // its own still in flight is not counted, only what opening Governance logs. Settled means hydrated, the shell's
-  // data in, then quiet: under a full run's load WebKit can go quiet for half a second before it hydrates at all,
-  // and its first reads and the rail's fetches ahead would then be cut off by the move (JO-15's check).
   await settled(page, pending);
   for (const from of ["/", "/issues/DEMO-1"]) {
     await page.goto(from);

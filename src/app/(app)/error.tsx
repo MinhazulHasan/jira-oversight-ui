@@ -14,11 +14,6 @@ function digestOf(error: unknown): string | undefined {
   return undefined;
 }
 
-/**
- * A page that failed to render. Calm and specific: nothing about the data has
- * changed, only this view could not be drawn, and trying again re-fetches it.
- * Data regions handle their own errors inline; this is the last line.
- */
 export default function PageError({ error, retry }: { error: unknown; retry: () => void }) {
   useEffect(() => {
     console.error(error);

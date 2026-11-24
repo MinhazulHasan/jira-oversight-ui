@@ -11,17 +11,7 @@ import { notify } from "@/lib/notify";
 
 import { SIGNED_OUT_PATH, SignOutButton, SignOutConfirm, cancelSignOut, leave, requestSignOut } from "../sign-out";
 
-/*
- * Sign out is a POST from the dashboard's own page, labelled in both places
- * it appears. It goes as a same-origin fetch, so it carries the dashboard's
- * real Origin (the site's no-referrer policy would make a form's own POST say
- * "null", which the route refuses), and lands on /login?signed_out=1. It is a
- * plain button, never a form: pressed before the page hydrates, a form would
- * submit by itself and meet that refusal.
- *
- * It asks first (the product owner, 13 Nov 2026): every way to sign out opens
- * one confirmation, and only its own "Sign out" ends the session.
- */
+/* Sign out is a POST from the dashboard's own page, labelled in both places it appears. */
 
 function answer(response: Partial<Response>) {
   const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(response as Response);

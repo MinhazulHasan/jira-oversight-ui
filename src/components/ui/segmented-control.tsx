@@ -43,11 +43,7 @@ const segment = cva(
   },
 );
 
-/**
- * One choice from a few, shown side by side (Chart | Table, 7d | 30d | 90d).
- * It is a radio group to assistive technology: Tab enters it at the checked
- * option, arrow keys move and choose, and the group has a name.
- */
+/** One choice from a few, shown side by side (Chart | Table, 7d | 30d | 90d). */
 export function SegmentedControl<T extends string>({
   label,
   options,

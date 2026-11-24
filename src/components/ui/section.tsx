@@ -18,11 +18,7 @@ export interface SectionProps {
   className?: string;
 }
 
-/**
- * A titled part of a page. Sections are separated by space and a hairline
- * that runs from the label to the actions, never by another card: the page
- * is one sheet.
- */
+/** A titled part of a page. */
 export function Section({
   title,
   count,

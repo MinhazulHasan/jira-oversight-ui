@@ -5,11 +5,6 @@ import { useInsights } from "@/lib/api/hooks";
 import { Briefing } from "./briefing";
 import { BriefingError, BriefingSkeleton, NoBriefing } from "./states";
 
-/**
- * The Insights page's one data region, in its four states: loading (the
- * sheet's own shape), no briefing yet (before the first weekly run), an
- * inline error with retry, and the briefing.
- */
 export function InsightsView() {
   const query = useInsights();
 

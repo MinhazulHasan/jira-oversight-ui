@@ -2,13 +2,6 @@ import { SAMPLE_BOARDS, type SampleBoard } from "./boards";
 import { buildDataset, CATALOGUE_SETTINGS, memo, sampleDataset, type Dataset } from "./dataset";
 import { boardSynced } from "./sync";
 
-/*
- * The sample's boards as one request sees them (JO-17): which have synced, and
- * each synced board's dataset at the request's "now". What answers for more
- * than one board reads them through this: the board list, the Portfolio, and
- * the other boards a person card names.
- */
-
 export interface ServedBoards {
   /** Whether the board has synced at least once. */
   synced(board: SampleBoard): boolean;
@@ -24,10 +17,7 @@ export function sampleBoardsAt(now: number, wallClock: number = Date.now()): Ser
   };
 }
 
-/**
- * Around a dataset the tests built: the other boards fresh at its "now", each
- * built once and kept with it, and synced as the server starts (HELP not).
- */
+/** Around a dataset the tests built: the other boards fresh at its "now", each */
 export function boardsAround(dataset: Dataset): ServedBoards {
   return {
     synced: (board) => board.key === dataset.board.key || board.syncedAtStart,
@@ -36,10 +26,6 @@ export function boardsAround(dataset: Dataset): ServedBoards {
   };
 }
 
-/**
- * Every board in the order GET /projects lists them (the service's order): the default first, then the synced
- * boards by name, then the boards not synced yet by name.
- */
 export function boardsInOrder(boards: ServedBoards): SampleBoard[] {
   const [first, ...rest] = SAMPLE_BOARDS;
   const byName = (a: SampleBoard, b: SampleBoard) => a.name.localeCompare(b.name, "en");

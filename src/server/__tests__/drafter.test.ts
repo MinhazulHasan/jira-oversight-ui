@@ -13,18 +13,6 @@ import { draftView } from "../sample/rule-settings";
 
 import evalSet from "./fixtures/rule-drafts.json";
 
-/*
- * The sample's AI draft (JO-20): the keyword script standing in for the model,
- * as the service's ScriptedProvider drafts in LLM_MODE=stub. Held first to the
- * service's own eval (tests/eval/rule_drafts.yaml in jira-oversight-sys, copied
- * here as fixtures/rule-drafts.json), case by case as the service's suite holds
- * its script, so the two scripts cannot drift apart; then to a table of
- * requests on DEMO's own names (To Do, In Progress and Done; Task, Bug,
- * Subtask, Test and Epic): the check each becomes, its key params, the
- * categories and issue types it looks at, how serious it is, its name and what
- * it flags.
- */
-
 const NOW = Date.parse("2026-11-04T14:30:00Z");
 const dataset = buildDataset(NOW);
 const options = boardOptions(dataset.world);
@@ -50,11 +38,6 @@ const evalOptions: BoardOptions = {
 };
 const evalBoard = customRuleBoard(evalOptions, dataset.rules);
 
-/**
- * What a draft got wrong against its case, as the service's suite reads one (tests/test_rule_drafts.py `misses`): the
- * outcome, then for a draft the check, each key param, the categories, issue types and severity the case names, and
- * any problem a save would still find.
- */
 function misses(want: EvalCase, text: string): string[] {
   const result = scriptedDraft(text, evalOptions);
   if (result.outcome !== want.outcome) return [`outcome ${result.outcome}, not ${want.outcome} (${result.note})`];

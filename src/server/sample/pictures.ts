@@ -1,15 +1,4 @@
-/**
- * The sample's two pictures, drawn here in code: an abstract pattern (a
- * mirrored five-by-five grid, as identicons are) encoded as a PNG. Never a
- * photograph of anyone, and nothing is fetched. Two of the eight fictional
- * people have one, so the dashboard shows (and its tests check) both a
- * picture and initials; the other six have none, as people who never set a
- * Jira picture have none.
- *
- * The PNG is written by hand with stored (uncompressed) deflate blocks, so
- * its bytes, and the version made from them, are the same on every machine
- * whatever zlib it has.
- */
+/** The sample's two pictures, drawn here in code: an abstract pattern (a */
 
 import { createHash } from "node:crypto";
 

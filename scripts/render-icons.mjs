@@ -1,13 +1,3 @@
-/**
- * Rasterise the product mark for the places that cannot take an SVG.
- *
- *   npm run icons
- *
- * Writes src/app/apple-icon.png (180px, full bleed: iOS rounds the corners
- * itself and fills transparent corners with black) and src/app/favicon.ico
- * (16px and 32px PNGs inside an ICO container, for older Safari and for
- * tools that still ask for /favicon.ico).
- */
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { chromium } from "@playwright/test";

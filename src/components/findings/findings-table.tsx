@@ -29,10 +29,6 @@ import { hasActiveFilters, type FindingsFilters, type SetFindingsUrl } from "./u
 
 const EMPTY: Finding[] = [];
 
-/**
- * Below this width the findings are a list, one to a row, rather than the table: its eight columns scrolled sideways
- * inside their frame on a phone, the rule cut to "Work s…" and the issue out of view (SQA). A tablet keeps the table.
- */
 const LIST_BELOW_PX = 640;
 
 export interface FindingsTableProps {
@@ -89,12 +85,6 @@ function ResultLine({
   );
 }
 
-/**
- * The findings on a phone: the rule's title and severity first, the issue (or
- * sprint) under it, then why the rule fired, each whole, and who has it; a
- * press opens its evidence, as a row of the table does. The table's order, so its pages and
- * the URL's sort read the same.
- */
 function FindingList({
   rows,
   loading,
@@ -160,12 +150,6 @@ function FindingList({
   );
 }
 
-/**
- * The working list: what the filters found, the findings themselves (every
- * row opens its evidence), and the way through the pages. Loading keeps the
- * table's shape, an empty result says what was looked at, and a failure
- * stays inline with a retry.
- */
 export function FindingsTable({ findings, filters, setFilters, openId, onOpen }: FindingsTableProps) {
   const locale = useFigureLocale();
   const top = useRef<HTMLDivElement>(null);
@@ -175,7 +159,6 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
   const { data, error, isPending, isPlaceholderData, isFetching, refetch } = findings;
   const rows = data?.items ?? EMPTY;
   const active = hasActiveFilters(filters);
-
 
   let empty: ReactNode = null;
   if (error && !data) {
@@ -229,8 +212,6 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
 
   const onPageChange = (page: number) => {
     void setFilters({ page: page === 1 ? null : page });
-    // The pages are long: start the next one at its first row, not at the pager,
-    // and below the sticky top bar rather than under it.
     const frame = top.current;
     if (!frame) return;
     const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--topbar-h")) || 56;
@@ -271,9 +252,6 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
               loadingRows={12}
               empty={empty}
               keyboardScope="page"
-              // Below this the table scrolls sideways in its frame rather than squeeze the issue key out of view. A
-              // MacBook Air's 1280 px with the rail open leaves the table about 58rem, so it never scrolls there (SQA:
-              // at 66rem the State column was cut off at 1280 px), nor at 1440 px (about 68rem).
               minWidth="56rem"
             />
           )}

@@ -15,10 +15,7 @@ export interface DialogProps {
   /** One or two lines on what the dialog is for; its accessible description. */
   description?: ReactNode;
   children?: ReactNode;
-  /**
-   * What must be seen whatever the body's scroll: a refusal, a failure. Set under the title, outside the body that
-   * scrolls, so it is in view the moment it appears.
-   */
+  /** What must be seen whatever the body's scroll. */
   notice?: ReactNode;
   /** Buttons, right-aligned in a ruled footer. Put the primary action last. */
   footer?: ReactNode;
@@ -35,13 +32,6 @@ export interface DialogProps {
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
 }
 
-/**
- * A centred dialog for something that needs the reader's whole attention for
- * a moment (an export's options, a definition). Focus is held inside, Escape
- * and the close button shut it, and focus returns to the control that opened
- * it (or, when that is gone, to `fallbackFocus`). Rare in a read-only product:
- * most detail opens in the drawer instead.
- */
 export function Dialog({
   open,
   onOpenChange,

@@ -26,17 +26,13 @@ export function errorDetail(error: ApiError | null): string | undefined {
   return `${error.status > 0 ? `HTTP ${error.status}` : "No response"} · ${error.code}`;
 }
 
-/**
- * The Process page's data regions. One request (GET rules) feeds both, so a
- * failure is said once, in place of both; while it loads each region shows a
- * skeleton in its final shape.
- */
+/** The Process page's data regions. */
 export function ProcessView() {
   const query = useRules();
   const locale = useFigureLocale();
   const [openRule, setOpenRule] = useOpenRule();
   const [order, setOrder] = useState<string[]>([]);
-  // An admin (people level) changes how the board runs its rules on the rule settings page (JO-15).
+  // An admin (people level) changes how the board runs its rules on the rule settings page.
   const admin = usePeopleLevel();
   const data = query.data;
 

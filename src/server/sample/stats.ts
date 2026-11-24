@@ -1,8 +1,4 @@
-/**
- * The statistics oversight/stats.py uses, so a sample median is computed the
- * way a live one would be: linear interpolation between ranks (numpy's
- * default), and null for an empty list or a share of nothing.
- */
+/** The statistics oversight/stats.py uses, so a sample median is computed the */
 
 export function percentile(values: readonly number[], pct: number): number | null {
   const data = values.filter((value) => Number.isFinite(value)).sort((a, b) => a - b);

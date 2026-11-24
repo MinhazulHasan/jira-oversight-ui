@@ -9,11 +9,7 @@ import { cn } from "@/lib/utils";
 
 import { floatingSurface, menuItem, menuLabel, menuSeparator } from "./surfaces";
 
-/**
- * A menu of actions or choices (Radix DropdownMenu: arrow keys, typeahead,
- * Escape, focus returned to the trigger). Styled like the theme menu in the
- * top bar, so every menu in the product reads the same.
- */
+/** A menu of actions or choices (Radix DropdownMenu. */
 export const DropdownMenu = MenuPrimitive.Root;
 export const DropdownMenuTrigger = MenuPrimitive.Trigger;
 export const DropdownMenuGroup = MenuPrimitive.Group;

@@ -50,14 +50,6 @@ import { newRuleImpacts } from "../review-dialog";
 
 import { BUGS, twoRules, UNTOUCHED } from "./custom-board";
 
-/*
- * The rule settings page's arithmetic (JO-15), and the two controls it adds to
- * the kit: a threshold's field, read leniently and stepped as a native number
- * field steps, and the On/Off switch. JO-20 adds a board's own rules: the
- * changes a custom rule's draft makes, their undo and words, and the "New
- * rule" sheet's form.
- */
-
 const settings = ruleSettingsSchema.parse(settingsJson);
 const rules = settings.rules;
 const saved = draftOf(settings);
@@ -301,8 +293,6 @@ describe("where the settings stand", () => {
     expect(region.querySelector("[data-apply]")).toHaveTextContent("Applied");
     expect(region).toHaveTextContent("5 closed, 2 opened");
     expect(region).toHaveAttribute("role", "status");
-    // Never an email address, an account id or a zone's name: the board, the revision, the time on the 12-hour clock, a name.
-    // Date first, as every time on screen reads (SQA).
     expect(region.textContent).toMatch(/Revision 1 · , last changed .+\d{4}, \d{1,2}:\d{2}\s[AP]M by Local \(sign-in off\)/);
     expect(region.textContent).not.toMatch(/GMT|UTC|BST|Europe\//);
   });

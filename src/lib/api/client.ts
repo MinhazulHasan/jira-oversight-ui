@@ -64,13 +64,6 @@ import {
   type Usage,
 } from "./schemas";
 
-/**
- * Typed fetchers for /api/oversight, the interface's own server route. The
- * browser never talks to the oversight service directly, and never trusts a
- * body it has not parsed: every response goes through its schema, so a page
- * either gets data in the contract's shape or an ApiError it can explain.
- */
-
 export const API_BASE = "/api/oversight";
 
 export interface ApiErrorIssue {
@@ -78,12 +71,6 @@ export interface ApiErrorIssue {
   message: string;
 }
 
-/**
- * A request that did not produce data. `status` is the HTTP status, or 0 when
- * no answer arrived at all; the QueryClient reads it to skip retrying a 4xx.
- * `code` is the route's stable error code, or one of network_error,
- * invalid_response and http_error raised here.
- */
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -117,13 +104,6 @@ function isAbort(error: unknown): boolean {
   return typeof error === "object" && error !== null && "name" in error && error.name === "AbortError";
 }
 
-/**
- * The browser is on its way to the sign-in page: hold the call instead of
- * failing it, so the page keeps what it shows, rather than an error that
- * blames the data source, until the browser has left. Should it still be
- * here once the guard has passed (a navigation cancelled, say), the call
- * fails as any other would. A cancelled query still ends at once.
- */
 function holdWhileLeaving(error: ApiError, signal: AbortSignal | null | undefined): Promise<never> {
   return new Promise<never>((_resolve, reject) => {
     if (signal?.aborted) {
@@ -207,13 +187,6 @@ export function getProjects(options: RequestOptions = {}): Promise<Projects> {
   return request("projects", projectsSchema, options);
 }
 
-/**
- * A POST as the route takes it (a question, "Sync now", a change to rule
- * settings): from this page, so it carries this dashboard's own Origin, which
- * the route requires of every POST (a referrer policy of its own, as signing
- * out has, so Safari sends the real one under the site's no-referrer policy);
- * a body, where there is one, as JSON.
- */
 function postRequest(body: unknown, options: RequestOptions): RequestInit {
   return {
     ...options,
@@ -223,10 +196,6 @@ function postRequest(body: unknown, options: RequestOptions): RequestInit {
   };
 }
 
-/**
- * Sync (JO-18): starts the sync of the board picked in the top bar (the server adds it), queued behind another
- * board's while one runs, unless that board's is under way or just finished; its state either way.
- */
 export function postRefresh(options: RequestOptions = {}): Promise<Refresh> {
   return request("refresh", refreshSchema, postRequest(undefined, options));
 }
@@ -250,23 +219,10 @@ export function getPeopleDirectory(options: RequestOptions = {}): Promise<People
   return request("people/directory", peopleDirectorySchema, options);
 }
 
-/**
- * How tickets are handled, person by person, next to the whole board, over the
- * last 30, 90 or 180 days (people level only). No person: everyone who holds a
- * ticket on the board, or, where comparison is turned off, the board's figures
- * alone; with people (ten at most), those people.
- */
 export function getPeopleScorecard(query: ScorecardQueryInput = {}, options: RequestOptions = {}): Promise<PeopleScorecard> {
   return request(withQuery("people/scorecard", scorecardSearchParams(query)), peopleScorecardSchema, options);
 }
 
-/**
- * One person's card (people level only): their work, findings and process
- * next to the board's over the period (90 days unless said), on the board
- * picked in the top bar, or on `board` where the page names one (an access
- * log entry's). Every read is recorded in the service's access log, at most
- * once in ten minutes for one person, board and reader.
- */
 export function getPersonCard(personId: string, query: PersonCardQueryInput = {}, options: RequestOptions = {}): Promise<PersonCard> {
   return request(withQuery(`people/${encodeURIComponent(personId)}/card`, personCardSearchParams(query)), personCardSchema, options);
 }
@@ -283,11 +239,6 @@ export function getIssueTimeline(issueKey: string, options: RequestOptions = {})
   return request(`issues/${encodeURIComponent(issueKey)}/timeline`, issueTimelineSchema, options);
 }
 
-/**
- * Ask a question. `mentions` are the people picked from the @ list, by id;
- * sent only when there are any. Whether Ask may answer about people is this
- * dashboard's server's decision, never the page's: it is not sent.
- */
 export function postAsk(question: string, mentions: readonly string[] = [], options: RequestOptions = {}): Promise<AskResponse> {
   return request("ask", askResponseSchema, postRequest(mentions.length > 0 ? { question, mentions } : { question }, options));
 }
@@ -323,11 +274,6 @@ export function getUsage(options: RequestOptions = {}): Promise<Usage> {
   return request("usage", usageSchema, options);
 }
 
-/**
- * A board's rule settings (JO-15, people level only), on the board picked in
- * the top bar: every catalogue rule as the board runs it, whether its findings
- * reflect them yet, and the newest changes.
- */
 export function getRuleSettings(options: RequestOptions = {}): Promise<RuleSettings> {
   return request("rules/settings", ruleSettingsSchema, options);
 }
@@ -337,20 +283,10 @@ export function postRuleSettingsPreview(body: RuleSettingsPreviewRequest, option
   return request("rules/settings/preview", ruleSettingsPreviewSchema, postRequest(body, options));
 }
 
-/**
- * Saves changes to the board's rule settings, made against `revision` (409
- * rule_settings_conflict when the board has moved on since), and starts the
- * re-check of its findings; answers the settings as they now stand.
- */
 export function postRuleSettings(body: RuleSettingsSaveRequest, options: RequestOptions = {}): Promise<RuleSettings> {
   return request("rules/settings", ruleSettingsSchema, postRequest(body, options));
 }
 
-/**
- * The AI's draft of a rule from an admin's words (JO-20), built from the board's
- * checks and names: a rule to check in the form, or why it could not be made.
- * Nothing is saved.
- */
 export function postRuleDraft(text: string, options: RequestOptions = {}): Promise<RuleDraft> {
   return request("rules/settings/draft", ruleDraftSchema, postRequest({ text }, options));
 }

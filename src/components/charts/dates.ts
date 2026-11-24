@@ -1,18 +1,5 @@
 import { formatDate, resolveLocale, tidyZoneName } from "@/lib/format";
 
-/*
- * Dates for chart axes and readouts, built on the locale rules in
- * src/lib/format.ts.
- *
- * Weekly series are keyed by the Monday that starts each week, as a calendar
- * date ("2026-11-02"). A calendar date is not an instant: formatted in a
- * reader's own zone, midnight UTC turns into Sunday in the Americas. Those
- * helpers read the date in UTC so every reader sees the same Monday.
- *
- * Instants (a status change at 09:14) are the opposite: they are shown in the
- * viewer's zone, so only ever format them after hydration.
- */
-
 const cache = new Map<string, Intl.DateTimeFormat>();
 
 function formatter(locale: string | undefined, key: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {

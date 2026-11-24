@@ -25,10 +25,6 @@ export function ParamsInWords({ tool, params }: { tool: string; params: AskRespo
   );
 }
 
-/**
- * The catalogue calls a question was planned into, in words: what was looked
- * at (no data), or what would have been looked at (not measurable).
- */
 export function PlanSteps({ plan, className }: { plan: AskResponse["plan"]; className?: string }) {
   if (plan.length === 0) return null;
   return (

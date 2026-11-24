@@ -33,11 +33,6 @@ function FactsSkeleton({ rows }: { rows: number }) {
   );
 }
 
-/**
- * How work flows once it starts (cycle time, reopens) and how time is logged.
- * Worklogs are totals; the people who write them appear only as a count,
- * never by name.
- */
 export function FlowBlock({ data }: { data: Baseline | undefined }) {
   const locale = useFigureLocale();
   const figures = data?.figures;

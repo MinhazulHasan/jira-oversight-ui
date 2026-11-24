@@ -34,13 +34,6 @@ import { resetSampleRuleSettings } from "../sample/settings-store";
 import { pictureOf } from "../sample/pictures";
 import { EVERYONE, MEMBERS, personIdFor, TEAM } from "../sample/team";
 
-/*
- * Every response the sample can give fits the contract exactly: it parses,
- * and parsing changes nothing (no field the contract does not name, no
- * default filled in, nothing that JSON cannot carry). What the browser parses
- * in sample mode is therefore what the Python service must send in live mode.
- */
-
 const dataset = buildDataset(Date.parse("2026-11-04T14:30:00Z"));
 
 function body(route: JsonRoute): unknown {
@@ -84,7 +77,7 @@ const PEOPLE_QUESTIONS: [question: string, mentions: string[]][] = [
   ["@Noor Haddad, @Tomás Ferreira and @Yuki Tanabe: open findings?", [NOOR, TOMAS, YUKI]],
   ["What are @Carmen Ruiz's and @Yuki Tanabe's open findings?", [CARMEN, YUKI]],
   ["How do @Ada Brooks, @Noor Haddad and @Carmen Ruiz compare?", [ADA, NOOR, CARMEN]],
-  // JO-11: questions that evaluate someone, answered with figures; personnel questions; the backlog; typed names.
+  // questions that evaluate someone, answered with figures; personnel questions; the backlog; typed names.
   ["Is @Carmen Ruiz doing well?", [CARMEN]],
   ["How are @Ada Brooks and @Carmen Ruiz doing?", [ADA, CARMEN]],
   ["Who is best on the board? Rank the others", []],
@@ -95,7 +88,7 @@ const PEOPLE_QUESTIONS: [question: string, mentions: string[]][] = [
   ["What is @Carmen Ruiz's backlog?", [CARMEN]],
   ["Is Ada Brooks doing well?", []],
 ];
-/** The scorecards (JO-11): everyone, each person on the board (members with no tickets too), each period. */
+/** The scorecards: everyone, each person on the board (members with no tickets too), each period. */
 const SCORECARDS: JsonRoute[] = SCORECARD_DAYS.flatMap((days) => [
   { name: "people_scorecard", query: { days, person: [] }, level: "people" } as JsonRoute,
   ...EVERYONE.map((member): JsonRoute => ({ name: "people_scorecard", query: { days, person: [personIdFor(member.accountId)] }, level: "people" })),
@@ -210,13 +203,7 @@ describe("sample responses fit the contract exactly", () => {
 
 /* ------------------------------------------------------------------ privacy -- */
 
-/**
- * Keys that would carry a person, or something about one. A person appears
- * only where the contract puts one (PERSON_PLACES), `name` only inside a
- * person or on a sprint, and `avatar` (a picture's version) only inside a
- * person or a people facet entry; the rest (an email, Jira's picture URLs, an
- * account id, a time zone, a reporter or an author) never at all.
- */
+/** Keys that would carry a person, or something about one. A person appears */
 const PERSON_KEYS =
   /^(assignee|reporter|author|creator|owner|user|username|user_name|person|people|email|email_?address|avatar|avatar_?urls|display_?name|account_?id|account_?type|time_?zone|active|full_?name|first_?name|last_?name|name)$/i;
 /** Where the contract puts a person: a finding's and an issue's assignee, a row of /people or of the directory, the people facet. */
@@ -229,22 +216,18 @@ const PERSON_PLACES = [
   /(\.(assignee|person)|\.facets\.people\[\d+\])\.avatar$/,
   /^ask\.people$/,
   /^ask\.people\[\d+\]\.(name|avatar)$/,
-  // Governance (JO-12): a board by its name in the Portfolio (no person); the access log's viewers, by the name their
-  // session holds, and the people each entry read, as person objects.
   /^portfolio\.boards\[\d+\]\.project\.name$/,
   /^access_log\.entries\[\d+\]\.viewer\.name$/,
   /^access_log\.entries\[\d+\]\.subjects\[\d+\]\.(name|avatar)$/,
   // The access log's facets: every viewer and every person read that the log holds, for its filters.
   /^access_log\.facets\.viewers\[\d+\]\.name$/,
   /^access_log\.facets\.subjects\[\d+\]\.(name|avatar)$/,
-  // The person card (JO-13): whose card it is, as a person object, and the boards it names by their names (no person).
+  // The person card: whose card it is, as a person object, and the boards it names by their names (no person).
   /^person_card\.person$/,
   /^person_card\.(board|other_boards\[\d+\])\.name$/,
-  // Rule settings (JO-15): a threshold by its name in the rule's params (no person), and who made a change, by the
-  // name their session holds, as the access log names its viewers.
   /^rule_settings(_save)?\.rules\[\d+\]\.params\[\d+\]\.name$/,
   /^rule_settings(_save)?\.history\[\d+\]\.by\.name$/,
-  // Custom rules (JO-20): a check and its params by their names (no person).
+  // Custom rules: a check and its params by their names (no person).
   /^rule_settings(_save)?\.checks\[\d+\]\.name$/,
   /^rule_settings(_save)?\.checks\[\d+\]\.params\[\d+\]\.name$/,
 ];
@@ -256,10 +239,6 @@ const PEOPLE_LEVEL_IDS = /^ask\.(facts|plan)\[\d+\]\.params\.person$/;
 const PEOPLE_LEVEL_TEXT = /^ask\.answer$/;
 /** At either level: the question, as the reader typed it, which may name someone (a team-level answer still names no one). */
 const ASKED = /^ask\.question$/;
-/**
- * The sample's people, by the names the sample gives them: the team who hold its work and the members who hold
- * none. Fictional, and the only names a response may carry.
- */
 const TEAM_NAMES = new Set(EVERYONE.map((member) => member.name));
 /** Their names, whole or by surname, as they would appear in text that should name no one. */
 const TEAM_IN_TEXT = new RegExp(`\\b(${EVERYONE.flatMap((member) => [member.name, member.name.split(" ")[1]]).join("|")})\\b`);
@@ -295,11 +274,6 @@ const SUBJECT_NAME = /^access_log\.(entries\[\d+\]\.subjects|facets\.subjects)\[
 /** The sample's people's names, longest first, to take out of text that may hold them. */
 const TEAM_NAME_PATTERN = new RegExp(`\\b(${[...TEAM_NAMES].sort((a, b) => b.length - a.length).join("|")})\\b`, "g");
 
-/**
- * Where a body names anyone, or carries anything about anyone, other than as the contract says. At people
- * level (`peopleLevel`), Ask's words, its question and its facts' name columns may name the sample's own
- * people, and only them.
- */
 function nameProblems(value: unknown, root: string, peopleLevel = false): string[] {
   const problems: string[] = [];
   walk(value, root, (path, key, item) => {
@@ -312,8 +286,6 @@ function nameProblems(value: unknown, root: string, peopleLevel = false): string
     if (id && (typeof item !== "string" || !PERSON_ID_PATTERN.test(item))) problems.push(`not a person id at ${path}`);
     if (typeof item !== "string") return;
     if (NAMED.test(path) || (peopleLevel && PEOPLE_LEVEL_FIELDS.test(path))) {
-      // A fictional name from the sample's team, the unassigned facet's label, or (in Ask's facts) the whole board's
-      // row and the row for the tickets nobody holds (JO-12, G5): labels for no one, never a person.
       const board = peopleLevel && PEOPLE_LEVEL_FIELDS.test(path) && (item === BOARD_NAME || item === UNASSIGNED_LABEL);
       const known = VIEWER_NAME.test(path) ? VIEWER_NAMES.has(item) : TEAM_NAMES.has(item) || (SUBJECT_NAME.test(path) && item === FORMER_MEMBER);
       if (!known && !(path.endsWith(".label") && item === UNASSIGNED_LABEL) && !board) problems.push(`${path}: ${item}`);
@@ -332,11 +304,6 @@ function nameProblems(value: unknown, root: string, peopleLevel = false): string
 /** The version a team member's picture goes by, or null for the six without one. */
 const versionOf = (accountId: string) => pictureOf(accountId)?.version ?? null;
 
-/**
- * Every person in a body that is more than an id, a team name and that member's picture's version, or whose id
- * is not its account's hash; every people facet entry whose picture's version is not its member's; and how many
- * people the body holds.
- */
 function personProblems(value: unknown, root: string): { problems: string[]; people: number } {
   const problems: string[] = [];
   let people = 0;
@@ -411,7 +378,7 @@ describe("sample responses name people only as the contract names them", () => {
     ...SCRIPTED.flatMap((question) => [ask(question, "team"), ask(question, "people")]),
     ...PEOPLE_QUESTIONS.flatMap(([question, mentions]) => [ask(question, "team"), ask(question, "people", mentions)]),
     ...SCORECARDS,
-    // Everyone's card on the board (JO-13), over each period: ticket holders and the members who hold none.
+    // Everyone's card on the board, over each period: ticket holders and the members who hold none.
     ...EVERYONE.flatMap((member) =>
       SCORECARD_DAYS.map((days): JsonRoute => ({ name: "person_card", personId: personIdFor(member.accountId), query: { days }, level: "people" })),
     ),
@@ -497,21 +464,16 @@ describe("sample responses name people only as the contract names them", () => {
 
 /* ------------------------------------------------------ the documented ones -- */
 
-/*
- * docs/sample-responses is what the Python team builds against and what the
- * component tests render, so each file must still be, to the byte, what the
- * route answers in sample mode at the pinned "now", fit its schema exactly,
- * and name people only as the contract does.
- */
+/** docs/sample-responses is what the Python team builds against and what the */
 
 const SAMPLE_DIR = fileURLToPath(new URL("../../../docs/sample-responses/", import.meta.url));
 const SAMPLE_ENV = { OVERSIGHT_DATA: "sample", SAMPLE_NOW: "2026-11-04T14:30:00Z", SAMPLE_LATENCY: "0", AUTH_MODE: "off" };
 
-/** The rule settings changes the documented preview, refusal and conflict were asked for (JO-15). */
+/** The rule settings changes the documented preview, refusal and conflict were asked for. */
 const SETTINGS_PREVIEW = { changes: [{ rule_id: "R-EFF-01", params: { threshold: 2 } }, { rule_id: "W-AGE-01", enabled: false }] };
 const SETTINGS_REFUSED = { changes: [{ rule_id: "W-EFF-01", params: { threshold: 1.6 } }] };
 const SETTINGS_CONFLICT = { revision: 7, changes: [{ rule_id: "R-EFF-01", params: { threshold: 2 } }] };
-/** A new rule (JO-20), as the page sends one for its preview: bugs in progress for over three days. */
+/** A new rule, as the page sends one for its preview: bugs in progress for over three days. */
 const SETTINGS_NEW_RULE: RuleSettingsPreviewRequest = {
   changes: [
     {
@@ -526,7 +488,7 @@ const SETTINGS_NEW_RULE: RuleSettingsPreviewRequest = {
     },
   ],
 };
-/** What an admin asked the AI to draft (JO-20). */
+/** What an admin asked the AI to draft. */
 const RULE_DRAFT = { text: "Bugs in progress for more than 3 days" };
 
 /** Each file and the request that answers it, as docs/sample-responses/README.md lists them. */
@@ -642,8 +604,6 @@ describe("the documented sample responses", () => {
   it("name people only as the contract does, and never carry an account id, an email address or a picture's address", () => {
     const checked = Object.entries(DOCUMENTED).map(([file, { route }]) => {
       const value = documented(file);
-      // Rooted at the route's name, as the responses above are, so the same places may hold a person. Sign-in is
-      // off for these, so Ask answered at people level.
       return {
         file,
         names: nameProblems(value, route, route === "ask"),
@@ -660,7 +620,7 @@ describe("the documented sample responses", () => {
     for (const file of Object.keys(DOCUMENTED)) {
       const meta = (documented(file) as { meta?: { data_mode: string; projects: string[] } }).meta;
       if (file.startsWith("error-")) expect(meta, file).toBeUndefined();
-      // The Portfolio belongs to no one board: its meta names every synced board it lists (JO-17).
+      // The Portfolio belongs to no one board: its meta names every synced board it lists.
       else if (file === "portfolio.json") expect([meta?.data_mode, meta?.projects], file).toEqual(["sample", ["DEMO", "MOB"]]);
       else expect([meta?.data_mode, meta?.projects], file).toEqual(["sample", ["DEMO"]]);
     }
@@ -668,24 +628,6 @@ describe("the documented sample responses", () => {
 });
 
 /* --------------------------------------------- the service's own answers --- */
-
-/*
- * The rule settings the live service really sends (JO-15, and JO-20's custom
- * rules and AI drafts), captured from it (jira-oversight-sys, through
- * FastAPI's TestClient on a scratch demo snapshot: DEMO synced, AIL configured
- * and never synced; the viewer a made-up name; the scripted drafter) into
- * fixtures/service/: the settings in every apply state, a save and an undo,
- * the settings holding custom rules (one added, edited and deleted in the
- * history), the previews (custom rules added, edited and deleted among them),
- * the catalogue holding them, the drafts of each outcome, and every shape of
- * refusal, a board never synced's 409 among them. The refinements in
- * schemas.ts (when and by whom only past revision 0, the history headed by
- * the revision, applied and pending against the applied revision, close +
- * stay = open now, totals that add up, a draft exactly with `drafted`) are
- * where a change in the service would show: here it fails a suite rather than
- * turning into 502 upstream_invalid in production. Capture them anew whenever
- * the service's answers change, as fixtures/service/README.md says.
- */
 
 const SERVICE_DIR = fileURLToPath(new URL("./fixtures/service/", import.meta.url));
 const service = (file: string): unknown => JSON.parse(readFileSync(`${SERVICE_DIR}${file}`, "utf8"));
@@ -813,7 +755,7 @@ describe("the oversight service's own rule settings answers", () => {
   it("reach the browser as this interface's own refusals, each problem the service names at its setting, in its words", async () => {
     for (const [name, value] of Object.entries(LIVE_ENV)) vi.stubEnv(name, value);
     const refusals = service("rule-settings-refusals.json") as Record<string, { status: number; body: { errors?: { message: string }[] } }>;
-    // The custom rules' refusals were captured for these changes (JO-20): sent as the page sends them.
+    // The custom rules' refusals were captured for these changes: sent as the page sends them.
     const inProgress = { statuses: ["In Progress"], hours: 72 };
     const sentFor: Record<string, unknown[]> = {
       save422_custom_bad_status: [{ op: "create", rule: CAPTURED_RULE }],
@@ -848,12 +790,10 @@ describe("the oversight service's own rule settings answers", () => {
         paths[name] = refused.issues?.map((issue) => issue.path) ?? [];
       }
     }
-    // The shapes the contract names beside the usual ones (4.22): a change that names no rule, its thresholds as a
-    // whole, a key the request or a change does not take.
     expect(paths.save422_bad_rule_id).toEqual(["(settings)"]);
     expect(paths.save422_params_not_object).toEqual(["R-EFF-01.params"]);
     expect(paths.save422_unknown_key).toEqual(["(settings)"]);
-    // A title is a field a change may set since JO-20 (a custom rule's edit): said at it, beside the rule all the same.
+    // A title is a field a change may set since (a custom rule's edit): said at it, beside the rule all the same.
     expect(paths.save422_unknown_change_key).toEqual(["R-EFF-01.title"]);
     expect(paths.save422_cross_rule_warning).toEqual(["W-EFF-01.params.threshold"]);
     expect(paths.save422_reset_and_more).toEqual(["R-EFF-01.reset"]);
@@ -863,7 +803,7 @@ describe("the oversight service's own rule settings answers", () => {
       ["revision"],
       ["changes"],
     ]);
-    // A new rule has no id: the service names its field alone, and the page's one new rule is where it stands (JO-20).
+    // A new rule has no id: the service names its field alone, and the page's one new rule is where it stands.
     expect([paths.save422_custom_bad_status, paths.save422_custom_title_taken, paths.save422_custom_issue_type]).toEqual([
       ["new-0.params.statuses"],
       ["new-0.title"],

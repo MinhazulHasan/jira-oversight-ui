@@ -23,12 +23,6 @@ export type IssueHeaderProps =
   | { issueKey: string; state: "loading" | "error" | "missing"; data?: undefined }
   | { issueKey: string; state: "ready"; data: IssueData };
 
-/**
- * The issue's header: the key in Plex Mono and its summary as the title; its
- * type, status (with the stage it maps to), epic and assignee on the line
- * beneath; and Copy link and Open in Jira. Sample data has no Jira site behind it, so
- * Open in Jira stays in place, dimmed, and says why.
- */
 export function IssueHeader({ issueKey, state, data }: IssueHeaderProps) {
   const issue = data?.issue;
   return (
@@ -110,9 +104,6 @@ function IssueMeta({ data }: { data: IssueData }) {
         <span className="sr-only">, status</span>
       </Badge>
       {stage ? <span className="text-sm text-ink-low">{stage}</span> : null}
-      {/* The dots part the facts on one line. On a phone the line wraps, and a dot would end or start a line,
-          so there the gap alone parts them. Each dot travels with the fact after it, so a line that wraps above the
-          phone's width never ends on one (SQA: "In Progress · Development stage ·"). */}
       <span className="inline-flex min-w-0 items-baseline gap-2.5">
         <span aria-hidden className="hidden text-ink-low sm:inline" data-separator>
           ·
@@ -130,12 +121,6 @@ function IssueMeta({ data }: { data: IssueData }) {
   );
 }
 
-/**
- * Who the issue is assigned to now, by name with their Jira picture, leading
- * to their open findings; or Unassigned. At people level resting on the name
- * opens their card (JO-13), which says where the link leads among its ways
- * on; the press stays the link's.
- */
 function Assignee({ data }: { data: IssueData }) {
   const peopleLevel = usePeopleLevel();
   const person = data.issue.assignee;

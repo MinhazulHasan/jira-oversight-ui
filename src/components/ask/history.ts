@@ -5,14 +5,6 @@ import { ASK_MAX_MENTIONS, askResponseSchema, personId, type AskResponse } from 
 
 import { sameQuestion } from "./describe";
 
-/**
- * This tab's questions, newest first, so a reader can go back to an answer
- * without asking again. Client state only: kept in sessionStorage (one tab,
- * gone when the tab closes), never sent anywhere. Storage can be missing or
- * refuse (a private window, blocked site data); the list then lives in memory
- * for as long as the page is open.
- */
-
 export const HISTORY_KEY = "jo-ask-history";
 export const HISTORY_LIMIT = 20;
 /** Jira is synced every 30 minutes; an answer kept for less than that is still the answer. */

@@ -1,20 +1,5 @@
 import type { Locator } from "@playwright/test";
 
-/**
- * Text cut short inside `scope`, as a reader sees it:
- *
- * - each element that hides what runs past its box (an ellipsis, or overflow
- *   hidden or clipped) while its text runs past it, or that ends its text
- *   early with a line clamp;
- * - and text that runs past a frame around it that hides its overflow, though
- *   the element holding the text hides nothing itself: a table's header cut
- *   by the rounded frame the table sits in (JO-14). The frame may lie outside
- *   `scope`, as that one lies outside its table.
- *
- * A frame that scrolls on purpose is not cut: what runs past it is a scroll
- * away, and text inside it is measured like any other. Text drawn for screen
- * readers only (a 1 px box) is not read. Each as "text (shown of needed px)".
- */
 export function cutText(scope: Locator): Promise<string[]> {
   return scope.evaluate((root) => {
     const cut: string[] = [];

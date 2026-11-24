@@ -10,12 +10,6 @@ import { projectsFor, servedBoards } from "../boards";
 import { readConfig } from "../env";
 import { resetSampleClock } from "../sample/clock";
 
-/*
- * The boards a person may read (JO-03): which boards the dashboard serves,
- * which of them Jira opens for the person, and the board list cut down to
- * theirs. Made-up keys throughout: no client's boards.
- */
-
 const BOARDS: Projects = {
   default: "BRAVO",
   projects: [

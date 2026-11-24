@@ -6,15 +6,6 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 
-/*
- * "Add rule" (JO-20) stands in the page's header, beside Copy link, while the
- * sheet it opens is the settings view's, which holds the draft. The page wraps
- * both in AddRuleProvider; the view says whether a rule can be added (its
- * settings read, the board under its limit) and how to open the sheet, and
- * the button asks it. The button keeps its place while the settings load, so
- * nothing in the header moves when they arrive.
- */
-
 interface AddRule {
   /** Opens the sheet for a new rule, the focus to come back to `from` when it closes. */
   open: (from: HTMLElement | null) => void;
@@ -36,10 +27,6 @@ export function AddRuleProvider({ children }: { children: ReactNode }) {
   return <AddRuleContext.Provider value={value}>{children}</AddRuleContext.Provider>;
 }
 
-/**
- * The settings view's side: whether a rule can be added, and how its sheet opens. `open` may change on every render;
- * the button always reaches the latest. Null while the settings are not read yet.
- */
 export function useAddRuleTarget(open: ((from: HTMLElement | null) => void) | null, blocked: string | null): void {
   const setTarget = useContext(AddRuleContext)?.setTarget;
   const latest = useRef(open);
@@ -54,10 +41,6 @@ export function useAddRuleTarget(open: ((from: HTMLElement | null) => void) | nu
   }, [setTarget, ready, blocked]);
 }
 
-/**
- * The header's "Add rule": it opens the "New rule" sheet. Held back, saying why in its tooltip, while the board
- * holds its 50 custom rules; held back without a word while the settings load.
- */
 export function AddRuleButton() {
   const target = useContext(AddRuleContext)?.target ?? null;
   if (target?.blocked) {

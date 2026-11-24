@@ -165,12 +165,6 @@ function FactRow({ fact, shown, rowIndex, link, index, tabbable, onFocusRow, onM
   );
 }
 
-/**
- * One fact set's rows as a compact table: typed columns, figures right-aligned
- * in mono, cited cells underlined with their markers, the traced row tinted
- * with the accent bar. A row opens where it leads (a finding's evidence, an
- * issue, an epic's findings); a wide set scrolls sideways inside the ledger.
- */
 export function FactTable({ fact, index, captionId }: { fact: FactSet; index: CitationIndex; captionId: string }) {
   const body = useRef<HTMLTableSectionElement>(null);
   const [focused, setFocused] = useState<number | null>(null);

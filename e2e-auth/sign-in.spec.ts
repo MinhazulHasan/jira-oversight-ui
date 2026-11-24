@@ -3,17 +3,6 @@ import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 import { ACCOUNTS, APP_URL, BROKEN_APP_URL, CLIENT_ID, MOCK_URL, SHORT_SECRET } from "./settings";
 
-/*
- * Signing in with Atlassian (JO-01), the domain allow-list (JO-02) and the
- * boards a person's Jira opens (JO-03), end to end, against the mock
- * Atlassian in mock-atlassian.mjs, and the person view (JO-07) on the boards
- * a user and an admin may read, and the person card (JO-13), an admin's
- * alone. The dashboard runs the sample project with sign-in on
- * (playwright.auth.config.ts), and ACCESS_MODE admin-list: admins are
- * ADMIN_EMAILS, everyone else a user. Everyone-admin, the default, has its
- * own spec and server (everyone-admin.spec.ts).
- */
-
 const DEEP_LINK = "/findings?severity=breach";
 const LOGIN_FOR_DEEP_LINK = /\/login\?next=%2Ffindings%3Fseverity%3Dbreach$/;
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
@@ -52,11 +41,6 @@ async function signedIn(page: Page, path: string) {
   await expect(page.getByRole("banner").getByRole("button", { name: /Sample data/ })).toBeVisible();
 }
 
-/**
- * Signed in on /findings, with the list loaded and nothing left in flight. A test that ends the session
- * waits for this: a call still on its way would meet the 401 first and leave for /login from /findings.
- * (The list starts after hydration, behind a Suspense boundary; the filter counts show it has arrived.)
- */
 async function signedInWithFindings(page: Page) {
   await signedIn(page, "/findings");
   await expect(page.getByRole("radio", { name: /^Breach, \d/ })).toBeVisible();
@@ -352,7 +336,7 @@ test.describe("admins (ADMIN_EMAILS) see every board", () => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/login/);
     await chooseAccount(page, ACCOUNTS.admin);
-    // Going nowhere in particular, an admin lands on the Portfolio, every board at once (JO-12).
+    // Going nowhere in particular, an admin lands on the Portfolio, every board at once.
     await expect(page).toHaveURL(`${APP_URL}/portfolio`);
     await expect(page.getByRole("banner").getByText("Admin", { exact: true })).toBeVisible();
 
@@ -503,9 +487,6 @@ test.describe("Ask about people: admins only (11 Nov 2026)", () => {
 
     const field = page.getByRole("textbox", { name: "Your question" });
     await expect(field).toHaveAttribute("aria-haspopup", "listbox");
-    // Typed only once the page is live: the sync time is drawn then (it reads the viewer's clock). A key pressed before
-    // hydration lands in the server's markup and is taken back with it (the JO-11 check: the @ was lost in 2 runs of 6
-    // in Chromium, on a page just reached from the sign-in redirect), as ask.spec waits for it.
     await expect(page.getByRole("banner").getByRole("button", { name: /Sample data/ })).toBeVisible();
     await expect(page.getByRole("banner").locator("[data-sync-now]").filter({ hasText: / ago/ })).toBeVisible();
     await field.click();
@@ -575,8 +556,6 @@ test.describe("person scorecards: admins only (JO-11)", () => {
     const rail = page.getByRole("navigation", { name: "Primary" });
     await expect(rail.getByRole("link", { name: "Ask" })).toBeVisible();
     await expect(rail.getByRole("link", { name: "People" })).toHaveCount(0);
-    // The not-found page, as for any address the reader has no page at. (Its status is 200, not 404: the page is
-    // refused inside the shell's loading boundary, after the response has started.)
     await page.goto("/people");
     await expect(page.getByRole("heading", { level: 1, name: "Nothing at this address" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "People" })).toHaveCount(0);
@@ -721,7 +700,7 @@ test.describe("Portfolio and Governance (JO-12)", () => {
 test.describe("Rule settings: admins only (JO-15, JO-20)", () => {
   /** A change as the page sends it: JSON, from the dashboard's own origin, which the route requires. */
   const CHANGE = { revision: 0, changes: [{ rule_id: "W-AGE-01", enabled: false }] };
-  /** An AI draft of a rule (JO-20), as the New rule sheet asks for one. */
+  /** An AI draft of a rule, as the New rule sheet asks for one. */
   const DRAFT = { text: "Bugs in progress for more than 3 days" };
 
   test("a user is not offered them: not in the rail, on the Process page or on g then r; the not-found page; reads and changes refused", async ({ page }) => {
@@ -830,8 +809,6 @@ test.describe("the gate", () => {
     if (!cookie) throw new Error("no session cookie after signing in");
     const at = Math.floor(cookie.value.length / 2);
     const tampered = `${cookie.value.slice(0, at)}${cookie.value[at] === "A" ? "B" : "A"}${cookie.value.slice(at + 1)}`;
-    // Off the dashboard first: an open page would meet the 401 in its next refetch and go to /login itself,
-    // racing the navigation below.
     await page.goto("about:blank");
     await page.context().addCookies([{ ...cookie, value: tampered }]);
 

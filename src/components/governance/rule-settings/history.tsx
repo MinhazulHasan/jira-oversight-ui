@@ -16,11 +16,6 @@ import { cn } from "@/lib/utils";
 import { useClock } from "./apply-status";
 import { changesWord, definitionWords, fieldWords, ruleChangeWords, undoneIn } from "./model";
 
-/**
- * One field a change set, in words: "R-EFF-01 Effort far beyond the estimate · Effort ratio 1.5× → 2×". A custom
- * rule added, deleted or brought back (JO-20) is a sentence of its own, "Added rule “Bugs in review over 3 days”",
- * with what it was under it; in an undo's question, what the undo will do ("Deletes rule …").
- */
 function ChangeLine({
   rules,
   checks,
@@ -76,7 +71,7 @@ function ChangeLine({
 export interface HistoryListProps {
   history: readonly RuleSettingsHistoryEntry[];
   rules: readonly RuleSettingsRule[];
-  /** The board's checks: a custom rule's definition in words (JO-20). */
+  /** The board's checks: a custom rule's definition in words. */
   checks?: readonly RuleCheck[];
   board: string;
   /** Undo is the latest change's alone, and held back while the page has unsaved edits (they would be lost). */
@@ -84,7 +79,7 @@ export interface HistoryListProps {
   onUndo: (entry: RuleSettingsHistoryEntry) => void;
 }
 
-/** The names the history gives custom rules (JO-20), by id: the latest it says, for a rule deleted since. */
+/** The names the history gives custom rules, by id: the latest it says, for a rule deleted since. */
 export function historyTitles(history: readonly RuleSettingsHistoryEntry[]): Map<string, string> {
   const titles = new Map<string, string>();
   for (const entry of [...history].reverse()) {
@@ -97,13 +92,6 @@ export function historyTitles(history: readonly RuleSettingsHistoryEntry[]): Map
   return titles;
 }
 
-/**
- * Every change to the board's rule settings, newest first: when (the
- * 12-hour clock, the reader's zone), who (by name, never an address), why, and
- * each field it set, from and to. The latest has Undo; one that a later change
- * undid says so, and an undo says what it undid. A custom rule added, deleted
- * or brought back (JO-20) reads as a sentence.
- */
 export function HistoryList({ history, rules, checks = [], board, undoBlocked, onUndo }: HistoryListProps) {
   const clock = useClock();
   const locale = useFigureLocale();
@@ -194,7 +182,7 @@ export function HistoryList({ history, rules, checks = [], board, undoBlocked, o
 export interface UndoConfirmProps {
   entry: RuleSettingsHistoryEntry | null;
   rules: readonly RuleSettingsRule[];
-  /** The board's checks: a custom rule's definition in words (JO-20). */
+  /** The board's checks: a custom rule's definition in words. */
   checks?: readonly RuleCheck[];
   board: string;
   undoing: boolean;
@@ -208,13 +196,6 @@ export interface UndoConfirmProps {
   fallbackFocus?: () => HTMLElement | null | undefined;
 }
 
-/**
- * Undo, asked first: what it sets back, whose change it was and when, and that
- * the board is re-checked. "Keep it" has the focus, so Enter or a second
- * stray press changes nothing; only "Undo revision N" does. Closed, it gives
- * the focus back to the Undo that opened it, or to `fallbackFocus` once that
- * is gone.
- */
 export function UndoConfirm({ entry, rules, checks = [], board, undoing, problem, conflict, onConfirm, onCancel, onReload, fallbackFocus }: UndoConfirmProps) {
   const clock = useClock();
   // The change asked about stays drawn while the dialog fades out, rather than its words going first.

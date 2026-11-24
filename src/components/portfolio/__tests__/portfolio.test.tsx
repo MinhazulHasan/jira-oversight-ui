@@ -220,7 +220,7 @@ describe("the Portfolio page", () => {
       `Across 3 boards: ${12 + 90 + base.open_breaches} open breaches and ${40 + 10 + base.open_warnings} open warnings;`,
     );
     expect(summary).toHaveTextContent("1 board has not synced in the last 2 hours.");
-    // One summary: the table above the rows says its order alone, never the count again (SQA).
+    // One summary: the table above the rows says its order alone, never the count again.
     expect(screen.getByText("Sorted by open breaches, most first.")).toBeInTheDocument();
     expect(document.body).not.toHaveTextContent(/Choose one to open its Overview|3 boards, sorted by/);
     const rows = within(table()).getAllByRole("row").slice(1);
@@ -354,8 +354,6 @@ describe("the Portfolio page", () => {
   });
 
   it("lists each ticket and rule once, keyed by that, saying how many open findings it holds when more than one", async () => {
-    // Regression (13 Nov 2026): R-FLOW-02 opens a finding for each transition that skipped a stage, AIL-99 held two,
-    // and the list named AIL-99 "Skipped a stage" twice: React said "Encountered two children with the same key".
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     const skipped = { ...sample.attention[0], project: "BRAVO", issue_key: "BRAVO-99", rule_id: "R-FLOW-02", title: "Skipped a stage" };
     const attention = [
@@ -395,8 +393,6 @@ describe("the Portfolio page", () => {
   });
 
   it("reads each board's staleness on the reader's clock, by the top bar's rule, whatever the service's clock said (JO-14)", async () => {
-    // Regression: with the reader's clock at the sample's own time (as the e2e suite pins it), the row said "Stale,
-    // synced 4 min ago" (the service read it on its own clock, days later) beside a top bar saying "4 min ago".
     serve({ ...THREE, boards: [board("ALPHA", "Alpha programme", { stale: true }), board("BRAVO", "Bravo delivery", { stale: true }), board("DEMO", "Demo project", { stale: true })] });
     renderPage();
     await loaded();

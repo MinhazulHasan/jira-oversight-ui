@@ -11,11 +11,6 @@ import { formatCount } from "@/lib/format";
 
 import { windowDays } from "./labels";
 
-/*
- * The facts that date and source the report, in one hairline frame like a row
- * of tiles. The columns follow the width of the frame's parent, which must be
- * the @container: a container query never reads the element it styles.
- */
 const FRAME =
   "grid grid-cols-1 gap-px overflow-hidden rounded-md border border-rule-weak bg-rule-weak @md:grid-cols-3";
 const CELL = "flex min-w-0 flex-col gap-1 bg-sheet px-4 py-3.5";

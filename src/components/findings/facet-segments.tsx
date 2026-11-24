@@ -28,19 +28,9 @@ export interface FacetSegmentsProps<T extends string> {
   className?: string;
 }
 
-/*
- * The kit's SegmentedControl (src/components/ui/segmented-control.tsx, size md)
- * with a count after each label, which its string labels cannot carry. Same
- * Radix radio group, same classes, so the two read as one control.
- */
 const ITEM =
   "group pressable inline-flex h-7 items-center justify-center gap-1.5 rounded-[6px] px-2.5 text-sm whitespace-nowrap text-ink-mid select-none hover:text-ink data-[state=checked]:bg-sheet data-[state=checked]:text-ink data-[state=checked]:shadow-raised data-[disabled]:pointer-events-none data-[disabled]:opacity-45";
 
-/**
- * One choice from a few, side by side, each with the number of findings it
- * would show. A radio group to assistive technology: Tab enters at the
- * choice, the arrow keys move it, and each option says its count.
- */
 export function FacetSegments<T extends string>({
   label,
   options,

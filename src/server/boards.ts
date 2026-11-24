@@ -9,15 +9,7 @@ import { sampleNow } from "./sample/clock";
 import { sampleDataset } from "./sample/dataset";
 import { sampleBoardsAt } from "./sample/served";
 
-/*
- * The boards this dashboard serves, and one person's share of them.
- *
- * At sign-in the served boards come from the oversight service (live) or the
- * bundled sample (DEMO, MOB and HELP), and are checked against the person's Jira
- * (auth/handlers.ts); the boards they may read go into their session. Every
- * request then reads one of those boards and no other (handler.ts), and the
- * board list the top bar shows holds only those.
- */
+/** The boards this dashboard serves, and one person's share of them */
 
 /** The served boards' keys, the service's default first; or null when the service cannot say. */
 export async function servedBoards(config: ServerConfig): Promise<string[] | null> {
@@ -39,24 +31,12 @@ export async function servedBoards(config: ServerConfig): Promise<string[] | nul
   return [...new Set([parsed.data.default, ...parsed.data.projects.map((project) => project.key)])];
 }
 
-/**
- * A person card as a reader may see it (JO-13): the other boards it names,
- * only those they may open, in the service's order; `allowed` null is every
- * board (an admin, or sign-in off), and nothing is cut. Today only people
- * level reads a card, and people level reads every board, so this cuts
- * nothing in practice: it holds the rule here, where every board rule lives,
- * should anyone at people level ever read only some boards.
- */
 export function cardForBoards(card: PersonCard, allowed: readonly string[] | null): PersonCard {
   if (allowed === null) return card;
   return { ...card, other_boards: card.other_boards.filter((board) => allowed.includes(board.key)) };
 }
 
-/**
- * The board list cut down to the boards a person may read, in the service's
- * order. The default stays the service's own when it is one of them, and is
- * otherwise their first board. Null when none of their boards is served any more.
- */
+/** The board list cut down to the boards a person may read, in the service's */
 export function projectsFor(projects: Projects, allowed: readonly string[]): Projects | null {
   const mine = projects.projects.filter((project) => allowed.includes(project.key));
   if (mine.length === 0) return null;

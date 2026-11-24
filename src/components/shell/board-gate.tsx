@@ -16,21 +16,7 @@ import { PageBody, PageHeader, PageSheet } from "./page";
 import { usePeopleLevel } from "./people-level";
 import { useSyncPress } from "./sync-follower";
 
-/*
- * A board that has never synced (JO-17) has nothing to show yet. Rather than
- * every page failing on it, each page that reads one board shows the same
- * calm state in its place: "<Board> hasn't been synced yet.", one honest line
- * about how long a first sync takes, and "Sync <Board>"; then its progress,
- * queued behind another board's sync or running; and when it ends the page
- * fills in (the board list says the board has synced, and the page itself
- * renders). The pages that belong to no one board (the Portfolio, the access
- * log, usage) are never held back.
- *
- * The board list says which boards have synced. Should a page's own request
- * meet the service's answer for such a board (409 board_not_synced) before the
- * list has said, the state is shown, never the error; should the list say the
- * board has synced, it is read again, once.
- */
+/* A board that has never synced has nothing to show yet. */
 
 /** The pages that read no one board: shown whatever board is picked. */
 const BOARDLESS_PAGES: ReadonlySet<PageKey> = new Set(["portfolio", "access_log", "usage"]);
@@ -44,11 +30,6 @@ export function readsOneBoard(pathname: string, peopleLevel: boolean): boolean {
   return page.level !== "people" || peopleLevel;
 }
 
-/**
- * Whether a request on this page has met the service's answer for a board not
- * synced yet (409 board_not_synced) for `board`. When the board list says the
- * board has synced, the list is read again, once: it is the list that decides.
- */
 function useNotSyncedAnswer(board: string | null, listed: boolean): boolean {
   const queryClient = useQueryClient();
   const [seen, setSeen] = useState<string | null>(null);
@@ -97,12 +78,7 @@ function NotSyncedPage({ boardKey, name }: { boardKey: string; name: string }) {
   );
 }
 
-/**
- * The board's first sync, offered: what is missing, how long it may take, and
- * the one action. While the sync is queued or running the button says so (and
- * keeps the focus), with a bar under it that sweeps (a wait, not a measure); a
- * failure says why, and the button offers it again.
- */
+/** The board's first sync, offered. */
 export function NotSyncedState({ boardKey, name }: { boardKey: string; name: string }) {
   const { state, press, underWay } = useSyncPress(boardKey, name);
   const hydrated = useHydrated();
@@ -127,7 +103,7 @@ export function NotSyncedState({ boardKey, name }: { boardKey: string; name: str
       <div className="flex w-full max-w-[320px] flex-col items-center gap-3">
         {failed ? (
           <p role="alert" className="text-sm text-warn-ink">
-            {/* The service's own words when it gave some (they say the sync failed, and why): said once (SQA). */}
+            {/* The service's own words when it gave some (they say the sync failed, and why): said once. */}
             {state?.message ?? "The last sync didn’t finish. Try again in a few minutes."}
           </p>
         ) : null}

@@ -26,12 +26,6 @@ function inside(rect: DOMRect, top: number, bottom: number): boolean {
   return rect.bottom > top + 2 && rect.top < bottom - 2;
 }
 
-/**
- * The thin line from a cited value to the row it was read from. Right
- * angles, not curves: a straight line reads as a ruling, a curve as
- * decoration. It is drawn only while both ends are in view and the ledger
- * sits beside the prose; otherwise the highlighted row speaks for itself.
- */
 export function Connector() {
   const trace = useTrace();
   const reduced = useReducedMotion();

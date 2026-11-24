@@ -64,80 +64,38 @@ import {
   type RuleSettingsSaveRequest,
 } from "@/lib/api/schemas";
 
-/**
- * The allowlist. Nothing reaches the oversight service (or the sample data)
- * unless it is named here, with its parameters validated; the upstream path is
- * rebuilt from the validated values, never copied from the request.
- */
+/** The allowlist. Nothing reaches the oversight service (or the sample data) */
 
 export type Route =
   | { name: "health" }
   | { name: "projects" }
-  /**
-   * Sync (JO-18): the state of, and the start of, the sync of the board picked in the top bar. Board-scoped like a
-   * read: the board comes from the top bar's pick, never from the query, and is held to the reader's boards.
-   */
   | { name: "refresh" }
   | { name: "refresh_start" }
   | { name: "overview" }
   | { name: "people" }
   /** Everyone on the board, members with no tickets too: what Ask's @ list offers. */
   | { name: "people_directory" }
-  /**
-   * How tickets are handled, person by person, next to the whole board (JO-11): people level only. `level` is
-   * "team" as resolved here, raised to "people" by the handler only for a reader it decides may see people.
-   */
   | { name: "people_scorecard"; query: ScorecardQuery; level: AskLevel }
-  /**
-   * One person's card (JO-13): their work, findings and process next to the board's, people level only, like the
-   * scorecard. `level` is "team" as resolved here, raised to "people" by the handler. `query.board` is the board the
-   * page names (an access log entry's), held to the reader's boards by the handler as a pick is; else the top bar's.
-   */
   | { name: "person_card"; personId: string; query: PersonCardQuery; level: AskLevel }
   | { name: "findings"; query: FindingsQuery }
   | { name: "finding"; findingId: string }
   | { name: "issue_timeline"; issueKey: string }
-  /**
-   * A question, the people it mentions (person ids, checked), and the level it
-   * is answered at: "team" as resolved here, raised to "people" by the handler
-   * only for a reader it decides may ask about people (auth/roles.ts).
-   */
+  /** A question, the people it mentions (person ids, checked), and the level it */
   | { name: "ask"; question: string; mentions: string[]; level: AskLevel }
   | { name: "insights" }
   | { name: "trend"; query: TrendQuery }
   | { name: "rules" }
   | { name: "baseline" }
-  /**
-   * Every board the reader may open, with the Overview's figures for each, and the oldest open breaches across
-   * them (JO-12). Not board-scoped. `boards`, set by the handler for a reader of some boards only (never from the
-   * browser), is sent to the service so the oldest breaches are found across those boards; absent, every board.
-   */
   | { name: "portfolio"; boards?: readonly string[] }
-  /**
-   * Who read person-level data, and when (JO-12): people level only, like the scorecard, and not board-scoped
-   * (an entry names its board). `level` is "team" as resolved here, raised to "people" by the handler.
-   */
   | { name: "access_log"; query: AccessLogQuery; level: AskLevel }
-  /** Ask's questions, model calls and tokens today and over the last 7 days, against the budget (JO-12): people level only. */
+  /** Ask's questions, model calls and tokens today and over the last 7 days, against the budget: people level only. */
   | { name: "usage"; level: AskLevel }
-  /**
-   * A person's picture: bytes, not JSON (src/server/pictures.ts). `board` is the board to read it from when the
-   * page says (an access log entry's board), else the one picked in the top bar.
-   */
   | { name: "person_avatar"; personId: string; board?: string }
-  /**
-   * A board's rule settings (JO-15): people level only, like the scorecard. `level` is "team" as resolved here, raised
-   * to "people" by the handler for an admin (or with sign-in off) and refused to anyone else before anything is asked.
-   */
   | { name: "rule_settings"; level: AskLevel }
   /** What changes to them would do, worked out by the service without writing anything: the body checked and rebuilt. */
   | { name: "rule_settings_preview"; body: RuleSettingsPreviewRequest; level: AskLevel }
   /** A save: the changes and the revision they were made against (a reason, an undo), the body checked and rebuilt. */
   | { name: "rule_settings_save"; body: RuleSettingsSaveRequest; level: AskLevel }
-  /**
-   * An AI draft of a rule from an admin's words (JO-20): people level only, the text checked and rebuilt as plain
-   * text. It saves nothing; the service writes only the model call's audit row.
-   */
   | { name: "rule_settings_draft"; body: RuleDraftRequest; level: AskLevel };
 
 export type RouteName = Route["name"];
@@ -217,14 +175,7 @@ function withQuery(path: string, search: URLSearchParams): string {
   return query ? `${path}?${query}` : path;
 }
 
-/**
- * A picture's address may carry its version (`v`), which only keeps the
- * browser's cached copy honest: checked like any parameter, never forwarded.
- * It may also name the board to read the picture from (`board`, a project
- * key), where the page shows someone from another board than the one picked in
- * the top bar (an access log entry's): the handler holds it to the reader's
- * boards like any pick, and it is sent on as the board, never as itself.
- */
+/** A picture's address may carry its version (`v`), which only keeps the */
 function pictureRoute(personId: string, upstream: string, search: URLSearchParams): Resolution {
   const problems: ParamProblem[] = [];
   for (const name of new Set(search.keys())) {
@@ -355,15 +306,9 @@ export function resolveGet(segments: readonly string[], search: URLSearchParams)
   return notFound(segments);
 }
 
-/** The rule settings POSTs: a save and a preview (JO-15), and an AI draft of a rule (JO-20). */
+/** The rule settings POSTs: a save and a preview, and an AI draft of a rule. */
 export type RuleSettingsPost = "rule_settings_save" | "rule_settings_preview" | "rule_settings_draft";
 
-/**
- * Which rule settings POST a path is: a save (rules/settings), a preview
- * (rules/settings/preview) or (JO-20) an AI draft (rules/settings/draft);
- * null for any other path. The handler asks before it reads a body, so only
- * these and Ask ever have one read.
- */
 export function ruleSettingsPost(segments: readonly string[]): RuleSettingsPost | null {
   if (segments[0] !== "rules" || segments[1] !== "settings") return null;
   if (segments.length === 2) return "rule_settings_save";
@@ -373,16 +318,7 @@ export function ruleSettingsPost(segments: readonly string[]): RuleSettingsPost 
 
 export const RULE_SETTINGS_REFUSED = "These rule settings cannot be saved as they are. Each problem is said beside its setting.";
 
-/**
- * Where a problem with a rule settings body sits, in the form the page reads
- * (and the sample and the service's refusals are mapped to): "R-EFF-01.params.threshold"
- * for a field of one rule's change, "R-EFF-01" for the change as a whole,
- * "new-0.title" for a field of the first new rule the body adds (JO-20: a new
- * rule has no id yet, so new rules are counted in the order the body lists
- * them), "reason" or "revision" for the request's own fields, and
- * "(settings)" for the request as a whole, as the service's refusals name it
- * (live.ts).
- */
+/** Where a problem with a rule settings body sits, in the form the page reads */
 export function settingsProblemPath(body: unknown, path: readonly PropertyKey[]): string {
   const [first, index, ...rest] = path.map(String);
   if (first === "changes" && index !== undefined && /^\d+$/.test(index)) {
@@ -398,10 +334,6 @@ export function settingsProblemPath(body: unknown, path: readonly PropertyKey[])
   return path.map(String).join(".") || "(settings)";
 }
 
-/**
- * A change as it is forwarded: what it names and nothing else (a `reset` of false is no reset). A custom rule's
- * change (JO-20) is forwarded as it was rebuilt when it was checked: plain text, statuses and issue types trimmed.
- */
 function canonicalChange(change: RuleSettingsChange): RuleSettingsChange {
   if ("op" in change) return change;
   if (change.reset === true) return { rule_id: change.rule_id, reset: true };
@@ -413,13 +345,6 @@ function canonicalChange(change: RuleSettingsChange): RuleSettingsChange {
   };
 }
 
-/**
- * A rule settings POST, its body checked against the contract before anything
- * is forwarded (the bounds, one change per rule, a reason with no email
- * address) and rebuilt from what was checked: the service never receives the
- * browser's own body. Refused with 422 rule_settings_invalid, each problem at
- * its setting, as the service refuses settings it cannot take.
- */
 function resolveRuleSettings(name: RuleSettingsPost, search: URLSearchParams, body: unknown): Resolution {
   const upstream = name === "rule_settings_save" ? "rules/settings" : name === "rule_settings_preview" ? "rules/settings/preview" : "rules/settings/draft";
   if ([...search.keys()].length > 0) return refuse(400, "bad_request", `/api/oversight/${upstream} takes no query parameters.`);
@@ -456,13 +381,7 @@ function resolveRuleSettings(name: RuleSettingsPost, search: URLSearchParams, bo
   );
 }
 
-/**
- * POST is allowed for five endpoints, and none writes to Jira: asking a
- * question; Sync (refresh), which takes no body, syncs the board picked in the
- * top bar and only reads Jira; (JO-15) a board's rule settings, previewed and
- * saved, which the service keeps in its own database; and (JO-20) an AI draft
- * of a rule, which saves nothing.
- */
+/** POST is allowed for five endpoints, and none writes to Jira: asking a */
 export function resolvePost(segments: readonly string[], search: URLSearchParams, body: unknown): Resolution {
   if (segments.length === 1 && segments[0] === "refresh") return withoutQuery({ name: "refresh_start" }, "refresh", search);
   const settings = ruleSettingsPost(segments);

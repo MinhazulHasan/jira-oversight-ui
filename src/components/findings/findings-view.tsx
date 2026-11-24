@@ -18,17 +18,10 @@ import {
 
 const NO_FINDINGS: Finding[] = [];
 
-/**
- * The Findings page's working area: the filter row, the result line, the
- * table and the evidence drawer, all read from and written to the URL, so a
- * link (or the browser's Back) reopens exactly this view.
- */
 export function FindingsView() {
   const [filters, setFilters] = useFindingsUrl();
   const [urlId, setUrlId] = useOpenFinding();
 
-  // The field answers every key; the list is asked again once typing settles.
-  // Emptying the field is a decision, not typing, so it applies at once.
   const settled = useSettledValue(filters.q, SEARCH_DEBOUNCE_MS);
   const search = filters.q.trim() === "" ? "" : settled;
   const findings = useFindings(toFindingsQuery(filters, search));

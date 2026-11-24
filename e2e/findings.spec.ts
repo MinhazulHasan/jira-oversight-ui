@@ -4,13 +4,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { readableClipboard } from "./clipboard";
 import { cutText } from "./cut-text";
 
-/*
- * The Findings page against the sample server (SAMPLE_NOW 2026-11-04T14:30Z),
- * with the browser's clock frozen at the same moment. Expected figures are read
- * from the API itself, so the page is checked against the numbers it is meant
- * to show rather than against copies of them.
- */
-
 const NOW = new Date("2026-11-04T14:30:00Z");
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 /** DEMO-1098, R-EST-01, foreshadowed by W-EST-01 (docs/sample-responses/finding.json). */
@@ -80,8 +73,6 @@ test("every row says why its rule fired, in the finding's own words", async ({ p
 
 for (const width of [1280, 1440]) {
   test(`at ${width} px the table never scrolls sideways, and each rule's title and issue key read whole (SQA)`, async ({ page }) => {
-    // Regression: at 1280 px with the rail open titles read "Effort b…" and the State column was cut off at the
-    // table's right edge; at 1440 px titles were still cut to a word or two.
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/findings");
     await listReady(page);
@@ -339,14 +330,10 @@ async function ages(page: Page) {
 }
 
 test("First seen and Open for read one clock: on fresh data an open finding's age is the span First seen gives", async ({ page }) => {
-  // Regression: an age measured to the last rules run and cut down to the hour sat beside a first-seen time
-  // measured to now and rounded: "First seen 6 h ago", "Open for 5 h".
   await page.goto("/findings");
   const { header, rows } = await ages(page);
   expect(header).toBe("open for");
   expect(rows.length).toBeGreaterThan(10);
-  // One span, read alike: the same figure in the same unit; under an hour, minutes beside "<1 h"; and where First seen
-  // already counts days (from 22 h) or months, the hours or days beside it round to the same.
   const figure = (text: string) => Number(text.replace(/,/g, "").split(" ")[0]);
   for (const { first: seen, open } of rows) {
     if (open === "<1 h") expect(seen).toMatch(/^(just now|\d+ min ago)$/);
@@ -380,12 +367,12 @@ test("on a phone the drawer's changelog and facts read whole: when and what chan
   const changelog = drawer.getByRole("table", { name: "Changelog entries the rule read on DEMO-1098" });
   await expect(changelog.locator("tbody tr")).toHaveCount(1);
   await expect(changelog.locator("tbody tr")).toContainText("To Do → In Progress");
-  // Its header too, which the rounded frame round the table clipped ("CHANGELO", JO-14): cutText reads that frame.
+  // Its header too, which the rounded frame round the table clipped ("CHANGELO"): cutText reads that frame.
   await expect(changelog.getByRole("columnheader", { name: "Changelog" })).toBeVisible();
   expect(await cutText(changelog)).toEqual([]);
   expect(await cutText(drawer.locator("dl").first())).toEqual([]);
 
-  // Scrolled under: the drawer's body moves, the changelog's head (which scrolls with it) does not lift (JO-14).
+  // Scrolled under: the drawer's body moves, the changelog's head (which scrolls with it) does not lift.
   await drawer.locator(".jo-scroller").first().evaluate((scroller) => (scroller.scrollTop = scroller.scrollHeight));
   await expect(drawer.locator(".jo-scroll-frame[data-scrolled='true']").first()).toBeAttached();
   const head = await changelog.locator("th").first().evaluate((th) => ({

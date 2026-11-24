@@ -10,14 +10,6 @@ const page = pageByKey("portfolio");
 
 export const metadata: Metadata = { title: page.label };
 
-/**
- * Portfolio (JO-12): every board at a glance, the admin's landing page after
- * signing in. One row per board, each with its Overview's own figures, and
- * the oldest open breaches across them. It names no one, so it is everyone's;
- * the oversight route holds it to the boards the reader may open before
- * anything reaches the browser. The sort lives in the address, so Copy link
- * shares the view.
- */
 export default function PortfolioPage() {
   return (
     <PageSheet>

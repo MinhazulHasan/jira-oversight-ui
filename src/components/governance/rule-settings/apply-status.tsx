@@ -31,12 +31,6 @@ export function resultWords(result: NonNullable<RuleSettingsApply["result"]>, lo
   return `${formatCount(result.closed, { locale })} closed, ${formatCount(result.opened, { locale })} opened`;
 }
 
-/**
- * Whether the board's findings reflect its settings, as a chip: Applied (the
- * resolved tick), Re-checking… (a line sweeps along its foot; nothing spins),
- * Will apply at the next sync, or Couldn't re-check (the warning mark, with
- * the service's words under it). Never the accent, which means traceable.
- */
 export function ApplyChip({ apply }: { apply: RuleSettingsApply }) {
   const tone =
     apply.state === "applied"
@@ -63,10 +57,6 @@ export function ApplyChip({ apply }: { apply: RuleSettingsApply }) {
   );
 }
 
-/**
- * What the settings are, in one line under the status: the same words while the page loads and once it has, so
- * the line wraps alike and nothing below it moves (the status above names the board).
- */
 export function SettingsNote() {
   return (
     <p className="flex items-start gap-2 text-xs text-ink-low">
@@ -83,15 +73,6 @@ export interface SettingsStatusProps {
   ref?: Ref<HTMLDivElement>;
 }
 
-/**
- * The board, its settings' revision and who last changed them when, and
- * whether its findings reflect them yet: the chip, with what the latest
- * re-check did beside it on the same line, so the card is as tall at every
- * revision as while it loads; a re-check that is waiting or failed says why
- * on a line of its own under a hairline. A live region: a save, its re-check
- * and a change made elsewhere are said as they happen. It takes the focus
- * after a save, so the reader hears where things stand.
- */
 export function SettingsStatus({ settings, boardName, ref }: SettingsStatusProps) {
   const locale = useFigureLocale();
   const clock = useClock();

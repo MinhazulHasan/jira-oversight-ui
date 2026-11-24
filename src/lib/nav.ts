@@ -1,9 +1,3 @@
-/**
- * The pages, in one place. The rail, the command palette, the `g` shortcuts,
- * the top bar title and each page's header all read from here, so a page is
- * named and described the same way everywhere it appears.
- */
-
 export type PageKey =
   | "portfolio"
   | "overview"
@@ -28,18 +22,11 @@ export interface NavPage {
   group: "oversight" | "reference" | "governance";
   /** Extra words the command palette should match. */
   keywords: string[];
-  /**
-   * "people": only for a reader Ask answers at people level (an admin, or anyone with sign-in off), decided on the
-   * server on every request; nobody else is offered it anywhere (rail, palette, shortcuts), and the page itself
-   * answers them with the not-found page.
-   */
   level?: "people";
 }
 
 export const NAV_PAGES: readonly NavPage[] = [
   {
-    // Every board at once (JO-12): an admin's landing page after sign-in. Not a people-level page: it names no one,
-    // and the oversight route holds it to the boards the reader may open.
     key: "portfolio",
     href: "/portfolio",
     label: "Portfolio",
@@ -113,7 +100,7 @@ export const NAV_PAGES: readonly NavPage[] = [
     keywords: ["snapshot", "report"],
   },
   {
-    // Governance (JO-12): accountability for person-level figures, for people level alone, like People.
+    // Governance: accountability for person-level figures, for people level alone, like People.
     key: "access_log",
     href: "/governance/access-log",
     label: "Access log",
@@ -134,7 +121,7 @@ export const NAV_PAGES: readonly NavPage[] = [
     level: "people",
   },
   {
-    // JO-15: an admin's settings for the board's rules, for people level alone, like the rest of Governance.
+    // an admin's settings for the board's rules, for people level alone, like the rest of Governance.
     key: "rule_settings",
     href: "/governance/rules",
     label: "Rule settings",

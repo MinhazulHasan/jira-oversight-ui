@@ -3,13 +3,6 @@ import type { ParamValue, RuleCheck, RuleDraftRule, RuleSettingsNumberParam, Sev
 
 import { fieldText, fieldValue, numberProblem, type CustomDraft, type DraftRule } from "./model";
 
-/*
- * The "New rule" sheet's form (JO-20), kept apart from its components so the
- * sheet, the page and the tests read the same rules: what the form holds, a
- * check's defaults when it is picked, the AI's draft put into it, and what is
- * wrong with it, in the words the service and the sample use too.
- */
-
 /** The form as the admin fills it: its numbers as typed, its choices, what it looks at, how serious it is. */
 export interface RuleForm {
   title: string;
@@ -90,10 +83,6 @@ export function formFromRule(rule: DraftRule & { custom: CustomDraft }): RuleFor
   };
 }
 
-/**
- * The AI's draft in the form: every field it filled, as the admin would have typed it. A check the board does not
- * offer leaves the check unpicked (the draft's problems say why); a param it left out takes the check's default.
- */
 export function formFromAiDraft(draft: RuleDraftRule, checks: readonly RuleCheck[]): RuleForm {
   const check = checks.find((candidate) => candidate.name === draft.check);
   const base: RuleForm = { ...EMPTY_FORM, title: draft.title, description: draft.description ?? "", severity: draft.severity };
@@ -138,12 +127,6 @@ export function formInput(form: RuleForm, check: RuleCheck | undefined): CustomR
   };
 }
 
-/**
- * What is wrong with the form, by its field ("title", "check", "params.hours", "applies_to.status_category"): a
- * number that is empty, not a number, out of its bounds or too precise first, as the rule settings rows say it;
- * then everything the service would refuse (the shared check, custom-rules.ts), the name against every other rule
- * on the board.
- */
 export function formProblems(
   form: RuleForm,
   board: CustomRuleBoard,
@@ -163,20 +146,11 @@ export function formProblems(
   return problems;
 }
 
-/**
- * What a rule in the form flags, as one value to compare: its check, its params as they read and what it looks at.
- * Its name, description and seriousness are left out: they change nothing it flags.
- */
 export function definitionKey(form: RuleForm, check: RuleCheck | undefined): string {
   const { check: name, params, applies_to } = formInput(form, check);
   return JSON.stringify([name, params, applies_to]);
 }
 
-/**
- * A request to draft from on the board's own names, for the Describe box's placeholder: its bugs (or tickets) in its
- * first status in progress ("Bugs in Code Review for more than 3 days"), a status named "In …" said as a reader says
- * it ("Bugs in progress for more than 3 days"); one any board can draft from where it has no status.
- */
 export function describeExample(checks: readonly RuleCheck[], issueTypes: readonly string[]): string {
   const statuses = checks.find((check) => check.name === "time_in_status_over")?.params.find((param) => param.kind === "statuses")?.options ?? [];
   const status = statuses.find((option) => option.category === "indeterminate") ?? statuses[0];
@@ -202,10 +176,6 @@ export function formDraftRule(form: RuleForm, enabled = true): DraftRule & { cus
   };
 }
 
-/**
- * The form's fields for a check, in the order it asks for them: where a problem can be said, and where the focus goes
- * first when some cannot be saved. A problem at any other place (the rule as a whole) is said with the draft.
- */
 export function formFields(check: RuleCheck | undefined): string[] {
   return [
     "title",

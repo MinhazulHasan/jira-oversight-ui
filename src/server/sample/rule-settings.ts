@@ -27,17 +27,6 @@ import type { FindingRecord } from "./engine";
 import { boardSettings, nextCustomNumber, recordChange, revisionOf, startRecheck, type BoardSettings } from "./settings-store";
 import { iso } from "./time";
 
-/*
- * GET /rules/settings, POST /rules/settings/preview, POST /rules/settings and
- * (JO-20) POST /rules/settings/draft for the sample, with the service's
- * semantics over the sample's engine: a preview works out a re-check without
- * keeping anything; a save records the change as the board's next revision
- * (refused when the board has moved on since the reader's revision), and its
- * re-check runs at once, taking a moment (SAMPLE_LATENCY decides how long)
- * before the settings read as applied. A draft is the sample's scripted
- * drafter's (drafter.ts), checked as a save would check it, and never kept.
- */
-
 /** What the sample answers: a body, or the service's refusal in this interface's words. */
 export type SettingsAnswer =
   | { ok: true; body: unknown }
@@ -89,7 +78,7 @@ function catalogueParams(rule: BoardRule): RuleSettingsParam[] {
   }));
 }
 
-/** Every param of a custom rule's check (JO-20), its choices with the board's options, its defaults its own. */
+/** Every param of a custom rule's check, its choices with the board's options, its defaults its own. */
 function customParams(rule: BoardRule, options: BoardOptions): RuleSettingsParam[] {
   const record = rule.custom!;
   const check = boardChecks(options).find((candidate) => candidate.name === record.check);
@@ -114,7 +103,7 @@ function customParams(rule: BoardRule, options: BoardOptions): RuleSettingsParam
   });
 }
 
-/** One rule as the page reads it: a catalogue rule, or one of the board's own (JO-20). */
+/** One rule as the page reads it: a catalogue rule, or one of the board's own. */
 function settingsRule(rule: BoardRule, open: number, options: BoardOptions): RuleSettingsRule {
   const { def, catalogue } = rule;
   const missing = missingFor(catalogue);
@@ -217,13 +206,7 @@ function contextFor(dataset: Dataset, at: number, by: string): ChangeContext {
   };
 }
 
-/**
- * What the changes would do to each rule they touch, against the board's data
- * as of its last sync, worked out with the engine's own code and kept nowhere.
- * A new rule (JO-20) is named by the id it would be given, after the board's
- * rules, in the order the request lists the new rules; it opens every finding
- * it would raise now. A deleted one closes its open findings.
- */
+/** What the changes would do to each rule they touch, against the board's data */
 export function previewView(dataset: Dataset, request: RuleSettingsPreviewRequest, at: number): SettingsAnswer {
   const applied = applyChanges(dataset.rules, request.changes, contextFor(dataset, at, ""));
   if (!applied.ok) return invalid(applied.problems);
@@ -266,14 +249,7 @@ export function previewView(dataset: Dataset, request: RuleSettingsPreviewReques
   return { ok: true, body };
 }
 
-/**
- * A save: refused when the board has moved on from the reader's revision (409)
- * or the changes cannot be made (422); else recorded as the next revision,
- * with each field's values before and after (a custom rule added, deleted or
- * brought back as one field, `rule`, with its definition), and its re-check
- * started at once. `recheckMs`, how long the sample's re-check takes (0: it is
- * applied as it is saved). Answers the board's settings as they now stand.
- */
+/** A save: refused when the board has moved on from the reader's revision (409) */
 export function saveView(
   dataset: Dataset,
   request: RuleSettingsSaveRequest,
@@ -312,11 +288,6 @@ export function saveView(
   return { ok: true, body: settingsView(sampleDataset(dataset.now, dataset.board), wallClock) };
 }
 
-/**
- * The AI's draft of a rule (JO-20) for the sample: the scripted drafter's,
- * from the board's own names, then checked exactly as a save would check a
- * new rule. Never saved; every draft is said with what is still wrong in it.
- */
 export function draftView(dataset: Dataset, request: RuleDraftRequest): RuleDraft {
   const options = boardOptions(dataset.world);
   const result = scriptedDraft(request.text, options);

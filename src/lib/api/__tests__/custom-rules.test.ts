@@ -22,15 +22,6 @@ import {
   ruleSettingsSchema,
 } from "../schemas";
 
-/*
- * The contract's side of custom rules (JO-20): the check registry the form is
- * built from, the widened rule id, each change a request may carry (create,
- * edit, delete, restore) checked and rebuilt before anything is forwarded, the
- * history's new fields, the settings' new parts (and a service still sending
- * JO-15's shapes for the catalogue's params), the draft's request and answer,
- * and the one check every side holds a custom rule to.
- */
-
 const settings = ruleSettingsSchema.parse(settingsJson);
 const board: CustomRuleBoard = { checks: settings.checks, issueTypes: settings.issue_types, rules: settings.rules };
 

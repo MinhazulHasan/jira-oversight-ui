@@ -9,12 +9,7 @@ import { boardMatches, groupBoards } from "../board-picker";
 import { BoardSwitcher, boardNavigation, requestBoardPicker } from "../board-switcher";
 import { board, manyBoards, onScreen, pick, renderWithQueries, serve } from "./boards-harness";
 
-/*
- * The board picker (JO-17): every board the service serves, which may be
- * dozens, searchable by name or key, in two groups, synced and not synced
- * yet, each synced board with its last sync; keyboard-complete; and a board
- * not synced yet can be picked, since every page offers its first sync.
- */
+/* The board picker. */
 
 let assign: ReturnType<typeof vi.spyOn>;
 

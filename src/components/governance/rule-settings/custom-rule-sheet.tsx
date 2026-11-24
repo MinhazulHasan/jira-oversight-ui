@@ -55,11 +55,6 @@ const SEVERITY_OPTIONS = [
 /** Said under the name or the description while it still holds the AI's words and the rule has changed since. */
 export const DRAFTED_WORDS_HINT = "From the AI's draft: check it still fits your changes.";
 
-/**
- * What the draft came to, as the sheet says it under the description: a draft's problems at the form's fields are
- * said at each field (and counted here while any is left), and any other (the rule as a whole) is said here. A draft
- * keeps the form as the AI filled it, so the sheet can tell when the admin has changed the rule since.
- */
 type DraftStatus =
   | { kind: "idle" }
   | { kind: "short" }
@@ -180,21 +175,6 @@ function unitSuffix(unit: string | null, text: string): string {
 
 const readDays = (text: string) => Number(text.trim().replace(",", "."));
 
-/**
- * The "New rule" sheet (JO-20), from the right (the screen's width on a
- * phone): what the admin wants in their own words, which the AI drafts into
- * the form below (drafted, not possible, not understood, no AI now, each said
- * in a live region), and the form itself, built from the board's checks: the
- * rule's name, its check, the check's settings by kind with their units and
- * bounds, the categories and issue types it looks at, how serious it is, and
- * a description. What cannot be saved is said at its field before anything is
- * sent; "Add to changes" puts the rule in the page's draft, never saved until
- * the review. Once the admin changes what a drafted rule flags, the AI's
- * explanation is no longer said (it described the draft), and a name or
- * description still in the AI's words asks to be checked. The example to
- * draft from is on the board's own names. Editing a rule opens the same form
- * with its check locked.
- */
 export function CustomRuleSheet(props: CustomRuleSheetProps) {
   const { open, onOpenChange, mode, ruleId, initial, board, checks, issueTypes, others, aiDraft, showSeverity, onSubmit, onCloseFocus } = props;
   const locale = useFigureLocale();
@@ -221,8 +201,6 @@ export function CustomRuleSheet(props: CustomRuleSheetProps) {
     const own = submitted || touched.has(field) ? (problems.get(field) ?? null) : null;
     return own ?? given.get(field) ?? null;
   };
-  // The form as the AI filled it, and whether what the rule flags has changed since: its explanation then no longer
-  // holds, and a name or description still in the AI's words may say the old limit.
   const filled = status.kind === "done" ? status.filled : null;
   const filledCheck = filled ? checks.find((candidate) => candidate.name === filled.check) : undefined;
   const changedSince = filled !== null && definitionKey(form, check) !== definitionKey(filled, filledCheck);
@@ -493,12 +471,6 @@ export function CustomRuleSheet(props: CustomRuleSheetProps) {
   );
 }
 
-/**
- * What the AI's draft came to, said in a live region: drafted, not possible, not understood, no AI now, or failed. A
- * draft is said with how many of its fields are still to fix and what it flags; once the admin changes what the rule
- * flags, "then changed", and what the AI said it flags no longer, since it no longer holds. What it flags is said
- * once: not here when the AI wrote the same words as the rule's description.
- */
 function DraftStatusLine({ id, status, changed, fixes }: { id: string; status: DraftStatus; changed: boolean; fixes: number }) {
   const body = (() => {
     switch (status.kind) {

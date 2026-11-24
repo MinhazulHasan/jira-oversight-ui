@@ -12,11 +12,7 @@ import { Keys, useAriaShortcut } from "./kbd";
 import { NavList } from "./nav-list";
 import { useShell } from "./shell-context";
 
-/**
- * The left rail: the mark, the pages, and at the foot the keyboard hints and
- * the data source. 232px, or 64px of icons when collapsed; the choice is
- * remembered in a cookie so the server renders it at the right width.
- */
+/** The left rail. */
 export function Rail() {
   const { railCollapsed: collapsed, toggleRail } = useShell();
 

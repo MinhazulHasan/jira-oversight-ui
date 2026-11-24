@@ -24,10 +24,6 @@ function ProcessLink() {
   );
 }
 
-/**
- * The steps of the agreed process Jira holds no evidence for. Said calmly,
- * with the hatch: for the reader this gap is a finding, not a fault.
- */
 export function NotMeasurableBlock({ data }: { data: Baseline | undefined }) {
   const locale = useFigureLocale();
   const evidence = data?.figures.evidence;

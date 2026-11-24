@@ -33,10 +33,6 @@ export interface TrendSeries {
   /** The field in each row that holds this series. */
   key: string;
   label: string;
-  /**
-   * The categorical slot this entity owns (0 is the first colour). Keep it
-   * fixed per entity, so filtering never repaints the survivors.
-   */
   slot?: number;
 }
 
@@ -44,10 +40,6 @@ export interface TrendThreshold {
   value: number;
   /** "Breach above 1.50×". */
   label: string;
-  /**
-   * The label in two lines, for a plot too narrow to hold it on one clear of the data (a phone): "Breach at 1.50×"
-   * over "(R-EFF-01)". Without it, the one line stands wherever the data suggests.
-   */
   lines?: readonly [string, string];
   /** A rule's limit is drawn in its status colour, with its label; anything else in ink. */
   tone?: "neutral" | "warning" | "breach";
@@ -59,11 +51,6 @@ export interface TrendLineProps {
   series: readonly TrendSeries[];
   /** How a value reads in the tooltip and the end label. */
   format?: FigureFormat;
-  /**
-   * How a tick on the value axis reads. Ticks are round numbers, so they
-   * read best with fewer decimals than a figure: axisHours, axisRatio and
-   * axisShare from ./scale take their precision from the step.
-   */
   axisFormat?: AxisFormat;
   threshold?: TrendThreshold;
   /** Start the value axis at zero (counts) or let it fit the data (a trend of a few hours). */
@@ -88,11 +75,6 @@ function valuesIn(rows: readonly TrendRow[], series: readonly TrendSeries[]): nu
   return rows.flatMap((row) => series.map((item) => valueOf(row, item.key))).filter((value): value is number => value !== null);
 }
 
-/**
- * The figures behind a trend, for its table view: a row per week (the Monday
- * that starts it, read in UTC so every reader sees the same date) and a
- * column per series.
- */
 export function trendTable(
   data: readonly TrendRow[],
   series: readonly TrendSeries[],
@@ -110,10 +92,6 @@ export function trendTable(
   };
 }
 
-/**
- * Where a threshold's label goes: at the end of the plot where the data runs
- * furthest from the rule, and on the side of the rule the data is not.
- */
 export function thresholdPlacement(
   data: readonly TrendRow[],
   series: readonly TrendSeries[],
@@ -209,15 +187,6 @@ function touches(line: readonly PlotPoint[], box: { left: number; right: number;
   );
 }
 
-/**
- * Where the threshold's label goes, drawn as the reader sees it (JO-14): the
- * spot the data suggests (thresholdPlacement) when the label is clear of every
- * line there, else the first of the others that is (the same end on the other
- * side of the rule, then the other end), so a narrow plot, where the label
- * spans many weeks, never has a line through it. A spot whose label would
- * leave the plot is passed over. Null when none is clear: the caller tries the
- * label in two lines, narrower, before settling for the suggested spot.
- */
 export function clearLabelSpot(
   preferred: LabelSpot,
   lines: readonly (readonly PlotPoint[])[],
@@ -241,15 +210,6 @@ export function clearLabelSpot(
   return null;
 }
 
-/**
- * A weekly trend: one series, or a few to compare. Lines are 2 px; a hairline
- * crosshair follows the pointer and snaps to the nearest week, with one
- * tooltip that lists every series there. The value axis ticks on round
- * numbers, the week axis always names the latest week, the last point is
- * marked and labelled (the value for one series, the name for several), and
- * a threshold is a dashed rule in its status colour. Arrow keys walk the
- * weeks when the chart has focus.
- */
 export function TrendLine({
   data,
   series,
@@ -445,12 +405,6 @@ function EndLabels({
   );
 }
 
-/**
- * A rule's limit across the plot: dashed (it is a threshold, not a
- * gridline), in its status colour, and named at whichever end leaves the
- * name clear of the data, as drawn: on a narrow plot the name spans many
- * weeks, so the lines under it are checked, not the end values alone.
- */
 function ThresholdRule({
   threshold,
   placement: suggested,

@@ -1,21 +1,7 @@
-/**
- * The oversight API contract, as zod schemas. This file is the single source
- * of truth: the route handler validates every upstream body against it, the
- * sample data is tested against it, the browser parses every response with
- * it, and docs/API_CONTRACT.md describes it for the Python team. Change a
- * field here first, then the document, never the other way round.
- *
- * Objects strip unknown keys rather than rejecting them, so the API can add a
- * field without breaking the interface, and nothing the contract does not name
- * ever reaches the browser.
- */
-
 import { z } from "zod";
 
 /* ------------------------------------------------------------ primitives -- */
 
-/** ISO 8601 with a zone. The API sends UTC with `Z`; an offset is accepted so a
- *  Python `isoformat()` slip is not an outage. */
 export const isoDateTime = z.iso.datetime({ offset: true });
 /** A calendar day, `YYYY-MM-DD`. Weekly series use the Monday the week starts on. */
 export const isoDate = z.iso.date();
@@ -23,10 +9,6 @@ export const isoDate = z.iso.date();
 /** Jira keys as the backend's catalogue accepts them: a 2 to 20 character project key. */
 export const ISSUE_KEY_PATTERN = /^[A-Z][A-Z0-9_]{1,19}-[1-9]\d{0,8}$/;
 export const PROJECT_KEY_PATTERN = /^[A-Z][A-Z0-9_]{1,19}$/;
-/**
- * A rule's id: the catalogue's (R-EFF-01) and, since JO-20, a board's own (R-CUS-01, W-CUS-114): two or three
- * digits, so there is room for 999 custom rules of each kind.
- */
 export const RULE_ID_PATTERN = /^[RW]-[A-Z]+-\d{2,3}$/;
 /** A rule id inside running text (an insight, an answer), as the pattern above reads it. */
 export const RULE_ID_IN_TEXT = /\b[RW]-[A-Z]+-\d{2,3}\b/g;
@@ -93,26 +75,12 @@ export const metaSchema = z.object({
   report_timezone: z.string().min(1),
 });
 
-/**
- * The meta of a response that belongs to no one board (the Portfolio, the
- * access log, Ask's usage): its sync time is the latest of every board's, so
- * it is null until the first board has synced (a first deployment, or Jira
- * settings that do not work yet), and these pages still open then.
- */
 export const serviceMetaSchema = metaSchema.extend({
   last_synced_at: isoDateTime.nullable(),
 });
 
 /* ---------------------------------------------------------------- health -- */
 
-/**
- * Health is the shell's liveness probe, polled every minute. The API sends
- * `meta` here as everywhere, but nothing reads it from this endpoint, so a bare
- * body (a test stub, a service still starting) parses rather than taking the
- * whole shell into its error state. Before the board's first sync there is no
- * sync time: `last_synced_at` is null (and so is meta's), and the shell says
- * the board has not been synced yet rather than that the service is down.
- */
 export const healthSchema = z.object({
   meta: serviceMetaSchema.optional(),
   status: z.enum(["ok", "degraded"]),
@@ -130,11 +98,6 @@ export const healthSchema = z.object({
 
 /* -------------------------------------------------------------- projects -- */
 
-/**
- * One Jira board the service serves (JO-17): every project its Jira account can browse, and JIRA_PROJECTS. A
- * board that has never synced has 0 issues, no sync time and `synced` false: it can be picked, and every page
- * offers its first sync.
- */
 export const projectSummarySchema = z
   .object({
     key: projectKey,
@@ -152,10 +115,6 @@ export const projectSummarySchema = z
     path: ["synced"],
   });
 
-/**
- * GET /projects: every board the dashboard can switch between; `default` is served when none is picked. The
- * service's order: the default first, then the synced boards by name, then the boards not synced yet by name.
- */
 export const projectsSchema = z
   .object({
     default: projectKey,
@@ -170,11 +129,6 @@ export const projectsSchema = z
 
 /** "p" and the first 12 hex characters of sha256 of the Jira account id: stable, and never the account id itself. */
 export const PERSON_ID_PATTERN = /^p[0-9a-f]{12}$/;
-/**
- * The version of the picture the service holds for a person: the first 12 hex
- * characters of sha256 of the picture's bytes. A version, never a URL: the
- * browser asks this interface for the picture by person id and version.
- */
 export const AVATAR_VERSION_PATTERN = /^[0-9a-f]{12}$/;
 /** The filter and facet value for tickets nobody is assigned to (null wherever a person goes). */
 export const UNASSIGNED = "unassigned";
@@ -195,32 +149,14 @@ const personName = z
   .string()
   .min(1)
   .refine((name) => [...name].length <= PERSON_NAME_MAX, { message: `at most ${PERSON_NAME_MAX} characters` })
-  // Jira gives some accounts their email address as a display name. The service sends "Unnamed account" for
-  // those; one that gets through anyway is replaced here, so an address never reaches a page as a name.
   .transform((name) => (EMAIL_IN_NAME.test(name) ? UNNAMED_ACCOUNT : name));
 
-/**
- * Someone tickets are assigned to, named as Jira names them: the display name
- * at the last sync ("Unnamed account" when Jira gave none), an id made one
- * way from the account id (an unsalted hash, so anyone who already knows an
- * account id can recognise its person id; it is never the account id itself),
- * and the version of their Jira picture, which the service fetched at sync and
- * serves itself (GET /people/{id}/avatar), or null when it holds none.
- * Nothing else about a person crosses this boundary: an email address, Jira's
- * picture URLs (avatarUrls), an account id or a time zone sent by mistake is
- * dropped here, as every field the contract does not name is.
- */
 export const personSchema = z.object({
   id: personId,
   name: personName,
   avatar: avatarVersion,
 });
 
-/**
- * One row of GET /people: a person and the board's tickets assigned to them
- * now, or (person null) the tickets nobody is assigned to. Findings are issue
- * findings only: a sprint finding belongs to no one.
- */
 export const personSummarySchema = z
   .object({
     person: personSchema.nullable(),
@@ -244,11 +180,6 @@ export const personSummarySchema = z
     }
   });
 
-/**
- * GET /people: everyone assigned a ticket on the board now, and one row for
- * the unassigned tickets when there are any. Ordered by open breaches, open
- * warnings and open tickets (most first), then by name.
- */
 export const peopleSchema = z
   .object({
     meta: metaSchema,
@@ -263,24 +194,11 @@ export const peopleSchema = z
     });
   });
 
-/**
- * One person in GET /people/directory: someone on the board, and how many of
- * its tickets are assigned to them now (GET /people's `tickets` for the same
- * person; 0 for a member who holds none).
- */
 export const directoryEntrySchema = z.object({
   person: personSchema,
   tickets: count,
 });
 
-/**
- * GET /people/directory (JO-10): everyone on the board, as Jira's own
- * assignee picker lists them. Every current assignee of one of its tickets
- * (GET /people's people) and every member of its last successful member fetch
- * (Jira's assignable users), each once; no Unassigned entry. Ordered by name,
- * folded for case and accents as the @ list's filter folds it, then by id.
- * Ask's @ list reads it; nothing else does.
- */
 export const peopleDirectorySchema = z
   .object({
     meta: metaSchema,
@@ -303,13 +221,6 @@ export const SCORECARD_DEFAULT_DAYS: ScorecardDays = 90;
 /** The most people one scorecard request may name (`person`, repeatable): an eleventh is refused. */
 export const SCORECARD_MAX_PEOPLE = 10;
 
-/**
- * The eleven measures, in the contract's order (docs/API_CONTRACT.md 4.15),
- * keys and labels exact. `count`: a number of tickets, always enough, never
- * compared. `rate`: a whole percentage of a denominator. `ratio`: open
- * findings per 10 open tickets, to one decimal. Which way is closer to the
- * process is the measure's own: a reader never has to guess.
- */
 export const SCORECARD_MEASURES = [
   { key: "open_tickets", label: "Open tickets", kind: "count", direction: "neutral" },
   { key: "in_progress", label: "In progress now", kind: "count", direction: "neutral" },
@@ -348,12 +259,6 @@ export const scorecardMeasureSchema = z.object({
   reason: z.string().min(1).nullable(),
 });
 
-/**
- * One figure: the value (a count; a whole percentage, 0 to 100; or findings
- * per 10 open tickets to one decimal), the counts it was worked out from
- * (null for a count), whether the denominator holds enough tickets to
- * compare, and where it stands next to the board's.
- */
 export const scorecardValueSchema = z.object({
   value: z.number().nonnegative().nullable(),
   numerator: count.nullable(),
@@ -376,15 +281,6 @@ export const scorecardPersonSchema = z.object({
   values: scorecardValuesSchema,
 });
 
-/**
- * GET /people/scorecard (JO-11): how tickets are handled, next to the whole
- * board, by each ticket's current assignee, over the last `period.days`.
- * People level only. With comparison on and no person asked for, everyone
- * who holds a ticket on the board now; with `person`, those people (a member
- * with no tickets reads as tickets 0, every value null). With comparison off
- * (PEOPLE_COMPARISON on the service, SAMPLE_PEOPLE_COMPARISON in the sample),
- * at most one person: none asked for is `people: []` with the board's figures.
- */
 export const peopleScorecardSchema = z
   .object({
     meta: metaSchema,
@@ -436,14 +332,6 @@ export const peopleScorecardSchema = z
     });
   });
 
-/**
- * What is wrong with one value for its measure, if anything: the arithmetic
- * (a rate is its numerator over its denominator, as a whole percentage; a
- * ratio ten times it, to one decimal, either rounding of a half), a measure
- * the board cannot show holding anything, a count with counts behind it, and
- * a comparison where either side has too few tickets. `board` is null for the
- * board's own value, which is compared with nothing.
- */
 export function scorecardValueProblems(
   measure: Pick<ScorecardMeasure, "kind" | "measurable">,
   value: ScorecardValue,
@@ -475,10 +363,6 @@ export function scorecardValueProblems(
   return problems;
 }
 
-/**
- * Ask's exact words for scorecards and the comparison (oversight/ask/prompts.py,
- * docs/API_CONTRACT.md 4.6 and 4.15), mirrored in the sample.
- */
 export const SCORECARD_SENTENCES = {
   /** People level, only where an organisation has turned comparison off: a question comparing people. */
   comparisonOff: "Comparing people side by side is turned off. Ask about one person at a time instead.",
@@ -492,21 +376,11 @@ export const CODE_REVIEW_CAVEAT = " Code review isn't recorded on this board, so
 /** Why the code review measure is not measurable on a board that records no code review in Jira (the contract's words). */
 export const CODE_REVIEW_NOT_RECORDED = "This board doesn't record code review in Jira.";
 
-/**
- * Whether the board records code review, as the caveat reads the scorecard's
- * measures: its code review measure is shown, or is not for another reason
- * than that (JO-15: R-FLOW-01 turned off on a board that records it).
- */
 export function recordsCodeReview(measures: readonly Pick<ScorecardMeasure, "key" | "measurable" | "reason">[]): boolean {
   const codeReview = measures.find((measure) => measure.key === "code_review");
   return codeReview !== undefined && (codeReview.measurable || codeReview.reason !== CODE_REVIEW_NOT_RECORDED);
 }
 
-/**
- * The final paragraph of every scorecard or comparison answer, appended in
- * code (and the foot of every scorecard on the page): the period, the basis,
- * and, where the board records no code review, whose work does not show.
- */
 export function scorecardCaveat(days: number, codeReviewRecorded: boolean): string {
   return `Figures from Jira over the last ${days} days, next to the whole board, by each ticket's current assignee.${codeReviewRecorded ? "" : CODE_REVIEW_CAVEAT}`;
 }
@@ -526,11 +400,6 @@ export const personCardTicketSchema = z.object({
   summary: z.string(),
   /** The status's name as Jira shows it ("In Progress", "In Review"). */
   status: z.string().min(1),
-  /**
-   * When the ticket last went into progress: the start of the unbroken run of in-progress statuses it is in now.
-   * Null only when the service knows neither its status timeline nor its creation (never for a ticket a sync
-   * stored); such a ticket is listed last, and the card says no time for it rather than failing.
-   */
   since: isoDateTime.nullable(),
 });
 
@@ -541,13 +410,6 @@ export const personCardBoardSchema = z.object({
   open_tickets: z.number().int().min(1),
 });
 
-/**
- * How their figures stand next to the board's over the period, counted over
- * the measures the board can show that compare (the rates and the ratio):
- * closer, level or further, or too few tickets to compare; `measurable` is
- * the four together. Null when they were compared on no measure (no tickets,
- * or too few for every one).
- */
 export const personCardProcessSchema = z
   .object({
     closer: count,
@@ -565,13 +427,6 @@ export const personCardProcessSchema = z
     }
   });
 
-/**
- * GET /people/{person_id}/card (JO-13, contract 4.19): what the person card
- * shows when an admin hovers or clicks a name. Every figure is one the page it
- * leads to shows: the counts are the scorecard's over `work.days` (open
- * tickets are GET /people's too, Epics left out), the findings GET /people's
- * row, the process meter the scorecard's marks. People level only.
- */
 export const personCardSchema = z
   .object({
     meta: metaSchema,
@@ -634,19 +489,11 @@ export const personCardSchema = z
 
 /* --------------------------------------------------------------- refresh -- */
 
-/** A board's sync, as GET and POST /refresh report it (JO-18). */
+/** A board's sync, as GET and POST /refresh report it. */
 export const REFRESH_STATES = ["idle", "queued", "running", "succeeded", "failed"] as const;
 /** The states a sync is still under way in: waiting its turn behind another board's, or running. */
 export const REFRESH_UNDER_WAY: readonly (typeof REFRESH_STATES)[number][] = ["queued", "running"];
 
-/**
- * GET and POST /refresh: "Sync", for the board picked in the top bar (JO-18).
- * POST starts that board's sync, derive and rules (Jira is only read; the
- * first sync of a board is a full one) unless it is running or just finished,
- * and answers its state either way: "queued" while another board's sync runs
- * (the service runs one at a time, never two at once), then "running". GET is
- * polled until the state is neither. `project` is the board the state is about.
- */
 export const refreshSchema = z.object({
   project: projectKey,
   state: z.enum(REFRESH_STATES),
@@ -658,8 +505,6 @@ export const refreshSchema = z.object({
 
 /* ------------------------------------------------------- shared pieces -- */
 
-/** One week of a weekly series. `t` is the Monday (UTC) the week starts on; the
- *  last point is the current week to date. null means nothing to measure that week. */
 export const trendPointSchema = z.object({
   t: isoDate,
   value: z.number().nullable(),
@@ -724,11 +569,6 @@ export const findingSchema = z
     first_seen_at: isoDateTime,
     last_seen_at: isoDateTime,
     resolved_at: isoDateTime.nullable(),
-    /**
-     * cleared: the condition stopped. superseded: a newer rules version (or a severity changed for the board)
-     * replaced it. settings_changed: the board's rule settings changed (a threshold moved, the rule was turned off),
-     * so the rule no longer holds it; never counted as fixed (JO-15).
-     */
     resolved_why: z.enum(["cleared", "superseded", "settings_changed"]).nullable(),
     /** The rule's threshold as text ("1.5×"), or null for rules without one. */
     threshold: z.string().nullable(),
@@ -755,11 +595,6 @@ export const findingSchema = z
 /** One 7-day window, ending at `end_at`. */
 export const windowPointSchema = z.object({ end_at: isoDateTime, value: count });
 
-/**
- * A headline figure over rolling 7-day windows ending now. `series` holds 12
- * windows, oldest first: the last point is `current`, the one before it
- * `previous`, so a tile's sparkline and its delta always agree.
- */
 export const windowTotalSchema = z.object({
   current: count,
   previous: count,
@@ -851,11 +686,6 @@ export const overviewSchema = z.object({
     skipped_stage_share: trendCardSchema,
     reopen_rate: trendCardSchema,
   }),
-  /**
-   * When the rules first saw this project. Findings history starts here, so a
-   * week-on-week change that reaches back before it is not a real change.
-   * Absent or null: no history limit is known (the sample data has 12 weeks).
-   */
   tracking_since: isoDateTime.nullable().optional(),
   /** Where work sits now: issues by current status (Epics left out). */
   status_mix: z.array(
@@ -885,10 +715,6 @@ export const facetEntrySchema = z.object({
   count,
 });
 
-/**
- * A person's facet entry, their id, name and picture's version, or
- * "unassigned" and "Unassigned" with no picture: always a value the filter takes.
- */
 export const personFacetEntrySchema = facetEntrySchema
   .extend({
     value: z.union([personId, z.literal(UNASSIGNED)]),
@@ -900,10 +726,6 @@ export const personFacetEntrySchema = facetEntrySchema
     path: ["avatar"],
   });
 
-/**
- * One page of findings. Facet counts apply every filter except the facet's
- * own, so a filter menu shows what each choice would give.
- */
 export const findingsPageSchema = z.object({
   meta: metaSchema,
   items: z.array(findingSchema),
@@ -969,8 +791,6 @@ export const issueTimelineSchema = z.object({
       skipped: z.array(stageSchema).min(1),
     }),
   ),
-  /** Status and tracked-field changes, oldest first. Assignee changes read only
-   *  "Assigned" or "Unassigned", never a person: who has it now is `issue.assignee`. */
   changes: z.array(
     z.object({
       changelog_id: z.string().min(1),
@@ -988,29 +808,13 @@ export const issueTimelineSchema = z.object({
 
 /* ------------------------------------------------------------------- ask -- */
 
-/**
- * The longest question the service will plan (oversight/ask/service.py): the
- * Ask field stops here, and the service declines anything longer as
- * not_understood. The route refuses bodies far beyond it outright.
- */
 export const ASK_MAX_LENGTH = 500;
 const ASK_BODY_MAX_LENGTH = 2_000;
 /** The most people one question may mention (the service's limit too). */
 export const ASK_MAX_MENTIONS = 10;
 
-/**
- * How far Ask may go for a request. "people": it may name people, count and
- * rank their tickets and findings (never judge them); "team": it answers about
- * the work and the process only. This interface's server decides it on every
- * request (an admin, or sign-in off, is "people"); the browser never sends it.
- */
 export const askLevelSchema = z.enum(["team", "people"]);
 
-/**
- * A question as the browser sends it: the text, and the people picked from
- * the @ list, by id (at most 10, each once). Nothing else: the level is not
- * the browser's to choose.
- */
 export const askRequestSchema = z.strictObject({
   question: z.string().max(ASK_BODY_MAX_LENGTH),
   mentions: z
@@ -1020,37 +824,15 @@ export const askRequestSchema = z.strictObject({
     .optional(),
 });
 
-/**
- * The service's exact words when Ask turns down a question about people
- * (docs/API_CONTRACT.md 4.6), each a `not_understood` message. The Ask page
- * tells them apart by these words, so both sides send them to the letter.
- */
 export const ASK_DECLINES = {
   /** Team level: any question about a person. */
   teamLevel: "Ask answers at team level. To see one person's findings, use the Person filter on Findings.",
-  /**
-   * JO-09's words for a judgement of someone. Since JO-11 nothing is declined at people level (a question that
-   * evaluates someone is answered with their scorecard), so the service no longer sends it; kept so an answer
-   * from an older service still reads as what it is.
-   */
   judgement: "I can show facts about someone's tickets and findings, but not judge their performance.",
   /** People level, only where an organisation has turned comparison off: a question comparing people. */
   comparisonOff: SCORECARD_SENTENCES.comparisonOff,
-  /**
-   * People level: a mention of someone who is not on the board at all (neither assigned one of its tickets nor
-   * one of its members). Nothing is asked of the model.
-   */
   unknownMention: "Someone you mentioned has no tickets on this board.",
 } as const;
 
-/**
- * Ask's words for people mentioned who are on the board but hold none of its
- * tickets (JO-10), built in code, never by a model, to the letter: "A has",
- * "A and B have", "A, B and C have" (no comma before the "and"), then "no
- * tickets on this board." When every mention is such a person it is the whole
- * answer (outcome `no_data`); when some hold tickets, the answer about them
- * ends with it as a paragraph of its own.
- */
 export function noTicketsSentence(names: readonly string[]): string {
   const listed = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : (names[0] ?? "");
   return `${listed} ${names.length > 1 ? "have" : "has"} no tickets on this board.`;
@@ -1093,13 +875,6 @@ export const factSetSchema = z.object({
   note: z.string().nullable(),
 });
 
-/**
- * A figure in the answer bound to the cell it came from. `text` is an exact
- * substring of `answer`; citations are in the order their text appears, so
- * each is found by searching from the end of the one before. A figure from a
- * query parameter or a row count has row_index -1 and column "params" or
- * "row_count".
- */
 export const citationSchema = z.object({
   marker: z.number().int().min(1),
   text: z.string().min(1),
@@ -1118,11 +893,6 @@ export const askResponseSchema = z.object({
   qa_id: z.string().regex(/^[0-9a-f]{32}$/),
   question: z.string(),
   outcome: askOutcomeSchema,
-  /**
-   * Plain text, no markers. null unless the outcome is "answered", or "no_data"
-   * for people mentioned with no tickets on the board: then exactly
-   * noTicketsSentence() of them, and nothing else.
-   */
   answer: z.string().nullable(),
   citations: z.array(citationSchema),
   facts: z.array(factSetSchema),
@@ -1135,35 +905,12 @@ export const askResponseSchema = z.object({
   /** The model that wrote the answer; null when none was asked. */
   model: z.string().nullable(),
   asked_at: isoDateTime,
-  /**
-   * The people the answer names, each verified against its facts or the
-   * mentions, in the order the answer first names them; for a "no_data" about
-   * people mentioned with no tickets, those people, in the order mentioned.
-   * Empty at team level, and whenever the answer names no one.
-   */
   people: z.array(personSchema),
-  /**
-   * A line the page shows under the answer in the muted note style, or null.
-   * Today only ASK_BUDGET_NOTE (JO-12): the day's AI budget is spent, so the
-   * answer was built in code, with no model. A service that predates it sends
-   * nothing, which reads as null.
-   */
   note: z.string().min(1).max(500).nullable().default(null),
 });
 
-/**
- * Ask's words when the day's model budget (LLM_DAILY_TOKEN_BUDGET on the
- * service) is used up: the answer was built in code from the catalogue, and
- * the page says so under it (JO-12).
- */
 export const ASK_BUDGET_NOTE = "Today's AI budget is used up, so this answer was built without the AI model.";
 
-/**
- * What a reader is told when the service's per-viewer limit on questions
- * (ASK_RATE_LIMIT) turns one away: in the Ask box, the draft kept. The wait
- * is the service's Retry-After, in whole minutes rounded up, never less
- * than one ("1 minute", "5 minutes").
- */
 export function askRateLimitMessage(retryAfterSeconds: number): string {
   const seconds = Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : 60;
   const minutes = Math.max(1, Math.ceil(seconds / 60));
@@ -1227,11 +974,6 @@ export const trendSchema = z.object({
 
 /* ----------------------------------------------------------------- rules -- */
 
-/**
- * A rule as the board runs it (JO-15): every catalogue rule is listed, the
- * ones turned off on the board too. Its severity, threshold, measurability and
- * open findings are the board's, under its rule settings.
- */
 export const ruleSchema = z.object({
   rule_id: ruleId,
   title: z.string().min(1),
@@ -1251,7 +993,7 @@ export const ruleSchema = z.object({
   enabled: z.boolean(),
   /** Whether the board's settings differ from the catalogue's for it (on or off, severity, a threshold). */
   customised: z.boolean(),
-  /** Whether an admin added it to this board (JO-20): listed after the catalogue, with its check's label. */
+  /** Whether an admin added it to this board: listed after the catalogue, with its check's label. */
   custom: z.boolean().default(false),
   /** The check it runs, in plain words ("Time in a status"); null where the service names none. */
   check_label: z.string().min(1).nullable().default(null),
@@ -1268,10 +1010,6 @@ export const processStageSchema = z.object({
   note: z.string(),
 });
 
-/**
- * The catalogue and the process map for a board. They do not wait on a sync, so a board that has never synced has
- * them too (its sync time null), as its rule settings (4.20) do: the Process page, which leads to them, opens for it.
- */
 export const rulesSchema = z.object({
   meta: serviceMetaSchema,
   rules: z.array(ruleSchema),
@@ -1299,11 +1037,6 @@ const spread = z.object({
 const countsBy = z.record(z.string(), count);
 const authorShare = z.object({ seconds: fraction.nullable(), count: fraction.nullable() });
 
-/**
- * The Phase 2 ground-truth report, shaped exactly as oversight/baseline.py
- * writes reports/baseline_<project>_<as_of>.json ({metadata, figures,
- * comparison}), plus meta. Shares are fractions and null when the whole is 0.
- */
 export const baselineSchema = z.object({
   meta: metaSchema,
   metadata: z.object({
@@ -1402,26 +1135,14 @@ export const baselineSchema = z.object({
 
 /* ------------------------------------------------------------ governance -- */
 
-/**
- * Who read person-level data, as the service's access log records them
- * (JO-12): never an account id or an email address, only a keyed hash of the
- * session's Atlassian account (HMAC-SHA-256 under AUTH_SECRET, hex, the first
- * 32 characters) and the display name the session holds. "local" and its name
- * stand for every reader while sign-in is off.
- */
 export const VIEWER_HASH_PATTERN = /^(?:[0-9a-f]{32}|local)$/;
 export const LOCAL_VIEWER = "local";
 export const LOCAL_VIEWER_NAME = "Local (sign-in off)";
-/** A session from before sessions kept the display name (JO-12): it still works, and reads as this. */
+/** A session from before sessions kept the display name: it still works, and reads as this. */
 export const SIGNED_IN_USER = "Signed-in user";
 /** A subject of the access log who is on no board any more: named so, with no picture. */
 export const FORMER_MEMBER = "Former member";
 
-/**
- * What the access log records, one entry per request that read person-level
- * data. A person card (JO-13) is recorded at most once per viewer, person and
- * board in any ten minutes, so hovering back and forth does not flood it.
- */
 export const ACCESS_ACTIONS = [
   "scorecard_view",
   "people_compare_view",
@@ -1469,15 +1190,6 @@ export interface AccessDetail {
   entries: number | null;
 }
 
-/**
- * An entry's `detail`, read for what the page shows and nothing else: `days`
- * (a scorecard's or a comparison's period), `qa_id` (the Ask answer's
- * reference) and `entries` (how many entries a read of the access log, or
- * its export, returned), each null where it does not apply or is not what
- * the contract says. Anything else in it (the findings' state and page, an
- * answer's outcome, the filters of a read of the log) is dropped here, never
- * shown and never passed on.
- */
 export function accessDetail(raw: unknown): AccessDetail {
   const record = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
   const whole = (value: unknown, min: number) => (typeof value === "number" && Number.isInteger(value) && value >= min ? value : null);
@@ -1507,24 +1219,11 @@ export const accessLogEntrySchema = z.object({
 /** A viewer the access log holds, as its filter offers them: by the name of their latest read. */
 export const accessViewerSchema = z.object({ hash: z.string().regex(VIEWER_HASH_PATTERN), name: viewerName });
 
-/**
- * Everyone the whole access log holds, whatever the filters: every viewer and
- * every person read (on any board; a former member by FORMER_MEMBER), so the
- * filters can offer them all. On a first page only.
- */
 export const accessLogFacetsSchema = z.object({
   viewers: z.array(accessViewerSchema).max(10_000),
   subjects: z.array(personSchema).max(10_000),
 });
 
-/**
- * GET /access-log (contract 4.16, people level only): one page of who read
- * whose figures, newest first, and where the next page starts (null at the
- * end), with the filters' facets on a first page (null on the pages after it
- * and on an export). An export (export=true) is the same body with up to
- * ACCESS_LOG_EXPORT_MAX entries; this interface holds each to the limit it
- * asked for (live.ts).
- */
 export const accessLogSchema = z
   .object({
     meta: serviceMetaSchema,
@@ -1552,11 +1251,6 @@ export const usageDaySchema = z.object({
   tokens: count,
 });
 
-/**
- * GET /usage (contract 4.17, people level only): today's questions, model
- * calls and tokens (UTC), against the daily budget when one is set
- * (LLM_DAILY_TOKEN_BUDGET), and the last seven days.
- */
 export const usageSchema = z
   .object({
     meta: serviceMetaSchema,
@@ -1606,50 +1300,22 @@ export const portfolioBoardSchema = z
     /** Findings first seen, and resolved, in the 7 days to now (the Overview's tiles). */
     new_findings_7d: count,
     resolved_findings_7d: count,
-    /**
-     * Open findings (breaches and warnings) at the end of each of the 7 weeks before this one (Monday 00:00 UTC, as
-     * GET /trends counts them), oldest first, and last the open findings now.
-     */
     open_findings_trend: z.array(count).length(PORTFOLIO_TREND_POINTS),
-    /**
-     * When the rules first saw the board (the Overview's tracking_since); null before any rules run. In its first
-     * tracked week every finding is new only because tracking began: there is no change or trend to show yet.
-     */
     tracking_since: isoDateTime.nullable(),
     /** The board has an active sprint now (false before its first sync). */
     active_sprint: z.boolean(),
-    /**
-     * Work in the active sprint, not done, with no estimate (W-EST-01's open findings, as the Overview's
-     * findings by rule counts them); null with no active sprint, or where the rule is missing or not measured.
-     */
     unestimated_in_active_sprint: count.nullable(),
-    /**
-     * The active sprint has an open W-SPR-01 finding; null with no active sprint, or where the rule cannot run
-     * (active_sprint tells the two apart).
-     */
     sprint_at_risk: z.boolean().nullable(),
     /** The rule with the most open findings on the board (catalogue order breaks a tie); null with none open. */
     top_rule: z.object({ id: ruleId, title: z.string().min(1), open: z.number().int().min(1) }).nullable(),
-    /**
-     * The last sync is more than 2 hours old by the service's clock (or there has been none): the one rule
-     * src/lib/sync.ts holds, which the page reads on the reader's clock, as the top bar does (JO-14).
-     */
     stale: z.boolean(),
   })
-  // Only what no reading of the figures allows. The service works each figure out as the board's Overview does, from
-  // its own aggregates; a check that two of them add up the same way (the trend's last week against the totals) would
-  // turn the admin's home page into an error over a difference the Overview itself would show.
   .superRefine((board, ctx) => {
     if (board.in_progress > board.open_tickets) {
       ctx.addIssue({ code: "custom", path: ["in_progress"], message: "more in progress than open" });
     }
   });
 
-/**
- * One ticket and rule that needs attention: the oldest open breaches across the boards, one row for each ticket and
- * rule. A rule can hold more than one open finding on a ticket (R-FLOW-02, one for each transition that skipped a
- * stage): they are one row, dated from the oldest, with how many there are.
- */
 export const attentionItemSchema = z.object({
   project: projectKey,
   issue_key: issueKey,
@@ -1659,7 +1325,7 @@ export const attentionItemSchema = z.object({
   severity: severitySchema,
   /** When the rules first saw the oldest of its open findings. */
   opened_at: isoDateTime,
-  /** The last rules run that saw it: where its age stops once its board's last sync is stale (JO-14). */
+  /** The last rules run that saw it: where its age stops once its board's last sync is stale. */
   last_seen_at: isoDateTime,
   /** Whole days from first seen to the service's now, or to last_seen_at once the board's last sync is stale. */
   age_days: count,
@@ -1687,7 +1353,7 @@ const portfolioBodySchema = z
       if (keys.has(board.project.key)) ctx.addIssue({ code: "custom", path: ["boards", index, "project"], message: "listed twice" });
       keys.add(board.project.key);
     });
-    // One row for each ticket and rule: the same ticket and rule twice reads as a duplicate (13 Nov 2026).
+    // One row for each ticket and rule: the same ticket and rule twice reads as a duplicate.
     const pairs = new Set<string>();
     body.attention.forEach((item, index) => {
       const pair = attentionKey(item);
@@ -1707,12 +1373,6 @@ const portfolioBodySchema = z
     });
   });
 
-/**
- * The not-synced count under its contract name. The service's first JO-17 build
- * sent it as `not_synced` (SQA, 18 Nov 2026), which failed the whole Portfolio:
- * that name is read too while both sides come to the one name, and the
- * contract's wins when a body carries both.
- */
 function notSyncedUnderContractName(body: unknown): unknown {
   if (typeof body !== "object" || body === null || Array.isArray(body)) return body;
   const record = body as Record<string, unknown>;
@@ -1721,25 +1381,9 @@ function notSyncedUnderContractName(body: unknown): unknown {
   return { ...rest, boards_not_synced: notSynced };
 }
 
-/**
- * GET /portfolio (contract 4.18): every synced board the reader may open, with
- * the Overview's figures for each, and the oldest open breaches across them;
- * and how many of the boards served (JO-17) have not synced yet, which the page
- * counts in one line. Not board-scoped; this interface's server holds both
- * lists, and the count, to the reader's boards before anything reaches the
- * browser.
- */
 export const portfolioSchema = z.preprocess(notSyncedUnderContractName, portfolioBodySchema);
 
 /* --------------------------------------------------------- rule settings -- */
-
-/*
- * JO-15: a board's rule settings, as its admins set them. rules.yaml stays the
- * catalogue and every board's defaults; the service keeps a board's settings
- * over it in its snapshot database. Per board and rule: on or off, the
- * severity its findings are reported as, and the numeric thresholds the
- * registry below names, within its bounds. Nothing here writes to Jira.
- */
 
 /** How a threshold reads beside its field. A share travels as a fraction (0.3) and is shown as a whole percentage. */
 export const RULE_PARAM_UNITS = ["ratio", "hours", "percentile", "days", "share"] as const;
@@ -1757,13 +1401,6 @@ export interface RuleParamSpec {
   fallback: number | null;
 }
 
-/**
- * The thresholds an admin may change, by the rule's check, with the bounds the
- * service enforces (the JO-15 spec, section 1). Structural params (a stage, an
- * evidence source) are never editable. This interface refuses a value outside
- * them before anything is forwarded, the page offers exactly these, and the
- * sample serves them.
- */
 export const RULE_PARAM_REGISTRY: Readonly<Record<string, readonly RuleParamSpec[]>> = {
   // The service names it "Grace after work started"; the sample says it so that no word of it reads as a first name.
   estimate_after_start: [{ name: "grace_hours", label: "Hours of grace", unit: "hours", min: 0, max: 168, step: 0.5, fallback: 1 }],
@@ -1780,20 +1417,7 @@ export const RULE_PARAM_REGISTRY: Readonly<Record<string, readonly RuleParamSpec
   ],
 };
 
-/* ------------------------------------------------- custom rules (JO-20) -- */
-
-/*
- * JO-20: an admin adds rules of the board's own, each built on one of the
- * service's checks (the code that looks at tickets), with its limits, the
- * statuses and issue types it applies to, and how serious it is. The registry
- * below is the service's (oversight/rules/registry.py): every check a custom
- * rule may use, with its params and the status categories it may look at. It
- * reuses JO-15's registry for the catalogue's checks, the same names and
- * bounds, so a threshold means one thing whichever kind of rule holds it. The
- * board's own options (its statuses, issue types, the stages it maps) come
- * with its settings (`checks`, 4.20); this copy checks a request's shape and
- * bounds before anything is forwarded.
- */
+/* ------------------------------------------------- custom rules -- */
 
 /** The most custom rules (not deleted) one board holds. */
 export const CUSTOM_RULE_LIMIT = 50;
@@ -1852,7 +1476,7 @@ export interface CheckSpec {
   defaultCategories: readonly StatusCategory[];
 }
 
-/** One of JO-15's thresholds as a custom rule's param: its name, words and bounds, with a default for a new rule. */
+/** One of the thresholds as a custom rule's param: its name, words and bounds, with a default for a new rule. */
 function thresholdParam(check: string, name: string, fallback?: number): CheckParamSpec {
   const spec = RULE_PARAM_REGISTRY[check]?.find((candidate) => candidate.name === name);
   const value = fallback ?? spec?.fallback;
@@ -2023,11 +1647,6 @@ export const PARAM_KIND_BY_NAME: ReadonlyMap<string, ParamKind> = new Map(
   CHECK_REGISTRY.flatMap((check) => check.params.map((param) => [param.name, param.kind] as const)),
 );
 
-/**
- * Each number param's bounds by its name, JO-15's thresholds and a custom rule's alike. A name a check uses with
- * bounds of its own (`days`: 1 to 3,650 open, 1 to 365 with no change) is held here to the widest; the check's own are
- * held where the check is known (a new rule, the page, the service).
- */
 export const RULE_PARAM_BOUNDS: ReadonlyMap<string, { min: number; max: number }> = (() => {
   const bounds = new Map<string, { min: number; max: number }>();
   const specs = [
@@ -2044,35 +1663,16 @@ export const RULE_PARAM_BOUNDS: ReadonlyMap<string, { min: number; max: number }
 
 /** Control characters (C0, DEL and C1): each reads as a space, as a line break does. */
 const CONTROLS = /[\u0000-\u001f\u007f-\u009f]/g;
-/**
- * What shows nothing, or nothing fixed, wherever it stands: format characters (a zero-width space or joiner, a soft
- * hyphen, a direction mark), whatever Unicode says to leave unseen (a variation selector, a Hangul filler), the blank
- * braille cell, lone surrogates, private-use and unassigned code points. Taken out of text a rule keeps, as the
- * service takes them out, so a name never reads blank or as another rule's.
- */
 const UNSEEN = /[\p{Cf}\p{Default_Ignorable_Code_Point}⠀\p{Cs}\p{Co}\p{Cn}]/gu;
 
-/**
- * Text as a rule keeps it (a title, a description, what an admin asked the AI for): control characters as spaces (a
- * line break reads as a space), what shows nothing taken out, each compatibility form as its plain one (NFKC: a
- * fullwidth "Ｓ" is "S", "ﬁ" is "fi"), runs of white space as one, trimmed.
- */
 export function plainText(text: string): string {
   return text.replace(CONTROLS, " ").replace(UNSEEN, "").normalize("NFKC").replace(/\s+/g, " ").trim();
 }
 
-/**
- * A name the board gives (a status, an issue type) as a request names it: control characters as spaces, runs of white
- * space as one, trimmed, and nothing else changed: the board's names are Jira's, compared as Jira wrote them.
- */
 export function boardText(text: string): string {
   return text.replace(CONTROLS, " ").replace(/\s+/g, " ").trim();
 }
 
-/**
- * A rule's name as two names are compared on a board (the service compares them casefolded): as plain text, in one
- * case, "ß" as "ss". "Stuck in a status", "STUCK IN A STATUS" and "Ｓtuck in a status" are one name.
- */
 export function nameKey(text: string): string {
   return plainText(text).toUpperCase().toLowerCase();
 }
@@ -2095,27 +1695,13 @@ export const RULE_SETTINGS_MAX_CHANGES = 64;
 /** A change's id: a uuid4 as 32 hexadecimal characters. */
 export const CHANGE_ID_PATTERN = /^[0-9a-f]{32}$/;
 const PARAM_NAME_PATTERN = /^[a-z][a-z0-9_]{0,39}$/;
-/**
- * A field in a change: on or off, the severity, or one param; and (JO-20) a custom rule as a whole (`rule`: added,
- * deleted or brought back), its title, description and what it looks at.
- */
 export const SETTING_FIELD_PATTERN = /^(?:enabled|severity|rule|title|description|applies_to|params\.[a-z][a-z0-9_]{0,39})$/;
 /** Where a preview's examples point: an issue key, or a sprint as the engine keys it ("sprint:26"). */
 const EXAMPLE_KEY_PATTERN = /^(?:[A-Z][A-Z0-9_]{1,19}-[1-9]\d{0,8}|sprint:\d{1,12})$/;
 
-/**
- * A save made against a revision the board has moved on from (409 rule_settings_conflict), in this interface's words,
- * whether the service or the sample refused it.
- */
 export const RULE_SETTINGS_CONFLICT =
   "Someone else changed this board's rule settings while you were editing. Reload them to see what changed: nothing was saved.";
 
-/**
- * The cross-rule rule (a warning keeps its threshold below its breach's while both are on) in the same words wherever
- * it is caught, the page, the sample or the service, with the other rule's threshold in its unit ("1.5×"): said on
- * the warning, "Must stay below R-EFF-01's 1.5× while both are on: the warning comes first."; on the breach, "Must
- * stay above W-EFF-01's 0.8× while both are on."
- */
 export const CROSS_RULE_WORDS = {
   onWarning: (breachId: string, threshold: string) => `Must stay below ${breachId}'s ${threshold} while both are on: the warning comes first.`,
   onBreach: (warningId: string, threshold: string) => `Must stay above ${warningId}'s ${threshold} while both are on.`,
@@ -2147,15 +1733,6 @@ function numberProblem(name: string, value: number): string | null {
   return null;
 }
 
-/**
- * One rule's settings changed (JO-15), as the browser sends it and this
- * interface forwards it: any of `enabled`, `severity` and `params` (some of
- * the rule's numeric params), or `reset: true` alone (back to rules.yaml for
- * that rule). It works on a custom rule too (JO-20), but for a reset: a custom
- * rule has no catalogue value to go back to. Whether the rule exists, the
- * param is the rule's, a value changes anything and warnings stay below their
- * breach are the service's to decide.
- */
 export const ruleSettingChangeSchema = z
   .strictObject({
     rule_id: ruleId,
@@ -2195,10 +1772,6 @@ export const CUSTOM_RULE_WORDS = {
   limit: `A board holds at most ${CUSTOM_RULE_LIMIT} custom rules. Delete one first.`,
 } as const;
 
-/**
- * What is wrong with a rule's name as plain text, whoever else has it apart: its length (3 to 80 characters), or
- * nothing in it to read (only marks or symbols). Null when nothing is.
- */
 export function titleTextProblem(title: string): string | null {
   const length = characterCount(title);
   if (length < CUSTOM_TITLE_MIN || length > CUSTOM_TITLE_MAX) return CUSTOM_RULE_WORDS.title;
@@ -2251,10 +1824,6 @@ const appliesToRequestSchema = z
 export const paramValueSchema = z.union([z.number(), z.string(), z.array(z.string())]);
 export type ParamValue = z.infer<typeof paramValueSchema>;
 
-/**
- * What is wrong with one param's value, by its kind and, where the check is known, the check's own bounds (a new
- * rule's); null when nothing is. Whether a status, a stage or an issue type is the board's is the service's to say.
- */
 function paramValueProblem(name: string, kind: ParamKind, value: unknown, spec?: CheckParamSpec): string | null {
   switch (kind) {
     case "number": {
@@ -2292,7 +1861,7 @@ const canonicalAppliesTo = (applies: { status_category: readonly StatusCategory[
   issue_type: applies.issue_type ? [...applies.issue_type] : null,
 });
 
-/** A new rule's definition (JO-20): its name, what it checks and with what, what it looks at and how serious it is. */
+/** A new rule's definition: its name, what it checks and with what, what it looks at and how serious it is. */
 export const customRuleSpecSchema = z
   .strictObject({
     title: customTitle,
@@ -2335,14 +1904,9 @@ export const customRuleSpecSchema = z
     severity: rule.severity,
   }));
 
-/** A new custom rule (JO-20): the service gives it its id. */
+/** A new custom rule: the service gives it its id. */
 export const customRuleCreateSchema = z.strictObject({ op: z.literal("create"), rule: customRuleSpecSchema });
 
-/**
- * A custom rule's definition changed (JO-20): its name, description, params or what it looks at; its check never
- * (delete it and add another). On or off and the severity go through the setting change above, as for any rule, and
- * never in an edit: a request names each rule once, so a rule's edit and its switch or severity are two saves.
- */
 export const customRuleEditSchema = z
   .strictObject({
     op: z.literal("edit"),
@@ -2373,9 +1937,9 @@ export const customRuleEditSchema = z
     ...(edit.applies_to !== undefined ? { applies_to: canonicalAppliesTo(edit.applies_to) } : {}),
   }));
 
-/** A custom rule deleted (JO-20): it keeps its row, so an undo can bring it back with its id and findings. */
+/** A custom rule deleted: it keeps its row, so an undo can bring it back with its id and findings. */
 export const customRuleDeleteSchema = z.strictObject({ op: z.literal("delete"), rule_id: ruleId });
-/** A deleted custom rule of the board brought back (JO-20): the undo of a delete. */
+/** A deleted custom rule of the board brought back: the undo of a delete. */
 export const customRuleRestoreSchema = z.strictObject({ op: z.literal("restore"), rule_id: ruleId });
 
 export type RuleSettingChange = z.infer<typeof ruleSettingChangeSchema>;
@@ -2384,7 +1948,7 @@ export type CustomRuleCreate = z.output<typeof customRuleCreateSchema>;
 export type CustomRuleEdit = z.output<typeof customRuleEditSchema>;
 export type CustomRuleDelete = z.infer<typeof customRuleDeleteSchema>;
 export type CustomRuleRestore = z.infer<typeof customRuleRestoreSchema>;
-/** One change in a preview or a save: a rule's settings, or (JO-20) a custom rule added, edited, deleted or brought back. */
+/** One change in a preview or a save: a rule's settings, or a custom rule added, edited, deleted or brought back. */
 export type RuleSettingsChange = RuleSettingChange | CustomRuleCreate | CustomRuleEdit | CustomRuleDelete | CustomRuleRestore;
 
 const CHANGE_OPS: Readonly<Record<string, z.ZodType>> = {
@@ -2394,10 +1958,6 @@ const CHANGE_OPS: Readonly<Record<string, z.ZodType>> = {
   restore: customRuleRestoreSchema,
 };
 
-/**
- * One change, read by its `op`: none for a rule's settings (JO-15), else a custom rule's create, edit, delete or
- * restore. Each is checked against its own shape, so a problem is said at its own field ("rule.title").
- */
 export const ruleSettingsChangeSchema = z.unknown().transform((value, ctx): RuleSettingsChange => {
   const op = typeof value === "object" && value !== null && !Array.isArray(value) ? (value as { op?: unknown }).op : undefined;
   const schema = op === undefined ? ruleSettingChangeSchema : typeof op === "string" && Object.hasOwn(CHANGE_OPS, op) ? CHANGE_OPS[op] : undefined;
@@ -2418,16 +1978,11 @@ export function changeRuleId(change: RuleSettingsChange): string | null {
   return "rule_id" in change ? change.rule_id : null;
 }
 
-/** Whether a change is a rule's settings (JO-15's shape, with no `op`). */
+/** Whether a change is a rule's settings (the shape, with no `op`). */
 export function isSettingChange(change: RuleSettingsChange): change is RuleSettingChange {
   return !("op" in change);
 }
 
-/**
- * The changes of one request: at least one, at most 64, each checked against its own shape, and one change per rule
- * (two new rules never with one name). Read item by item, so a rule named twice is said beside whatever else is
- * wrong with the request, as the service says every problem at once.
- */
 const ruleSettingsChanges = z.unknown().transform((value, ctx): RuleSettingsChange[] => {
   if (!Array.isArray(value)) {
     ctx.addIssue({ code: "custom", path: [], message: "Is not a list of changes." });
@@ -2465,11 +2020,6 @@ const ruleSettingsChanges = z.unknown().transform((value, ctx): RuleSettingsChan
 /** POST /rules/settings/preview, browser to interface and interface to service: the changes to weigh up. */
 export const ruleSettingsPreviewRequestSchema = z.strictObject({ changes: ruleSettingsChanges });
 
-/**
- * POST /rules/settings: the changes, the revision they were made against (the
- * service refuses them with 409 when the board's settings have moved on since),
- * a reason (optional), and, for an undo, the change it undoes.
- */
 export const ruleSettingsSaveRequestSchema = z.strictObject({
   revision: z.number().int().min(0).max(1_000_000_000),
   changes: ruleSettingsChanges,
@@ -2477,10 +2027,6 @@ export const ruleSettingsSaveRequestSchema = z.strictObject({
   undo_of: z.string().regex(CHANGE_ID_PATTERN).optional(),
 });
 
-/**
- * A param read without a kind is a number (JO-15's thresholds, before JO-20 named the kind): the shape every
- * threshold has always had, with no options to choose from.
- */
 function numberUnlessSaid(value: unknown): unknown {
   if (typeof value !== "object" || value === null || Array.isArray(value) || "kind" in value) return value;
   return { ...value, kind: "number", options: null };
@@ -2494,11 +2040,6 @@ export const paramOptionSchema = z.object({
   category: statusCategorySchema.nullable().default(null),
 });
 
-/**
- * A threshold as a board runs it: its value there, its default (the catalogue's, or a custom rule's own as it was
- * set), the bounds and the step its field moves by. A value or default outside the bounds is passed on (rules.yaml
- * may set one the bounds leave out): the page says so beside the field rather than failing to open.
- */
 const numberParamSchema = z
   .object({
     name: z.string().regex(PARAM_NAME_PATTERN),
@@ -2516,7 +2057,7 @@ const numberParamSchema = z
     if (param.min > param.max) ctx.addIssue({ code: "custom", path: ["max"], message: "below the minimum" });
   });
 
-/** A custom rule's choice (JO-20): statuses, a stage, an evidence name or a field, with the board's options. */
+/** A custom rule's choice: statuses, a stage, an evidence name or a field, with the board's options. */
 const choiceParamSchema = z.object({
   name: z.string().regex(PARAM_NAME_PATTERN),
   label: z.string().min(1),
@@ -2530,24 +2071,14 @@ const choiceParamSchema = z.object({
   options: z.array(paramOptionSchema),
 });
 
-/**
- * A rule's param on the board: a catalogue rule's editable thresholds (numbers), and every param of a custom rule's
- * check (JO-20), its choices among them, each by its kind.
- */
 export const ruleSettingsParamSchema = z.preprocess(numberUnlessSaid, z.discriminatedUnion("kind", [numberParamSchema, choiceParamSchema]));
 
-/** What a rule looks at (JO-20): its status categories (none for a sprint's rule) and issue types (null: every type but Epic). */
+/** What a rule looks at: its status categories (none for a sprint's rule) and issue types (null: every type but Epic). */
 export const appliesToSchema = z.object({
   status_category: z.array(statusCategorySchema),
   issue_type: z.array(z.string().min(1)).nullable(),
 });
 
-/**
- * A rule as a board runs it: on or off, its severity and thresholds there, and what the catalogue says. Since JO-20 a
- * board's own rules are among them (`custom`), after the catalogue's: their check by its label, what they look at,
- * every param of their check, and when and by whom they were added. A custom rule's defaults are its own as it was
- * added or last edited, and it has no catalogue to be customised from.
- */
 export const ruleSettingsRuleSchema = z
   .object({
     rule_id: ruleId,
@@ -2572,7 +2103,7 @@ export const ruleSettingsRuleSchema = z
     missing_evidence: z.array(z.string()),
     /** Its open findings on the board. */
     open: count,
-    /** Whether an admin added it to this board (JO-20). */
+    /** Whether an admin added it to this board. */
     custom: z.boolean(),
     applies_to: appliesToSchema,
     /** When and by whom a custom rule was added (as the access log names them); null for a catalogue rule. */
@@ -2594,7 +2125,7 @@ export const ruleSettingsRuleSchema = z
     if (differs !== rule.customised) ctx.addIssue({ code: "custom", path: ["customised"], message: "does not say whether it differs from the catalogue" });
   });
 
-/** A param of a check as the board offers it (JO-20): a number's unit, bounds, step and default; a choice's options. */
+/** A param of a check as the board offers it: a number's unit, bounds, step and default; a choice's options. */
 export const checkParamSchema = z
   .object({
     name: z.string().regex(PARAM_NAME_PATTERN),
@@ -2617,10 +2148,6 @@ export const checkParamSchema = z
     if (param.kind !== "number" && param.options === null) ctx.addIssue({ code: "custom", path: ["options"], message: "a choice needs its options" });
   });
 
-/**
- * A check a custom rule may use on the board (JO-20), from the service's registry: its words, what it looks at, its
- * params with the board's own options, the status categories it may look at, and whether the board can measure it.
- */
 export const ruleCheckSchema = z.object({
   name: z.string().regex(PARAM_NAME_PATTERN),
   label: z.string().min(1),
@@ -2633,7 +2160,7 @@ export const ruleCheckSchema = z.object({
   missing_evidence: z.array(z.string()),
 });
 
-/** A custom rule's definition as the history keeps it (JO-20), in plain fields: what was added, deleted or brought back. */
+/** A custom rule's definition as the history keeps it, in plain fields: what was added, deleted or brought back. */
 export const customRuleDefinitionSchema = z.object({
   title: z.string().min(1),
   description: z.string().nullable().default(null),
@@ -2669,11 +2196,6 @@ function fieldValueSchema(field: string): z.ZodType<SettingValue> {
 /** Whether two values a field held are the same: by value, so lists and objects compare as well as figures. */
 const sameValue = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-/**
- * One field a change set: from and to are the values the board ran before and after it (effective). JO-20 adds a
- * custom rule's own: `rule` for a rule added (from null), deleted (to null) or brought back, with its definition;
- * `title`, `description` and `applies_to` for an edit; and its params by name, a choice among them.
- */
 export const ruleSettingsFieldChangeSchema = z
   .object({
     rule_id: ruleId,
@@ -2738,15 +2260,6 @@ export const ruleSettingsHistoryEntrySchema = z.object({
 
 export const APPLY_STATES = ["applied", "pending", "running", "failed"] as const;
 
-/**
- * Whether the board's findings reflect its settings, decided in this order:
- * `running` while the service re-checks the board after a save; else
- * `applied` once a succeeded rules run has applied the current revision
- * (`applied_revision` has reached it), even after a re-check that failed and
- * a later run made up for; else `failed` when the service's last re-check of
- * the board failed (the next sync applies the settings anyway); else
- * `pending`.
- */
 export const ruleSettingsApplySchema = z.object({
   state: z.enum(APPLY_STATES),
   /** The highest settings revision among the board's latest succeeded rules runs; 0 when none applied one. */
@@ -2759,23 +2272,11 @@ export const ruleSettingsApplySchema = z.object({
   result: z.object({ opened: count, closed: count }).nullable(),
 });
 
-/**
- * Whether an admin can describe a rule for the AI to draft (JO-20): with the live model, or the service's scripted
- * drafter (LLM_MODE=stub, and the sample); not once the day's AI budget is used up, with the reason in plain words.
- */
 export const ruleDraftAvailabilitySchema = z.object({
   available: z.boolean(),
   reason: z.string().min(1).nullable().default(null),
 });
 
-/**
- * GET /rules/settings, and the answer to a save (contract 4.20, 4.22): one
- * board's settings over the catalogue, whether its findings reflect them,
- * every catalogue rule as the board runs it (catalogue order) and then its own
- * rules (JO-20), and the newest changes; the checks a new rule may use, with
- * the board's options, how many custom rules it holds of how many, and
- * whether the AI can draft one. People level only.
- */
 export const ruleSettingsSchema = z
   .object({
     meta: serviceMetaSchema,
@@ -2789,9 +2290,9 @@ export const ruleSettingsSchema = z
     rules: z.array(ruleSettingsRuleSchema),
     /** Newest first. */
     history: z.array(ruleSettingsHistoryEntrySchema).max(RULE_SETTINGS_HISTORY_MAX),
-    /** The checks a custom rule may use on the board, each with the board's own options (JO-20). */
+    /** The checks a custom rule may use on the board, each with the board's own options. */
     checks: z.array(ruleCheckSchema),
-    /** The issue types the board's issues have, which a rule may be held to (JO-20; Epic, where offered, last). */
+    /** The issue types the board's issues have, which a rule may be held to (Epic, where offered, last). */
     issue_types: z.array(z.string().min(1)).default([]),
     custom_limit: count,
     /** Its custom rules, deleted ones left out. */
@@ -2866,18 +2367,10 @@ export const ruleSettingsPreviewSchema = z
     }
   });
 
-/* ----------------------------------------------------- an AI draft (JO-20) -- */
+/* ----------------------------------------------------- an AI draft -- */
 
-/**
- * An Atlassian account id as the service finds one in text: 24 hexadecimal characters, or a prefix and a UUID
- * ("557058:f58131cb-..."), standing on its own.
- */
 const ACCOUNT_ID_IN_TEXT = /(?<![0-9A-Za-z])(?:[0-9a-f]{24}|[0-9A-Za-z]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?![0-9A-Za-z])/u;
 
-/**
- * Whether text names someone by an email address or an account id. What an admin writes for a draft goes to the AI,
- * so the page, this interface and the service each refuse such text before anything is drafted.
- */
 export function namesSomeone(text: string): boolean {
   return EMAIL_IN_NAME.test(text) || ACCOUNT_ID_IN_TEXT.test(text);
 }
@@ -2885,10 +2378,6 @@ export function namesSomeone(text: string): boolean {
 /** Why words holding an email address or an account id are not drafted from, wherever they are caught. */
 export const RULE_DRAFT_PERSONAL = "Leave out email addresses and account IDs.";
 
-/**
- * POST /rules/settings/draft: what an admin wrote, as plain text, 3 to 500 characters once trimmed. The service
- * treats it as data, never as instructions, and writes no settings from it.
- */
 export const ruleDraftRequestSchema = z
   .strictObject({ text: z.string().max(RULE_DRAFT_TEXT_MAX * 4).transform(plainText) })
   .refine((body) => characterCount(body.text) >= RULE_DRAFT_TEXT_MIN && characterCount(body.text) <= RULE_DRAFT_TEXT_MAX, {
@@ -2900,13 +2389,7 @@ export const ruleDraftRequestSchema = z
 /** What a draft came to: a rule to check, one the checks cannot make, a request not understood, or no AI just now. */
 export const DRAFT_OUTCOMES = ["drafted", "not_supported", "not_understood", "unavailable"] as const;
 
-/**
- * A drafted rule, as the AI filled it in from the board's checks and names: the page puts it in the form for the
- * admin to check, never saves it, and says each problem the service found at its field.
- */
 export const ruleDraftRuleSchema = z.object({
-  // A draft the service could not put right comes as the model left it, a field it did not fill null: the form
-  // shows it empty (the check unpicked, the seriousness Breach), and the draft's problems say what to fill in.
   title: z
     .string()
     .nullish()
@@ -2924,12 +2407,6 @@ export const ruleDraftRuleSchema = z.object({
   severity: severitySchema.nullish().transform((severity) => severity ?? "breach"),
 });
 
-/**
- * POST /rules/settings/draft (contract 4.23): the AI's draft of a rule from an admin's words, built only from the
- * board's checks and its own names. Nothing is saved: `drafted` fills the form (with the problems a save would
- * refuse it for, after one repair, at their fields); `not_supported` and `not_understood` say why, and the closest
- * check; `unavailable` says why there is no AI just now (the day's budget used up, a refusal, a failure).
- */
 export const ruleDraftSchema = z
   .object({
     meta: serviceMetaSchema,
@@ -2954,10 +2431,6 @@ export const ruleDraftSchema = z
 
 /* ---------------------------------------------------------------- errors -- */
 
-/**
- * The codes /api/oversight answers with. The browser reads any string (a newer
- * server may add one); the server may only send these.
- */
 export const API_ERROR_CODES = [
   /** The request itself is wrong: a parameter, a body. Not worth retrying. */
   "bad_request",
@@ -2965,10 +2438,6 @@ export const API_ERROR_CODES = [
   "not_found",
   /** The board picked in the top bar is not one the oversight service serves (it was taken off). */
   "unknown_board",
-  /**
-   * The board picked in the top bar is served but has never synced (JO-17), so it has nothing to show yet: 409.
-   * Every page offers its first sync instead.
-   */
   "board_not_synced",
   /** Sign-in is on, and the person's Jira account cannot open that board (their boards are worked out at sign-in). */
   "board_not_allowed",
@@ -2978,19 +2447,11 @@ export const API_ERROR_CODES = [
   "comparison_off",
   /** Too many questions from one reader in a short time (the service's ASK_RATE_LIMIT): 429, with Retry-After. */
   "ask_rate_limited",
-  /**
-   * The service could not record this read of person-level figures in its access log, so it served nothing
-   * (it fails closed, JO-12). Worth trying again in a moment.
-   */
   "access_log_unavailable",
-  /** A save of rule settings made against a revision the board has moved on from: someone else changed them (JO-15). */
+  /** A save of rule settings made against a revision the board has moved on from: someone else changed them. */
   "rule_settings_conflict",
-  /** Rule settings refused: a value out of bounds, a warning not below its breach, a rule that does not exist (JO-15). */
+  /** Rule settings refused: a value out of bounds, a warning not below its breach, a rule that does not exist. */
   "rule_settings_invalid",
-  /**
-   * A request that changes something did not come from this dashboard's own pages (its Origin), or was not JSON: refused
-   * before anything is asked, so a page on another site cannot change rule settings in a signed-in admin's name.
-   */
   "forbidden",
   /** Sign-in is on and the request carries no valid session: the browser goes to /login and comes back. */
   "unauthenticated",
@@ -3105,7 +2566,7 @@ export type RuleSettingsSaveRequest = z.output<typeof ruleSettingsSaveRequestSch
 export type RuleSettingsParam = z.infer<typeof ruleSettingsParamSchema>;
 /** A rule's number param: a threshold, with its unit and bounds. */
 export type RuleSettingsNumberParam = Extract<RuleSettingsParam, { kind: "number" }>;
-/** A custom rule's choice (JO-20): statuses, a stage, an evidence name or a field. */
+/** A custom rule's choice: statuses, a stage, an evidence name or a field. */
 export type RuleSettingsChoiceParam = Exclude<RuleSettingsParam, { kind: "number" }>;
 export type ParamOption = z.infer<typeof paramOptionSchema>;
 export type AppliesTo = z.infer<typeof appliesToSchema>;

@@ -1,11 +1,5 @@
 import { PageBody } from "@/components/shell/page";
 
-/**
- * Shown while a page is prepared. It fades in only after a short delay, so a
- * fast navigation never flashes a skeleton; when it does appear it has the
- * shape of a page (header, figures, a section) so nothing jumps when the real
- * one arrives.
- */
 export default function Loading() {
   return (
     <div role="status" className="reveal-late">

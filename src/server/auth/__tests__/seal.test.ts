@@ -9,11 +9,7 @@ import { fromBase64Url, randomToken, seal, toBase64Url, unseal } from "../seal";
 
 import { SECRET, SESSION_KEYS, SITE } from "./fixtures";
 
-/*
- * Sealed cookies: what one server seals, only that server opens, for the one
- * purpose it was sealed for, unchanged and in time. Everything else is
- * "signed out", never an error.
- */
+/** Sealed cookies: what one server seals, only that server opens, for the one */
 
 const OTHER_SECRET = "another-secret-of-forty-eight-characters-987654";
 const NOW = Date.parse("2026-11-10T09:00:00Z");
@@ -99,8 +95,6 @@ describe("seal and unseal", () => {
   });
 
   it("refuses a second spelling of the same bytes", async () => {
-    // 12 bytes of IV, 12 of payload ({"sub":"ab"}) and 16 of tag: 40 bytes, not a multiple of three, so the
-    // last of the 54 characters carries four spare bits. Flipping one spells the same bytes another way.
     const sealed = await seal({ sub: "ab" }, SECRET, "session");
     const body = sealed.slice(3);
     expect(body.length % 4).not.toBe(0);

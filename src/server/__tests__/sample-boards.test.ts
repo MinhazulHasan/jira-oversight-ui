@@ -19,14 +19,6 @@ import { resetSampleRuleSettings } from "../sample/settings-store";
 import { resetSampleSync, SAMPLE_SYNC_COOLDOWN_MS, SAMPLE_SYNC_MIN_MS } from "../sample/sync";
 import { personIdFor } from "../sample/team";
 
-/*
- * The sample's boards (JO-17, JO-18): DEMO, the full story; MOB, a second,
- * small board, synced; HELP, never synced until its first sync has run. Every
- * response for each fits the contract exactly; a board that has never synced
- * answers as the service does; and Sync runs one board at a time, the next
- * queued behind it.
- */
-
 const NOW = "2026-11-04T14:30:00Z";
 const MOB = sampleBoard("MOB")!;
 const HELP = sampleBoard("HELP")!;

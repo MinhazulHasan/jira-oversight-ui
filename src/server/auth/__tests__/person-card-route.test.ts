@@ -20,15 +20,6 @@ import { emailHash } from "../roles";
 
 import { SECRET, SESSION_KEYS, stubAuthEnv } from "./fixtures";
 
-/*
- * GET /api/oversight/people/{id}/card (JO-13, contract 4.19): people level
- * only, decided by this route on every request (never the browser); the
- * period and the board the page names checked; the service told the level
- * this route decided and the board it reads; the other boards held to the
- * reader's; and every figure the one the scorecard and GET /people give for
- * the same person, board and period.
- */
-
 const NOW = "2026-11-04T14:30:00Z";
 const ADA = personIdFor("acc-01");
 const DEV = personIdFor("acc-04");
@@ -136,7 +127,7 @@ describe("the person card in sample mode, sign-in off (people level)", () => {
           done_in_period: row.values.done_in_period.value ?? 0,
           days,
         });
-        // GET /people's open tickets: one meaning everywhere (JO-12, G5).
+        // GET /people's open tickets: one meaning everywhere.
         expect(card.work.open_tickets).toBe(summary?.open_tickets ?? 0);
         expect(card.findings).toEqual({ open_breaches: summary?.open_breaches ?? 0, open_warnings: summary?.open_warnings ?? 0 });
         expect(card.membership).toBe(row.tickets > 0 ? "holds_tickets" : "member_no_tickets");

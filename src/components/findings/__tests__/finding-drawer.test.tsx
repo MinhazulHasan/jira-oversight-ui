@@ -56,8 +56,6 @@ describe("the evidence drawer", () => {
   });
 
   it("reads the age on the table's clock, so a row and its drawer give one figure; stale, it says as at the last sync", async () => {
-    // An hour and a half after the sample's sync (still fresh): DEMO-1098's breach was first seen five and a half
-    // hours ago, at 10:29, and last seen at the 14:29 run.
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-11-04T15:59:00.000Z"));
     try {

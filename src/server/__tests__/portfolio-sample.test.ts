@@ -21,12 +21,12 @@ describe("the sample Portfolio's staleness", () => {
     expect(staleAt(synced + 10 * MINUTE)).toBe(false);
     expect(staleAt(synced + STALE_AFTER_MS - MINUTE)).toBe(false);
     expect(staleAt(synced + STALE_AFTER_MS + MINUTE)).toBe(true);
-    // Regression (JO-14): a day was the Portfolio's own rule, so three hours on it said fresh beside a stale top bar.
+    // Regression: a day was the Portfolio's own rule, so three hours on it said fresh beside a stale top bar.
     expect(staleAt(synced + 3 * 60 * MINUTE)).toBe(true);
   });
 
   it("is stale when a sample pinned to SAMPLE_NOW is read days later, as the top bar and the row's own age say", () => {
-    // Regression (the JO-12 check): the row read "synced 8 d ago" in the calm style, the top bar "Stale" in amber.
+    // Regression (the check): the row read "synced 8 d ago" in the calm style, the top bar "Stale" in amber.
     expect(staleAt(NOW + 8 * DAY)).toBe(true);
     // Its figures stay the snapshot's: only the staleness is said at the time of reading.
     expect(portfolioView([dataset], undefined, NOW + 8 * DAY).boards[0].open_breaches).toBe(portfolioView([dataset], undefined, NOW).boards[0].open_breaches);
@@ -48,8 +48,6 @@ describe("the sample's 'Needs attention' ages, on the one clock (JO-14)", () => 
     const synced = dataset.world.syncAt;
     const fresh = at(synced + 30 * MINUTE);
     for (const item of fresh) expect(item.age_days).toBe(Math.floor((synced + 30 * MINUTE - Date.parse(item.opened_at)) / DAY));
-    // Read eight days later: the board is stale, so the ages are as at its last sync, not eight days older (the
-    // Findings drawer's "Open for … at last sync" for the same breach).
     const later = at(NOW + 8 * DAY);
     for (const [index, item] of later.entries()) {
       expect(item.age_days).toBe(Math.floor((Date.parse(item.last_seen_at) - Date.parse(item.opened_at)) / DAY));
@@ -78,8 +76,6 @@ describe("the sample's 'Needs attention', one row for each ticket and rule (13 N
   });
 
   it("lists a ticket holding two open findings of one rule once, counted, and still the ten oldest distinct", () => {
-    // Regression: R-FLOW-02 opens a finding for each transition that skipped a stage; AIL-99 held two, and the list
-    // named AIL-99 "Skipped a stage" twice, which read as a duplicate (and React refused the repeated key).
     const before = portfolioView([buildDataset(NOW)], undefined, NOW).attention;
     const dataset = buildDataset(NOW);
     const [first, second] = before.map((item) => findingsOf(dataset, item)[0]);

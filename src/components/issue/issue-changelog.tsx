@@ -30,9 +30,6 @@ const COLUMNS = col.columns([
   col.accessor("changed_at", {
     header: "When",
     cell: (info) => <Timestamp value={info.getValue()} mode="datetime" className="text-ink-mid" />,
-    // Read whole in every locale: "Nov 14, 2026, 12:28 PM" (en-US) and "14 Nov 2026, 6:28 PM" (en-DE, a German
-    // browser) can run past the column, so the time takes a second, balanced line rather than being cut (the JO-14
-    // review).
     meta: { width: "12.5rem", cellClassName: "whitespace-normal py-1.5 leading-snug text-balance" },
   }),
   col.accessor("kind", {
@@ -49,8 +46,6 @@ const COLUMNS = col.columns([
   col.accessor((row) => `${row.from ?? ""} → ${row.to ?? ""}`, {
     id: "change",
     header: "From → to",
-    // Read whole, as in the drawer's changelog: each value kept on its line where it fits, the line breaking after
-    // the arrow, and a value longer than the column wrapping inside itself, never cut (JO-14).
     cell: (info) => (
       <span className="text-ink">
         <span className={WHOLE}>
@@ -79,8 +74,6 @@ const COLUMNS = col.columns([
         );
       }
       return (
-        // Each citation whole, a second one on its own line where the column has no room for it (the JO-14 review: a
-        // superseded finding and its replacement cite the same change).
         <span className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
           {cited.map((finding) => (
             <span key={finding.finding_id} className="inline-flex items-center gap-1.5 whitespace-nowrap">

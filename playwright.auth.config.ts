@@ -16,22 +16,6 @@ import {
 } from "./e2e-auth/settings";
 import { SAMPLE_ENV } from "./playwright.config";
 
-/*
- * The sign-in suite (e2e-auth/), kept apart from the main suite because it
- * needs sign-in on, which the sample project otherwise has off. It never
- * talks to Atlassian: e2e-auth/mock-atlassian.mjs stands in for it.
- *
- *   npm run e2e:auth                    builds, then tests in Chromium and WebKit
- *   E2E_NO_BUILD=1 npm run e2e:auth     tests the build already in .next
- *
- * Four servers, started in this order: the mock on 3404, the dashboard on
- * 3403 with sign-in on and ACCESS_MODE admin-list (the build happens here), on
- * 3405 a second dashboard whose sign-in is set up wrongly, and on 3408 a third
- * with ACCESS_MODE left empty, so everyone-admin, the default (JO-16). Never
- * 3400: that is the developer's own. Every sign-in variable is set here, so
- * whatever .env.local says (Next.js loads it too) cannot change what is tested.
- */
-
 const SIGN_IN_ENV = {
   ...SAMPLE_ENV,
   AUTH_MODE: "atlassian",
@@ -104,7 +88,7 @@ export default defineConfig({
       env: { ...SIGN_IN_ENV, APP_URL: BROKEN_APP_URL, AUTH_SECRET: SHORT_SECRET },
     },
     {
-      // Everyone who signs in is an admin (JO-16): ACCESS_MODE empty, its default. ADMIN_EMAILS stays set, unused.
+      // Everyone who signs in is an admin: ACCESS_MODE empty, its default. ADMIN_EMAILS stays set, unused.
       command: `node node_modules/next/dist/bin/next start --port ${new URL(EVERYONE_APP_URL).port}`,
       url: `${EVERYONE_APP_URL}/login`,
       reuseExistingServer: false,

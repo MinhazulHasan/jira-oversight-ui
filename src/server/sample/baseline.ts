@@ -16,13 +16,7 @@ import { median, percentile, round4, round4OrNull, share } from "./stats";
 import { HOUR, SECOND, addDays, iso, zonedDay, zonedIso, zonedMidnight } from "./time";
 import type { Issue } from "./world";
 
-/**
- * The Phase 2 ground-truth report, computed over the sample project the way
- * oversight/baseline.py computes it over a synced one: the same window (local
- * midnights in the report zone), the same figures in the same shape, and a
- * comparison with an audit's expected figures. Shares are fractions, null
- * when the whole is 0.
- */
+/** The Phase 2 ground-truth report, computed over the sample project the way */
 
 const WINDOW_DAYS = 90;
 /** Hours per point within this fraction of the configured 8 count as near it (both edges included). */
@@ -160,8 +154,6 @@ export function baselineView(dataset: Dataset): Baseline {
     const end = zonedMidnight(asOf, REPORT_TIMEZONE);
     const result = figures(dataset, start, end);
 
-    // The fictional audit counted during the as_of day itself, at the last sync, and summed logged time with
-    // subtasks rolled up: the two differences real comparisons show, with the reasons baseline.py gives for them.
     const auditAt = world.syncAt;
     const audited = {
       total_issues: world.issues.filter((issue) => issue.createdAt < auditAt).length,

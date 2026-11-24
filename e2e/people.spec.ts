@@ -3,16 +3,6 @@ import { createHash } from "node:crypto";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
-/*
- * The person view (JO-07): who carries the open findings on the Overview, the
- * Person filter and the Assignee column on Findings, and the assignee on the
- * ticket page. Sample mode, pinned to SAMPLE_NOW (playwright.config.ts), with
- * the browser's clock frozen at the same moment. The sample's people are the
- * eight fictional names of the backend's DEMO project; expected figures are
- * read from the API, so each screen is checked against the numbers it is
- * meant to show rather than against copies of them.
- */
-
 const NOW = new Date("2026-11-04T14:30:00Z");
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const PEOPLE_API = "**/api/oversight/people";
@@ -33,7 +23,7 @@ const BREACH_ID = "0b7b3b0f61c477e61699982f24892735";
 const SPRINT_ID = "4f4dea9b42b76d4882fbb2db662287c3";
 /** An issue nobody is assigned to in the sample. */
 const UNASSIGNED_ISSUE = "DEMO-1133";
-/** The board's members who hold none of its tickets (JO-10): fictional, with no picture. */
+/** The board's members who hold none of its tickets: fictional, with no picture. */
 const SAMPLE_MEMBERS = [
   ["acc-09", "Noor Haddad"],
   ["acc-10", "Tomás Ferreira"],
@@ -109,8 +99,6 @@ const personRows = (page: Page) => page.getByRole("list", { name: "Open findings
 /** Each row as a whole: the name (with its card), the bar and the figures. */
 const personItems = (page: Page) => page.getByRole("list", { name: "Open findings by person" }).getByRole("listitem");
 
-/* The Findings page. */
-/** "124 open findings · 88 breaches": the one live region that starts with a figure. */
 const resultLine = (page: Page) => page.getByRole("status").filter({ hasText: /^\s*[\d,]+ / });
 const table = (page: Page) => page.getByRole("table", { name: "Findings" });
 const bodyRows = (page: Page) => table(page).locator("tbody tr");
@@ -171,7 +159,7 @@ test.describe("the Overview's open findings by person", () => {
         await expect(item).toContainText(row.person?.name ?? "Unassigned");
         await expect(item).toContainText(count(row.open_breaches));
         await expect(item).toContainText(count(row.open_warnings));
-        // At people level a person's name opens their card (JO-13); the link stands behind the row, named for them.
+        // At people level a person's name opens their card; the link stands behind the row, named for them.
         if (row.person) await expect(personRows(page).nth(index)).toHaveAccessibleName(new RegExp(`^${row.person.name}: `));
       }
       const unassigned = personItems(page).last();
@@ -229,8 +217,6 @@ test.describe("the Overview's open findings by person", () => {
   }) => {
     const { facets } = await findings(request, "?state=open");
     await page.goto("/");
-    // The rows come after hydration. WebKit sometimes loses a click on the server-rendered link made
-    // before then, so wait for them, as overview.spec.ts waits for its figures.
     await expect(personRows(page).first()).toBeVisible();
     await peoplePanel(page).getByRole("link", { name: /^All people/ }).click();
     await expect(page).toHaveURL(/\/findings\?state=open&menu=person$/);
@@ -343,9 +329,6 @@ test.describe("the Person filter on Findings", () => {
     await expect(page.getByRole("button", { name: "Person Carmen Ruiz" })).toBeVisible();
     await expect(await assigneeCells(page)).toHaveText(hers.items.map(assigneeText));
 
-    // A second choice widens the list: anyone of them. The first acknowledgement is let go first: the filters share
-    // one toast, and an update that lands in the last moment of a closing toast closes with it (sonner), which made
-    // this step depend on how fast the browser ran it.
     await expect(page.getByText("Person: Carmen Ruiz", { exact: true })).toBeHidden({ timeout: 10_000 });
     await page.getByRole("button", { name: "Person Carmen Ruiz" }).click();
     await personMenu(page).getByRole("option", { name: /^Unassigned/ }).click();
@@ -362,15 +345,11 @@ test.describe("the Person filter on Findings", () => {
   });
 
   test("a second choice made just as the first one's toast leaves is still acknowledged (the JO-12 check)", async ({ page }) => {
-    // Regression: the filters' toast was updated in place by its id, and an update that landed while the toast was
-    // leaving (sonner keeps it 200 ms for its exit) left with it: the second choice was never acknowledged.
     await page.goto("/findings");
     await listReady(page);
     await page.getByRole("button", { name: "Person Any" }).click();
     await personMenu(page).getByRole("option", { name: /^Carmen Ruiz/ }).click();
     await expect(page.getByText("Person: Carmen Ruiz", { exact: true })).toBeVisible();
-    // Its time up, the toast starts to leave: choose again right then, the menu still open. (Polled every 16 ms rather
-    // than every frame: a busy WebKit can hold its frames back.)
     await page.waitForFunction(() => document.querySelector("[data-sonner-toast][data-removed='true']") !== null, undefined, {
       polling: 16,
       timeout: 15_000,
@@ -554,8 +533,6 @@ test.describe("the ticket page's assignee", () => {
 test.describe("names, and nothing else about a person", () => {
   test("the sample's people are the eight fictional names, each id the contract's hash of the account id", async ({ request }) => {
     const { facets } = await findings(request);
-    // Each facet entry carries the person's picture version as well (contract 4.3): two of the eight have an
-    // abstract picture drawn in code, and nobody (Unassigned) has none.
     const pictured = new Set<string>(["Carmen Ruiz", "Grace Lindqvist"]);
     expect(facets.people).toEqual([
       ...SAMPLE_PEOPLE.map(([accountId, name]) => ({
@@ -717,10 +694,6 @@ test.describe("on a phone", () => {
 });
 
 test.describe("the ways to a person's scorecard (JO-11, people level)", () => {
-  /**
-   * The page is live: the top bar's sync time reads the viewer's clock, so it is drawn only once the page has
-   * hydrated. A click before that can be lost in WebKit (1 run in 16 in the JO-11 integration).
-   */
   const live = (page: Page) => expect(page.getByRole("banner").locator("[data-sync-now]").filter({ hasText: / ago/ })).toBeVisible();
 
   test("the Overview's open findings by person lead to everyone's scorecards", async ({ page }) => {

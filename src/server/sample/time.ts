@@ -1,8 +1,4 @@
-/**
- * Time for the sample world: epoch milliseconds throughout, written out in the
- * backend's storage format (UTC, milliseconds, `Z`). Weeks start on Monday in
- * UTC, as the backend's weekly series do.
- */
+/** Time for the sample world: epoch milliseconds throughout, written out in the */
 
 export const SECOND = 1_000;
 export const MINUTE = 60 * SECOND;
@@ -22,7 +18,7 @@ export function isoDay(time: number): string {
   return iso(time).slice(0, 10);
 }
 
-/** "4 Nov 2026" (UTC): how code-written messages name a day, readable on both sides of the Atlantic. */
+/** "" (UTC): how code-written messages name a day, readable on both sides of the Atlantic. */
 export function spelledDay(time: number): string {
   const date = new Date(time);
   return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;

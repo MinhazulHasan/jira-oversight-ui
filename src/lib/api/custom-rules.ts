@@ -17,17 +17,6 @@ import {
   type StatusCategory,
 } from "./schemas";
 
-/*
- * A custom rule checked against the board it is for (JO-20), as the service
- * checks one when it is saved and when the AI's draft is validated: the
- * check is one the board offers, each param is set and within its bounds or
- * among the board's own names, the rule looks at categories its check allows
- * and at issue types the board has, and its name is its own on the board. The
- * page says each problem at its field before anything is sent, the sample
- * refuses a save with them, and the sample's drafter reports them on a draft:
- * the same words everywhere.
- */
-
 /** What a custom rule is checked against: the board's checks (with their options), issue types and rules. */
 export interface CustomRuleBoard {
   checks: readonly RuleCheck[];
@@ -64,11 +53,6 @@ function plain(value: number, locale?: string): string {
   return format.format(value);
 }
 
-/**
- * A number in words, as its unit reads: "1.5×", "72 h", "90%", "2 days", "30%" (a share travels as a fraction). A
- * percentile reads as the share of finished work it is above ("90%"), never "p90", which a project manager does not
- * read (SQA).
- */
 export function unitWords(unit: RuleParamUnit, value: number, locale?: string): string {
   switch (unit) {
     case "ratio":
@@ -84,10 +68,6 @@ export function unitWords(unit: RuleParamUnit, value: number, locale?: string): 
   }
 }
 
-/**
- * A length of time a limit sets, as a reader says it: whole days from 48 hours ("3 days"), else hours ("36 h"), as
- * the service writes a finding's message (rules/checks.py `_duration`, without its decimal for a whole limit).
- */
 export function limitWords(hours: number, locale?: string): string {
   if (hours >= 48 && Number.isInteger(hours / 24)) return unitWords("days", hours / 24, locale);
   if (hours >= 48) return `${plain(Math.round((hours / 24) * 10) / 10, locale)} days`;
@@ -159,10 +139,6 @@ export function appliesToProblems(check: RuleCheck, applies: CustomRuleInput["ap
   return problems;
 }
 
-/**
- * What is wrong with a rule's name on the board: its length as plain text, nothing in it to read, or a name another
- * rule there has, compared as the service compares names (any case, look-alike forms and unseen characters aside).
- */
 export function titleProblem(title: string, board: Pick<CustomRuleBoard, "rules">, own: { ruleId?: string; others?: readonly string[] } = {}): string | null {
   const text = plainText(title);
   const problem = titleTextProblem(text);
@@ -173,11 +149,6 @@ export function titleProblem(title: string, board: Pick<CustomRuleBoard, "rules"
   return taken ? CUSTOM_RULE_WORDS.titleTaken : null;
 }
 
-/**
- * Every problem with a custom rule on the board, at its field, in the order the form asks for them: its name, what
- * it checks and with what, what it looks at, and its description. `own.ruleId` is the rule itself when it is edited
- * (its own name is no clash), and `own.others` the names of the other new rules in the same change.
- */
 export function customRuleProblems(
   rule: CustomRuleInput,
   board: CustomRuleBoard,
@@ -206,10 +177,6 @@ export function customRuleProblems(
   return problems;
 }
 
-/**
- * The rule as the board keeps it once checked: plain text, statuses and issue types in the board's own spelling,
- * a blank description none, and a sprint's rule looking at no statuses or types.
- */
 export function canonicalRule(rule: CustomRuleInput, board: CustomRuleBoard): CustomRuleInput {
   const check = checkOf(board, rule.check);
   const statusOptions = (name: string) => (check?.params.find((param) => param.name === name)?.options ?? []).map((option) => option.value);

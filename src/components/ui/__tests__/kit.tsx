@@ -4,12 +4,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import { ShellProvider } from "@/components/shell/shell-context";
 
-/*
- * Test helpers for the kit. jsdom does no layout, so it lacks the few
- * browser APIs the components lean on (they are present in every browser
- * the product supports); and kit components expect the providers the app
- * shell gives them: the platform for key caps, and Radix's tooltip provider.
- */
+/* Test helpers for the kit. */
 
 class ResizeObserverShim {
   observe() {}

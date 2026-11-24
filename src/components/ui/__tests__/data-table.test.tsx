@@ -234,8 +234,6 @@ describe("DataTable states", () => {
 describe("DataTable width (JO-14)", () => {
   it("keeps its least width on a desktop and takes its scroll width once its frame is narrower, as it scrolls anyway", () => {
     expect(tableMinWidth("62rem")).toBe("62rem");
-    // A step at the frame's width (100cqw, the scroller being a container): at or above 62rem the table fits the
-    // frame; below it, 68rem, room for the titles a 62rem table squeezed to 80 px on a phone.
     expect(tableMinWidth("62rem", "68rem")).toBe("clamp(62rem, calc(62rem + (62rem - 100cqw) * 1000), 68rem)");
   });
 

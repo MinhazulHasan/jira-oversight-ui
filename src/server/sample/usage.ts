@@ -4,16 +4,6 @@ import { memo, meta, type Dataset } from "./dataset";
 import { createRng } from "./random";
 import { DAY, isoDay } from "./time";
 
-/*
- * GET /usage (JO-12) for the sample: Ask's questions, model calls and tokens
- * today and over the last seven days, in UTC days, as the service counts them
- * from qa_log and llm_calls. The sample's own answers are scripted (no model
- * is asked), so these figures are made up, as plausible as the rest of the
- * sample: a working week of an oversight team's questions, quiet at the
- * weekend, today counted to now. No daily budget is set, the service's
- * default (LLM_DAILY_TOKEN_BUDGET=0).
- */
-
 const SEED = 20261112;
 const DAYS = 7;
 

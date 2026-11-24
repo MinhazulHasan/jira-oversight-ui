@@ -14,18 +14,6 @@ import type { SentencePart, TraceFocus } from "./bind";
 import { TONES, candidatesOf, primaryHref, sentenceSource, tonesIn } from "./model";
 import { CandidateRef, FindingsLink, IssueKeys, candidateAnchor, useFindingsTarget } from "./trace-links";
 
-/*
- * The briefing, sentence by sentence. Each carries its tone as a mark (the
- * words are in the legend and read out with the sentence), the candidates it
- * was written from and the findings behind them. Hovering or focusing a
- * sentence lights those candidates and the very figures it quotes.
- */
-
-/**
- * Shared with the candidate rows: the hover ground, and when linked to what
- * the reader is on, the tick-and-tie line down the left edge. The line, not a
- * tint, so the lit figures inside keep their contrast.
- */
 export const traceRow =
   "group relative -mx-3 rounded-md px-3 transition-[background-color,box-shadow] duration-[var(--dur-fast)] data-[row-href]:cursor-pointer hover:bg-rail data-[linked=true]:rounded-l-none data-[linked=true]:shadow-[inset_2px_0_0_var(--cite)] print:mx-0 print:break-inside-avoid print:px-0 print:shadow-none";
 

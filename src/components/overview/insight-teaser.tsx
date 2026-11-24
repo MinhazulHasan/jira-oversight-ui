@@ -14,12 +14,6 @@ import { useNow } from "@/lib/use-now";
 import { INSIGHTS_HREF } from "./links";
 import { SectionLink } from "./section-link";
 
-/**
- * The opening of the latest weekly briefing, each sentence with its tone (the
- * Insights page's words), and, once its week is over, that its figures may
- * have moved on. The full briefing, with the findings behind each sentence,
- * is one click away.
- */
 export function InsightTeaser({ data, className }: { data?: Overview; className?: string }) {
   const locale = useFigureLocale();
   const now = useNow();

@@ -1,14 +1,6 @@
 import { ASK_MAX_LENGTH, ASK_MAX_MENTIONS, type DirectoryEntry, type Person } from "@/lib/api/schemas";
 import { compareByFoldedName, foldText } from "@/lib/names";
 
-/*
- * Mentions in the question, as the text it is sent as: where a typed @ starts
- * a search for someone, who the search finds, what choosing them writes, and
- * the people a question's chips name. The box shows each mention as a chip
- * (draft.ts holds the question as text and chips); here a chip is its
- * "@Name" in the text. Pure functions, so every rule is tested without a browser.
- */
-
 /** Someone picked from the @ list (a chip in the question), and where their "@Name" stands in its text. */
 export interface Mention {
   person: Person;
@@ -37,11 +29,6 @@ const WORDISH = /[\p{L}\p{M}\p{N}_]/u;
 export const mentionLabel = (person: Pick<Person, "name">) => `@${person.name}`;
 const labelOf = mentionLabel;
 
-/**
- * The search the caret is in: an @ at the start or after a space (or an
- * opening bracket or quote), then up to four words on the same line, with no
- * other @. Null when there is none, or when the @ is a mention already made.
- */
 export function mentionQueryAt(text: string, caret: number, mentions: readonly Mention[] = []): MentionQuery | null {
   const before = text.slice(0, caret);
   const at = before.lastIndexOf("@");
@@ -62,11 +49,6 @@ function wordsOf(text: string): string[] {
     .filter(Boolean);
 }
 
-/**
- * Whether a name answers a search: each word typed starts a word of the name,
- * in order, so "car" and "ruiz" and "car ru" all find Carmen Ruiz, and
- * "élif" finds Elif. Case and accents are ignored. An empty search finds everyone.
- */
 export function nameMatches(name: string, query: string): boolean {
   const words = wordsOf(name);
   let from = 0;
@@ -78,11 +60,6 @@ export function nameMatches(name: string, query: string): boolean {
   return true;
 }
 
-/**
- * The people a search finds: those whose first name it starts first, then in
- * the directory's order (name folded for case and accents, then id), so
- * "Élodie" sorts among the Es and "Øyvind" among the Os, never after Z.
- */
 export function peopleMatching(people: readonly Person[], query: string): Person[] {
   const first = wordsOf(query)[0];
   const leads = (person: Person) => (first !== undefined && wordsOf(person.name)[0]?.startsWith(first) ? 0 : 1);
@@ -104,14 +81,6 @@ export interface MentionGroup {
   people: Person[];
 }
 
-/**
- * The people a search finds on the board's directory, in the @ list's two
- * groups: "With tickets" (assigned at least one of its tickets now), then
- * "No tickets" (members Jira lets you assign its tickets to who hold none),
- * each ordered as peopleMatching orders. A group the search empties is left
- * out, heading and all. The keyboard moves through them as one list:
- * flattened, they are the options in order.
- */
 export function groupMatching(directory: readonly DirectoryEntry[], query: string): MentionGroup[] {
   const people: Record<MentionGroupKey, Person[]> = { tickets: [], none: [] };
   for (const entry of directory) people[entry.tickets > 0 ? "tickets" : "none"].push(entry.person);
@@ -121,11 +90,6 @@ export function groupMatching(directory: readonly DirectoryEntry[], query: strin
   });
 }
 
-/**
- * The text with "@Name " in place of the search (and the rest of the word
- * the caret was in), the mention it makes, and where the caret goes: just
- * after the space. Null when the question would pass its 500 characters.
- */
 export function insertMention(
   text: string,
   search: MentionQuery,
@@ -142,13 +106,6 @@ export function insertMention(
   return { text: next, mention: { person, start: search.start, end }, caret: end + 1 };
 }
 
-/**
- * The mentions still standing after the text changed from `before` to
- * `after`: those the edit did not touch, moved along with it. One the edit
- * reached into (a letter typed inside the name, or deleted from it) is plain
- * text from then on, whatever the text later says. Typing just before the @
- * or just after the name leaves it standing.
- */
 export function rebaseMentions(mentions: readonly Mention[], before: string, after: string): Mention[] {
   if (before === after) return [...mentions];
   // The edit is what lies between the longest common start and the longest common end.
@@ -182,17 +139,6 @@ export function mentionedPeople(mentions: readonly Mention[]): Person[] {
   return people.slice(0, ASK_MAX_MENTIONS);
 }
 
-/**
- * The mentions in a text that came from elsewhere (the address, the last
- * question), sent with these person ids: every "@Name" of each of them is
- * their chip again, as the box sent it, the same person twice included. A
- * whole "@Name" (not run into a longer word) is taken first, each id's first
- * one before any other, so two people of one name get one each and
- * "@Ada Brooksby" is never Ada Brooks's. Then one a letter touches, as the
- * box sends a chip with a letter typed against it ("is@Ada Brooks"), the
- * longer name first. People not on the board, or whose name is not in the
- * text, are left out. In the order they stand, none overlapping.
- */
 export function mentionsIn(text: string, people: readonly Person[] | undefined, ids: readonly string[]): Mention[] {
   if (!people || ids.length === 0) return [];
   const sent = ids.flatMap((id) => people.find((candidate) => candidate.id === id) ?? []);

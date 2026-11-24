@@ -29,11 +29,6 @@ export interface IssueTimelineProps {
   retryingProcess?: boolean;
 }
 
-/**
- * The status timeline: a lane per stage of the process, every status the
- * issue sat in, the stages it jumped, the estimate being set, and now; with
- * the same spells as a table.
- */
 export function IssueTimeline({ data, process, processState, onRetryProcess, retryingProcess }: IssueTimelineProps) {
   const locale = useFigureLocale();
   const box = useRef<HTMLDivElement>(null);

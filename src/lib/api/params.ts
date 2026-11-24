@@ -1,10 +1,3 @@
-/**
- * Query parameters for the endpoints that take them. The browser serialises
- * with these functions and the route handler parses with them, so a URL the
- * interface builds is always one the boundary accepts, and the canonical form
- * (defaults left out, lists de-duplicated and sorted) doubles as a stable cache key.
- */
-
 import { z } from "zod";
 
 import {
@@ -57,11 +50,6 @@ export const findingsQuerySchema = z.object({
   state: z.enum(FINDING_STATES).default("open"),
   /** Any of these epics (repeatable); "none" for issues without one. */
   epic: listOf(z.union([z.string().regex(ISSUE_KEY_PATTERN), z.literal(NO_EPIC)]), 50),
-  /**
-   * Any of these people (repeatable), by the issue's assignee now; "unassigned"
-   * for issues nobody is assigned to. Sprint findings belong to no one, so
-   * they never match.
-   */
   person: listOf(z.union([z.string().regex(PERSON_ID_PATTERN), z.literal(UNASSIGNED)]), 50),
   /** Part of an issue key or summary, any case. */
   q: z.string().trim().max(100).optional(),
@@ -95,11 +83,6 @@ export type TrendQueryInput = z.input<typeof trendQuerySchema>;
 
 /* ------------------------------------------------------------- scorecard -- */
 
-/**
- * GET /people/scorecard: the period, and the people (by id, each once, ten at
- * most). No person: everyone who holds a ticket on the board now, or, where
- * comparison is off, the board's figures alone.
- */
 export const scorecardQuerySchema = z.object({
   days: z.coerce
     .number()
@@ -121,13 +104,6 @@ const SCORECARD_LISTS = ["person"] as const;
 
 /* ----------------------------------------------------------- person card -- */
 
-/**
- * GET /people/{id}/card (JO-13): the period its counts cover (the scorecard's
- * 30, 90 or 180 days), and the board to read them on where the page says
- * (an access log entry's board; the top bar's pick otherwise). The board is
- * this interface's to hold to the reader's boards; it is sent on as the
- * board read, never as itself.
- */
 export const personCardQuerySchema = z.object({
   days: scorecardQuerySchema.shape.days,
   board: z.string().regex(PROJECT_KEY_PATTERN, { message: "is a board's project key" }).optional(),
@@ -138,22 +114,12 @@ export type PersonCardQueryInput = { days?: ScorecardDays; board?: string | null
 
 /* ------------------------------------------------------------ access log -- */
 
-/**
- * The days an access log filter may name, as the service takes them: far wider than any log, and narrow enough that
- * every zone can hold a day and the next one's midnight.
- */
 export const ACCESS_LOG_FIRST_DAY = "2000-01-01";
 export const ACCESS_LOG_LAST_DAY = "2100-12-31";
 const accessLogDay = isoDate.refine((day) => day >= ACCESS_LOG_FIRST_DAY && day <= ACCESS_LOG_LAST_DAY, {
   message: `is a day from ${ACCESS_LOG_FIRST_DAY} to ${ACCESS_LOG_LAST_DAY}`,
 });
 
-/**
- * GET /access-log (JO-12): the days (both included, cut in the organisation's
- * report zone, from 2000 to 2100), the actions, one person whose figures were
- * read, one viewer, where the page starts, how many to a page, and whether
- * this read is an export (the service records it as one).
- */
 export const accessLogQuerySchema = z.object({
   from: accessLogDay.optional(),
   to: accessLogDay.optional(),
@@ -192,11 +158,6 @@ export interface ParamProblem {
 
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; problems: ParamProblem[] };
 
-/**
- * URLSearchParams to a validated object. Unknown names, and a single-valued
- * name given twice, are refused rather than guessed at: the boundary forwards
- * only what it has validated.
- */
 function parseSearch<S extends z.ZodObject>(
   schema: S,
   search: URLSearchParams,
@@ -246,11 +207,6 @@ export function parseScorecardQuery(search: URLSearchParams): ParseResult<Scorec
   return parsed.ok ? { ok: true, value: normalizeScorecardQuery(parsed.value as ScorecardQuery) } : parsed;
 }
 
-/**
- * Defaults filled in, the people in id order: the same people asked for in
- * any order are one request and one cache entry. Throws on a value no URL
- * could carry (a programming error).
- */
 export function normalizeScorecardQuery(input: ScorecardQueryInput = {}): ScorecardQuery {
   const query = scorecardQuerySchema.parse({ days: input.days, person: input.person ? [...input.person] : undefined });
   return { days: query.days as ScorecardDays, person: [...query.person].sort() };
@@ -286,11 +242,6 @@ export function personCardSearchParams(input: PersonCardQueryInput = {}): URLSea
   return search;
 }
 
-/**
- * The access log's filters, checked: a day that is no calendar day, a range
- * that ends before it starts, an unknown action, a person or viewer that is
- * not one, a page larger than the service gives. The canonical form follows.
- */
 export function parseAccessLogQuery(search: URLSearchParams): ParseResult<AccessLogQuery> {
   const parsed = parseSearch(accessLogQuerySchema, search, ACCESS_LOG_LISTS);
   if (!parsed.ok) return parsed;
@@ -311,11 +262,6 @@ export function accessLogDefaultLimit(exporting: boolean): number {
   return exporting ? ACCESS_LOG_EXPORT_MAX : ACCESS_LOG_DEFAULT_LIMIT;
 }
 
-/**
- * Defaults filled in and the actions each once in the catalogue's order, so
- * the same filters are one request and one cache entry. Throws on a value no
- * URL could carry (a programming error).
- */
 export function normalizeAccessLogQuery(input: AccessLogQueryInput = {}): AccessLogQuery {
   const exporting = input.export === true;
   const query = accessLogQuerySchema.parse({
@@ -342,11 +288,6 @@ export function normalizeAccessLogQuery(input: AccessLogQueryInput = {}): Access
   };
 }
 
-/**
- * The canonical query string: each filter once, the actions in order, the
- * limit always (so this interface and the service never read a missing one
- * differently: the service's default for an export is its whole limit).
- */
 export function accessLogSearchParams(input: AccessLogQueryInput = {}): URLSearchParams {
   const query = normalizeAccessLogQuery(input);
   const search = new URLSearchParams();

@@ -30,11 +30,6 @@ export function ranked(counts: Readonly<Record<string, number>>): [string, numbe
 
 /* ------------------------------------------------------------- window --- */
 
-/**
- * Format in the report's own zone. The zone is the service's setting and is
- * not checked against the IANA list, and Intl throws on one it does not know:
- * then the reader's zone is used rather than failing the page.
- */
 function inZone<T>(zone: string, format: (options: ZoneOptions) => T, locale?: string): T {
   try {
     return format({ timeZone: zone, locale });
@@ -43,11 +38,6 @@ function inZone<T>(zone: string, format: (options: ZoneOptions) => T, locale?: s
   }
 }
 
-/**
- * The window as calendar days in the report's zone. Report days are cut in
- * that zone, not the reader's, and the end is exclusive: a window ending
- * at midnight on 4 Nov covers up to and including 3 Nov.
- */
 export function windowDays(metadata: BaselineMetadata, locale?: string): { first: string; last: string; span: string } {
   const lastInstant = new Date(new Date(metadata.window.end).getTime() - 1);
   const first = inZone(metadata.zone, (options) => formatDate(metadata.window.start, options), locale);

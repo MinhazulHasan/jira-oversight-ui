@@ -1,19 +1,3 @@
-/**
- * Every figure and time on screen goes through here, so it reads the same way
- * on every page, in every export and on paper.
- *
- * Dates are unambiguous on both sides of the Atlantic ("4 Nov 2026", never
- * 11/04/2026). Times read on the 12-hour clock ("2:32 PM") in the reader's
- * own zone, which is never named; a time set in another zone (the
- * organisation's, UTC) names it ("2:18 PM GMT"). Numbers follow the reader's regional
- * conventions through Intl, with en-GB as the fallback. Units are joined to
- * their figure with a no-break space so "12.5 h" never wraps apart.
- *
- * Output that depends on the viewer (their zone, their locale, "now") must be
- * rendered after hydration, or the server's version and the browser's will
- * disagree. See useNow and useHydrated.
- */
-
 export const FALLBACK_LOCALE = "en-GB";
 /** Shown where a value is missing or not a number. */
 export const MISSING = "—";
@@ -36,8 +20,6 @@ export type DateInput = Date | string | number;
 
 /* ------------------------------------------------------------- locale ---- */
 
-/** True when the runtime holds real data for this exact language and region,
- *  rather than quietly falling back to a parent such as plain "en". */
 function hasLocaleData(tag: string): boolean {
   try {
     const requested = new Intl.Locale(tag);
@@ -51,15 +33,7 @@ function hasLocaleData(tag: string): boolean {
   }
 }
 
-/**
- * The interface is written in English, so a reader whose browser asks for
- * German gets English words with German conventions (en-DE: "4 Nov 2026",
- * "1.234,5") rather than German month names inside English sentences.
- */
 function localeFromBrowser(): string | undefined {
-  // Node 24 defines `navigator` (as en-US), so testing for it would format
-  // server-rendered figures in en-US and mismatch the browser on hydration.
-  // Only a real browser has `window`.
   if (typeof window === "undefined" || typeof navigator === "undefined") return undefined;
   const preferred = navigator.languages?.[0] ?? navigator.language;
   if (!preferred) return undefined;
@@ -86,8 +60,6 @@ export function resolveLocale(locale?: string): string {
 
 /* --------------------------------------------------------- formatters ---- */
 
-// Building an Intl formatter costs far more than using one, and a table of a
-// few hundred rows formats thousands of cells.
 const numberFormats = new Map<string, Intl.NumberFormat>();
 const dateFormats = new Map<string, Intl.DateTimeFormat>();
 
@@ -111,10 +83,6 @@ function dateFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.D
   return format;
 }
 
-/**
- * Browsers ship trimmed zone names, and Chromium calls London in winter
- * "GMT+0" where a reader (and Node) says "GMT". A zero offset is named plainly.
- */
 export function tidyZoneName(name: string): string {
   return name.replace(/^(GMT|UTC)[+−-]0{1,2}(?::?00)?$/, "$1");
 }
@@ -154,18 +122,9 @@ export function formatDate(value: DateInput | null | undefined, options: ZoneOpt
 }
 
 export interface ClockOptions extends ZoneOptions {
-  /**
-   * Name the zone after the time ("2:18 PM GMT"). Only for a time set in a zone other than the reader's own, where
-   * it would otherwise be misread: the access log's, in the organisation's zone; Ask usage's UTC day; a baseline's
-   * report window. A time in the reader's own zone names none.
-   */
   zoneNamed?: boolean;
 }
 
-/**
- * "4 Nov 2026, 2:32 PM": a moment on the 12-hour clock, in the reader's zone, with no zone named, as every time in
- * the dashboard reads; "4 Nov 2026, 2:18 PM GMT" with `zoneNamed`, for another zone's time.
- */
 export function formatDateTime(value: DateInput | null | undefined, options: ClockOptions = {}): string {
   const date = toDate(value);
   if (!date) return MISSING;
@@ -212,10 +171,6 @@ const DAY = 24 * HOUR;
 const MONTH = 30.4375 * DAY;
 const YEAR = 365.25 * DAY;
 
-/**
- * "2 h ago", "in 3 d", "just now". Always shown with the absolute time in a
- * tooltip: a relative time alone cannot be checked against anything.
- */
 export function formatRelative(value: DateInput | null | undefined, options: RelativeOptions): string {
   const date = toDate(value);
   const now = toDate(options.now);
@@ -292,11 +247,6 @@ export function formatRatio(value: number | null | undefined, options: LocaleOpt
   return `${formatNumber(value, { ...options, decimals: 2 })}${TIMES}`;
 }
 
-/**
- * "16%" from 0.16. Whole percentages only, and never a rounding that hides a
- * fact: a share above zero is "<1%", not "0%", and a share short of all is
- * ">99%", not "100%".
- */
 export function formatShare(value: number | null | undefined, options: LocaleOptions = {}): string {
   if (!isFiniteNumber(value)) return MISSING;
   const percent = numberFormat(resolveLocale(options.locale), {
@@ -310,11 +260,6 @@ export function formatShare(value: number | null | undefined, options: LocaleOpt
 
 /* ------------------------------------------------------------ by kind ---- */
 
-/**
- * The kinds the API contract uses for units, fact columns, evidence items and
- * insight details. Pages format any contract value through formatByKind, so a
- * figure reads the same in a tile, a table cell, a drawer and an export.
- */
 export type ValueKind =
   | "text"
   | "number"
@@ -328,10 +273,6 @@ export type ValueKind =
   | "datetime"
   | "issue_key";
 
-/**
- * One contract value as text. Numbers in a text kind are written as they are;
- * a date kind accepts ISO strings; anything missing reads as "—".
- */
 export function formatByKind(
   value: unknown,
   kind: ValueKind | string | null | undefined,

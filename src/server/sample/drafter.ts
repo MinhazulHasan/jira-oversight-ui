@@ -12,52 +12,6 @@ import {
 
 import type { BoardOptions } from "./custom-rules";
 
-/*
- * The sample's AI draft (JO-20): a small keyword script standing in for the
- * model, as the service's ScriptedProvider drafts in LLM_MODE=stub
- * (oversight/llm/scripted.py), so the page's AI flow runs offline and the
- * end-to-end tests are repeatable. It reads the words as the service's script
- * does, rule for rule and in the same order (the first that matches decides
- * the check), against the board's own names, its statuses and issue types as
- * whole words:
- *
- * - "reopen" -> reopened
- * - "skip" -> skipped_stage
- * - "effort" / "over the estimate" with "N×" or "N times" -> effort_ratio_at_least
- * - "no assignee" / "unassigned", "no epic", "no estimate" / "unestimated",
- *   "no sprint" / "not in a sprint" ("without" and "missing" read as "no") ->
- *   missing_field, the first of the four in that order
- * - "no update" / "not (been) updated" / "untouched" / "no change" / "nobody
- *   has touched" -> no_update_for
- * - "open for N days" / "older than" -> open_longer_than
- * - a status of the board's, or with none named "review" (the board's first
- *   status with review in its name) -> time_in_status_over
- * - "bug(s)" or another issue type of the board's -> the rule's issue types
- * - "warning" / "warn" / "early" -> severity warning; otherwise a breach
- * - anything else -> not_supported, naming the closest check; not_understood
- *   when the words hold none of three letters or more (both in the service's
- *   own words)
- *
- * A length of time is "N hours", "N days" or "N weeks", N in figures or in
- * words ("two weeks", "a day", "a couple of days"). Where the words give none,
- * the check's usual limit is drafted (72 hours in a status, 7 days with no
- * change, 30 days open) and the explanation says it is the default. A status
- * the board does not have is never swapped for one it has: "Bugs in Code
- * Review for more than 3 days" on a board with no review status is not
- * supported, its closest check time in a status (a length of time "in"
- * somewhere); any other request's closest check is the one whose label and
- * summary share the most words of four letters or more with it, the first in
- * the registry's order when none does.
- *
- * The status categories are those of the statuses a time in a status names
- * (where the check may look at them), else the check's defaults, and the
- * explanation says which it looks at. The rule's name never holds its limit,
- * which its row shows and an admin may change. What the script drafts is then
- * checked exactly as a save would check it (the service makes one repair call
- * with the problems; a script would give the same answer, so the problems go
- * back with the draft, to be put right in the form).
- */
-
 /** What the script made of the words: a rule to check, or why not. */
 export interface ScriptedDraft {
   outcome: DraftOutcome;
@@ -138,10 +92,6 @@ function typesNamed(text: string, options: BoardOptions): string[] | null {
   return named.length > 0 ? named : null;
 }
 
-/**
- * The board's statuses the words name as whole words, the longest names first (so "QA Review" is never read as "QA"
- * too), in the board's order; with none named, "review" names the board's first status with review in its name.
- */
 function statusesNamed(text: string, options: BoardOptions): string[] {
   let rest = text;
   const found = new Set<string>();
@@ -168,10 +118,6 @@ function statusCategories(statuses: readonly string[], options: BoardOptions): S
 
 const CATEGORY_WORDS: Readonly<Record<StatusCategory, string>> = { new: "not started", indeterminate: "in progress", done: "already done" };
 
-/**
- * The status categories a rule looks at, as words after the tickets it flags ("bugs in progress", "tasks not done");
- * nothing where it looks at every one its check may.
- */
 function categoryWords(check: string, categories: readonly StatusCategory[]): string {
   const allowed = CHECKS_BY_NAME.get(check)?.categories ?? [];
   if (allowed.every((category) => categories.includes(category))) return "";
@@ -206,11 +152,6 @@ function fit(title: string): string {
 /** The words of four letters or more in a text, in one case: what a request and a check are matched on. */
 const longWords = (text: string) => new Set((text.match(/[A-Za-z]{4,}/g) ?? []).map((word) => word.toLowerCase()));
 
-/**
- * The closest check for words the script cannot make a rule of: time in a status for a length of time "in"
- * somewhere (a status the board does not have); otherwise the check whose label and summary share the most words
- * with them, the first in the registry's order when none does.
- */
 function closest(text: string): string {
   if (DURATION.test(text) && IN_SOMEWHERE.test(text)) return CHECKS_BY_NAME.get("time_in_status_over")?.label ?? "time_in_status_over";
   const words = longWords(text);
@@ -224,10 +165,6 @@ function closest(text: string): string {
   return best;
 }
 
-/**
- * The script's draft of a rule from an admin's words, built only from the registry's checks and the board's own
- * names. Nothing it makes is saved: the page fills its form with it.
- */
 export function scriptedDraft(text: string, options: BoardOptions): ScriptedDraft {
   const types = typesNamed(text, options);
   const who = typesWords(types);

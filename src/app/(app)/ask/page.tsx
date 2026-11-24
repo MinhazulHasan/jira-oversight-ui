@@ -11,16 +11,6 @@ const page = pageByKey("ask");
 
 export const metadata: Metadata = { title: page.label };
 
-/**
- * Ask: a question in plain English, answered from the oversight facts. The
- * question lives in the URL (`/ask?q=…`), so Copy link shares it and the
- * command palette sends questions here.
- *
- * How far Ask answers this reader is checked here, on the server, as the
- * shell checks the admin badge: an admin (or anyone, with sign-in off) can
- * type @ and ask about people. The oversight route checks it again on every
- * question, so this only decides what the page offers.
- */
 export default async function AskPage() {
   const level = await currentAskLevel();
   return (

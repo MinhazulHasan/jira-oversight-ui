@@ -1,27 +1,4 @@
-/**
- * The rule engine over the sample world. Each rule is written as the spans of
- * time its condition held for an issue (or a sprint); the engine then replays
- * the real system's schedule, a sync every 30 minutes and a rules run a
- * minute after it, from the day the oversight rules started. A finding opens
- * at the first run that sees its condition, stays open while runs keep seeing
- * it, and resolves at the first run that does not: the same lifecycle
- * oversight/rules/engine.py gives a live finding.
- *
- * Each rule runs as the board's settings make it (JO-15, board-rules.ts): on or
- * off, its severity, its thresholds. One run here replays the whole history "as
- * if always", the settings read as if they had always been the board's; the
- * dataset (dataset.ts) keeps the past as it was and applies a change of
- * settings from its re-check on (recheck.ts), as the service does. A
- * finding's identity is the condition on the ticket, never the threshold: its
- * evidence key is built from the catalogue's value, so a ticket over both the
- * old and the new threshold is the same finding; only a severity change gives
- * a rule new ids.
- *
- * A board's own rules (JO-20, custom-checks.ts) are read as of the last sync:
- * a rule an admin adds sees the board as it is now, and its findings are first
- * seen when it was added, which is what the live service does at its first
- * re-check. Their evidence keys never hold a limit either.
- */
+/** The rule engine over the sample world. Each rule is written as the spans of */
 
 import { createHash } from "node:crypto";
 
@@ -165,10 +142,6 @@ function estimateRules(issue: Issue, rule: RuleOf): Hit[] {
   return hits;
 }
 
-/**
- * The effort key, `ratio-ge-1.5`, from the catalogue's threshold whatever the board's: the finding is the
- * condition on the ticket, so a ticket over both the old and the new threshold stays the same finding.
- */
 function effortKey(rule: BoardRule): string {
   return `ratio-ge-${numberWords(catalogueParam(rule.catalogue, "threshold"))}`;
 }
@@ -466,12 +439,7 @@ function observe(world: World, spans: Span[]): Observation | null {
   return firstSync === null ? null : { firstSync, lastSync, resolvedSync };
 }
 
-/**
- * "Warned on X, breached on Y": for each breach rule's finding `link` picks,
- * the earliest warning on the same issue, of a rule that escalates to it,
- * first seen no later than the breach. A warning counts only under its own
- * rule's current version (a board's severity change gives it new findings).
- */
+/** "Warned on X, breached on Y": for each breach rule's finding `link` picks, */
 export function linkWarnings(
   findings: readonly FindingRecord[],
   rules: readonly BoardRule[],
@@ -513,11 +481,7 @@ export function assembleEngine(findings: FindingRecord[], thresholds: Map<Status
   return { findings, byId: new Map(findings.map((finding) => [finding.id, finding])), byIssue, thresholds };
 }
 
-/**
- * The rules engine over the sample's world, every rule as the board runs it
- * (the catalogue's rules when no settings are given). A rule turned off, or
- * one whose evidence Jira does not hold, raises nothing.
- */
+/** The rules engine over the sample's world, every rule as the board runs it */
 export function runEngine(world: World, rules: readonly BoardRule[] = boardRules()): Engine {
   const byId = rulesById(rules);
   const rule: RuleOf = (id) => byId.get(id)!;
@@ -529,7 +493,7 @@ export function runEngine(world: World, rules: readonly BoardRule[] = boardRules
     hits.push(...unestimatedInSprint(issue, world, rule("W-EST-01")));
   }
   hits.push(...sprintRules(world, rule("W-SPR-01")));
-  // A board's own rules (JO-20), each seen as of the last sync: one span from it, open while the board stands so.
+  // A board's own rules, each seen as of the last sync: one span from it, open while the board stands so.
   for (const custom of rules) {
     if (!custom.custom || !custom.enabled) continue;
     for (const hit of customHits(world, custom)) hits.push({ ...hit, rule: custom, spans: [[world.syncAt, null]], describe: () => hit.describe() });

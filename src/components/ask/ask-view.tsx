@@ -26,16 +26,6 @@ const NO_CITATIONS: readonly Citation[] = [];
 const NO_ORDER: readonly number[] = [];
 const NO_MENTIONS: readonly string[] = [];
 
-/**
- * The address holds the question (`q`) and the people it mentions (`m`, person
- * ids, comma-separated), so a link asks the same question about the same
- * people. Read through the contract's id pattern, each once, ten at most.
- * `about` (a person id) puts that person in the question box as a chip and
- * asks nothing: a person card's "Ask about" from another page (JO-13); it
- * leaves the address once the chip is in. On this page a card's "Ask about"
- * never goes through the address: the chip joins the question being written,
- * and the answer on screen stays.
- */
 const ADDRESS = {
   q: parseAsString.withDefault(""),
   m: parseAsArrayOf(parseAsString).withDefault([]),
@@ -46,12 +36,6 @@ function mentionIds(ids: readonly string[]): string[] {
   return [...new Set(ids.filter((id) => PERSON_ID_PATTERN.test(id)))].slice(0, ASK_MAX_MENTIONS);
 }
 
-/*
- * Three columns when there is room (this session, the answer, the ledger),
- * two on a narrower window (the session moves under the answer), one on a
- * phone. Measured on the page body, not the window, so a collapsed rail gives
- * the room back.
- */
 const GRID = [
   "grid grid-cols-[minmax(0,1fr)] gap-x-7 gap-y-9",
   "[grid-template-areas:'ask'_'ledger'_'history']",
@@ -61,21 +45,6 @@ const GRID = [
   "print:grid-cols-[minmax(0,1fr)]! print:grid-rows-none! print:[grid-template-areas:'ask'_'ledger'_'history']!",
 ].join(" ");
 
-/**
- * The Ask page: ask in plain English, read the answer as an annotated
- * document, and tie every figure in it to the row it came from.
- *
- * The URL holds the question (`?q=`), and the people it mentions (`&m=`), so a
- * link reopens it and the command palette can send one here; it is asked once
- * on arrival. This tab's answers are kept, so coming back (the back button, a
- * reload) shows the answer just given rather than asking again.
- *
- * `level` is the server's own check of how far Ask answers this reader (as the
- * admin badge is passed down): at people level @ opens everyone on the board
- * (GET /people/directory: who holds its tickets, and its members who hold none). A
- * hint for the page only: the route decides again on every question, and
- * refuses a team-level reader's mentions.
- */
 export function AskView({ level = "team" }: { level?: AskLevel }) {
   const [address, setAddress] = useQueryStates(ADDRESS, { history: "replace", scroll: false });
   const q = address.q;
@@ -93,7 +62,7 @@ export function AskView({ level = "team" }: { level?: AskLevel }) {
   useEffect(() => {
     before.current = address;
   });
-  /** A question turned away by the service's limit on questions (JO-12): its words, said in the box that keeps it. */
+  /** A question turned away by the service's limit on questions: its words, said in the box that keeps it. */
   const [limited, setLimited] = useState<string | null>(null);
 
   const question = q.trim();
@@ -129,8 +98,6 @@ export function AskView({ level = "team" }: { level?: AskLevel }) {
               notify.warn("Couldn't get an answer", { id: TOAST_ID, description: errorSummary(failure) });
               return;
             }
-            // Over the service's limit on questions: nothing was asked. The box keeps the question and says when to try
-            // again; the page goes back to what it showed (the answer before, or the start), as if it had not been sent.
             setLimited(failure.message);
             notify.warn("Not asked yet", { id: TOAST_ID, description: failure.message });
             const shownBefore = previous.q.trim();
@@ -146,8 +113,6 @@ export function AskView({ level = "team" }: { level?: AskLevel }) {
     [mutate, setAddress, peopleLevel],
   );
 
-  // A question in the URL is asked once, about the people it names. Back on a question this tab answered within
-  // the half hour, that answer is shown instead.
   useEffect(() => {
     const first = firstVisit.current;
     firstVisit.current = false;
@@ -188,8 +153,6 @@ export function AskView({ level = "team" }: { level?: AskLevel }) {
     notify.info("Session cleared", { description: "This tab's questions and answers are forgotten." });
   };
 
-  // A person card's "Ask about": their chip in the box, nothing asked. From another page it comes in the address,
-  // which then forgets it; from a card on this page it comes straight here, so the answer and the draft stay.
   const about = peopleLevel && address.about && PERSON_ID_PATTERN.test(address.about) ? address.about : null;
   const fromAddress = useMemo<QuestionSeed | null>(() => (about ? { id: about } : null), [about]);
   const [askedHere, setAskedHere] = useState<QuestionSeed | null>(null);
@@ -229,9 +192,6 @@ export function AskView({ level = "team" }: { level?: AskLevel }) {
       }
     : undefined;
 
-  // The boards come from the health query the top bar shares, which can already be
-  // cached when this part of the page hydrates; the server never has them. Name
-  // them only after hydration, so the server's HTML and the first render agree.
   const where = hydrated && projects && projects.length > 0 ? projects.join(", ") : "Jira";
 
   return (
@@ -246,9 +206,6 @@ export function AskView({ level = "team" }: { level?: AskLevel }) {
         <div className={GRID}>
           <div className="@container flex min-w-0 flex-col gap-8 [grid-area:ask]">
             <QuestionBox
-              // A question sent leaves the box at once (it is the answer's heading now, and in the session list); the
-              // box keeps only what is typed next. A question that fails comes back into the box (phase "failed"), and
-              // one the service's limit turned away comes back as a draft (send's onError), so nothing typed is lost.
               value={draft && draft.forQ === q ? draft.text : shown || phase === "loading" ? "" : q}
               onChange={(text) => setDraft({ text, forQ: q })}
               onSubmit={send}

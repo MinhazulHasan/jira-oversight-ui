@@ -24,14 +24,7 @@ import { startSync, syncState } from "./sync";
 import { iso } from "./time";
 import { usageView } from "./usage";
 
-/**
- * What the sample answers a validated route with: a body, or "no such thing"
- * in plain words (404 unless a status and code say otherwise: a scorecard
- * comparing people where comparison is off is refused, 403 comparison_off;
- * an access log cursor it never gave, 400 bad_request; rule settings saved
- * against a revision the board has moved on from, 409, or that cannot be made,
- * 422, with each problem at its setting).
- */
+/** What the sample answers a validated route with: a body, or "no such thing" */
 export type SampleAnswer =
   | { found: true; body: unknown }
   | {
@@ -45,22 +38,8 @@ export type SampleAnswer =
 /** The sample's settings a response depends on (env.ts): whether people may be compared. */
 export interface SampleOptions {
   peopleComparison: PeopleComparison;
-  /**
-   * The sample's boards as this request sees them (JO-17): which have synced, and their datasets, for what answers
-   * for more than one board (the board list, the Portfolio, a person card's other boards). Left out: the boards
-   * around the dataset, built fresh, as the tests build it.
-   */
   boards?: ServedBoards;
-  /**
-   * For a sync (JO-18): the board it is about, when that is not the dataset's (a board that has never synced has
-   * no dataset yet); the sample's clock, which the times it reports are on; and how long a read takes, which
-   * decides how long a sync takes (sync.ts). Left out: the dataset's board and "now", and no latency.
-   */
   sync?: { board?: SampleBoard; at: number; readMs: number };
-  /**
-   * For rule settings (JO-15): who is reading (a save records them), the moment on the sample's clock, and how
-   * long a save's re-check takes. Left out: the local reader, the dataset's now, and at once.
-   */
   settings?: { reader: SettingsReader; at: number; recheckMs: number };
 }
 
@@ -84,10 +63,6 @@ function health(dataset: Dataset): Health {
   };
 }
 
-/**
- * Every board the sample serves (boards.ts), in the service's order: DEMO, the default, first; then the synced
- * boards by name; then the boards not synced yet (HELP, until its first sync has run), with no issues and no sync time.
- */
 function projects(boards: ServedBoards): Projects {
   return {
     default: DEFAULT_BOARD.key,
@@ -156,8 +131,6 @@ export function sampleResponse(
     case "people_scorecard":
       return scorecardView(dataset, route.query, options.peopleComparison);
     case "person_card": {
-      // The board read is the dataset's (the one the page named, or the top bar's): the route has held it to the
-      // reader's. The other boards it names are the sample's other synced boards.
       const others = syncedAndNot(boards).datasets.filter((other) => other.board.key !== dataset.board.key);
       const card = personCardView(dataset, route.personId, route.query.days, others);
       return card.found ? found(card.body) : { found: false, message: card.message };
@@ -207,7 +180,7 @@ export function sampleResponse(
       return settingsAnswer(saveView(dataset, route.body, reader, at, recheckMs));
     }
     case "rule_settings_draft":
-      // The sample's scripted drafter in the model's place (JO-20): nothing is saved.
+      // The sample's scripted drafter in the model's place: nothing is saved.
       return found(draftView(dataset, route.body));
   }
 }

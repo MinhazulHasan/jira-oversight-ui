@@ -1,8 +1,3 @@
-/**
- * Colour roles for charts, by the job each colour does (docs/DESIGN.md §11).
- * Components refer to these names, never to hex: the values live in
- * src/styles/charts.css and change with the theme.
- */
 
 /** Categorical identity, in fixed order. A seventh series is "Other", never a new hue. */
 export const SERIES_COLOURS = [
@@ -16,11 +11,6 @@ export const SERIES_COLOURS = [
 
 export const OTHER_COLOUR = "var(--series-other)";
 
-/**
- * The colour for the series at this position. Assign positions to entities
- * once (an epic keeps its slot when a filter hides its neighbours) and pass
- * the entity's slot here, never its current rank.
- */
 export function seriesColour(slot: number): string {
   return SERIES_COLOURS[slot] ?? OTHER_COLOUR;
 }

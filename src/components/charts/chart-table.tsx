@@ -14,10 +14,6 @@ export interface ChartTableData {
   rows: readonly (readonly ReactNode[])[];
 }
 
-/**
- * Every chart's twin: the same figures as a table, for screen readers,
- * keyboard readers, printing and anyone who wants the exact numbers.
- */
 export function ChartTable({ data, caption }: { data: ChartTableData; caption: string }) {
   return (
     <ScrollArea axis="x" label={caption} frameClassName="overflow-hidden rounded-md border border-rule-weak">

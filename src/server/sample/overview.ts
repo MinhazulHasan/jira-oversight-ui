@@ -51,8 +51,6 @@ export function overview(dataset: Dataset): Overview {
           issues: spot.issues,
           series: epicSeries(dataset, spot.epicKey),
         })),
-      // Every rule the board runs, as it runs it (JO-15): its severity there and its open findings. A rule turned off
-      // in the board's rule settings is left out, as the service leaves it out: it is not running, so not "0 open".
       by_rule: dataset.rules.filter(({ enabled }) => enabled).map(({ def, catalogue }) => ({
         rule_id: def.id,
         title: def.title,

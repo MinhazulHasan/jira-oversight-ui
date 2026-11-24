@@ -52,21 +52,12 @@ export interface ThresholdEditorProps {
   problems: ReadonlyMap<string, string>;
   onChange: (name: string, text: string) => void;
   onBlur: (name: string) => void;
-  /** A custom rule's check, as the board offers it (JO-20): the words of its choices. */
+  /** A custom rule's check, as the board offers it: the words of its choices. */
   check?: RuleCheck;
   /** Read only: a rule marked for deletion, whose fields are no longer the draft's to change. */
   readOnly?: boolean;
 }
 
-/**
- * A rule's thresholds, in the sentence its check reads as ("Flag when effort
- * ≥ [1.5] × the estimate", "≤ [2] days left and > [30]% not started"), each
- * figure a field with its bounds and step; under it the catalogue's default,
- * or what is wrong in its place (one line, so a message moves nothing). A
- * custom rule (JO-20) reads as its own check's sentence, with the board's
- * names it was given ("Stays in “In Progress” for over [72] h"), and under it
- * what it looks at ("Bug · In progress"), having no catalogue default.
- */
 export function ThresholdEditor({ rule, draft, titleId, problems, onChange, onBlur, check, readOnly = false }: ThresholdEditorProps) {
   const locale = useFigureLocale();
   // One line under the sentence: the default (a custom rule: what it looks at), or what is wrong in its place.

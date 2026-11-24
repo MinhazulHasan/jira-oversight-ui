@@ -1,13 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 
-/*
- * A toast reused by id (the JO-12 check). Sonner updates a toast in place when
- * its id is reused, but one that has begun to leave takes the update with it:
- * a second Findings filter chosen just as the first one's toast left was never
- * acknowledged. notify keeps the in-place update while the toast is on screen,
- * and puts a fresh toast in the place of one that is leaving.
- */
-
 type Shown = { title: string; options: { id?: string; description?: string; onAutoClose?: () => void; onDismiss?: () => void } };
 const { shown, dismissed } = vi.hoisted(() => ({ shown: [] as Shown[], dismissed: [] as unknown[] }));
 

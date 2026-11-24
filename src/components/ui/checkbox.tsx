@@ -17,13 +17,7 @@ export interface CheckboxProps {
   className?: string;
 }
 
-/**
- * One choice that is on or off among others (a rule's status categories): a
- * 14 px box in the kit's look, as the multi-select list and the column menu
- * draw theirs (the 3:1 field edge; ticked, a filled ink square with a tick,
- * never the accent), with its words beside it, which a press on also toggles.
- * Space toggles it; a screen reader reads it as a checkbox, named by its words.
- */
+/** One choice that is on or off among others (a rule's status categories). */
 export function Checkbox({ checked, onCheckedChange, children, id, disabled, describedBy, className }: CheckboxProps) {
   return (
     <label className={cn("inline-flex min-h-6 cursor-pointer items-center gap-2 text-sm text-ink select-none", disabled && "cursor-not-allowed opacity-45", className)}>

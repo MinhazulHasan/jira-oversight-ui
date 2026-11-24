@@ -24,14 +24,6 @@ import {
 } from "./timeline-model";
 import { barPath, CUT_GAP, diamondPath, PAD_X, timelineScale } from "./timeline-scale";
 
-/*
- * The issue's swimlane: the kit's StatusTimeline (same lanes, bars, skip
- * stops, hatch, now line, readouts and keyboard walk) extended for one
- * issue's whole life. A quiet stretch after the last change is cut out of the
- * axis (see timeline-scale.ts), and estimate changes stand as diamonds on the
- * Estimate lane, so "points set five days into development" is visible.
- */
-
 export interface IssueTimelineChartProps {
   lanes: readonly IssueLane[];
   spells: readonly IssueSpell[];
@@ -45,10 +37,6 @@ export interface IssueTimelineChartProps {
   labelWidth?: number;
   /** One line per lane label and thinner bars, for a narrow screen. */
   compact?: boolean;
-  /**
-   * Finished work: cut a long quiet stretch after the last change out of the
-   * axis. Never for open work, whose long spell is the evidence.
-   */
   cutQuietTail?: boolean;
   className?: string;
 }

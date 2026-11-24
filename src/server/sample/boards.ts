@@ -1,21 +1,5 @@
 import { PROJECT_KEY, PROJECT_NAME } from "./catalogue";
 
-/*
- * The sample's Jira boards (JO-17, JO-18). The service serves every board its
- * Jira account can browse; some have synced and some have not. So that both
- * can be seen and tested, the sample serves three made-up boards:
- *
- *   DEMO  Demo project   the full story told in world.ts, synced; the default
- *   MOB   Mobile app     a second, small board, synced: the same generator with
- *                        a seed and a size of its own, the same eight people
- *   HELP  Help desk      a service desk board that has never synced: every page
- *                        on it offers its first sync, and once that has run
- *                        (sync.ts) it serves its own small world like the others
- *
- * Each board's world is built from its own seed, so no board's story moves
- * another's; DEMO's is exactly as it always was.
- */
-
 export interface SampleBoard {
   key: string;
   /** The board's name as people know it. */

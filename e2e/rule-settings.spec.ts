@@ -1,18 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 
-/*
- * Rule settings (JO-15), end to end, against a sample server of its own (port
- * 3402, playwright.config.ts): saves change the sample's findings for every
- * page that server serves, so no other spec ever reads from it. Serial, one
- * browser after the other, and every test puts the board back to the
- * catalogue when it ends, through the page's own route, as an admin would:
- * every rule at the catalogue's settings, and (JO-20) every rule the board
- * added deleted. Sign-in is off here, which reads at people level, as an
- * admin does; a user's side (no page, the route refusing them) is in
- * e2e-auth/sign-in.spec.ts.
- */
-
 test.describe.configure({ mode: "serial" });
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
@@ -54,7 +42,7 @@ async function restoreDefaults(request: APIRequestContext) {
   const settings = (await (await request.get("/api/oversight/rules/settings")).json()) as SettingsBody;
   const changes = [
     ...settings.rules.filter((rule) => !rule.custom && rule.customised).map((rule) => ({ rule_id: rule.rule_id, reset: true })),
-    // A board's own rule (JO-20) has no catalogue to go back to: deleted, as an admin would.
+    // A board's own rule has no catalogue to go back to: deleted, as an admin would.
     ...settings.rules.filter((rule) => rule.custom).map((rule) => ({ op: "delete", rule_id: rule.rule_id })),
   ];
   if (changes.length > 0) await saveNow(request, changes, "End-to-end tests: back to the catalogue");
@@ -76,10 +64,6 @@ const status = (page: Page) => page.locator("[data-settings-status]");
 const chip = (page: Page) => status(page).locator("[data-apply]");
 const history = (page: Page) => page.getByRole("list", { name: "Changes to Demo project's rule settings, newest first" });
 
-/**
- * A frame or two for a dialog just drawn to run its effects (its Escape listener among them): WebKit under a full
- * run's load can draw a dialog before they run, and an Escape that early reaches nothing.
- */
 async function settled(page: Page) {
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 }
@@ -462,7 +446,7 @@ for (const width of [1280, 1728]) {
   });
 }
 
-/* ------------------------------------------------ a board's own rules (JO-20) --- */
+/* ------------------------------------------------ a board's own rules --- */
 
 test("an admin adds a rule the AI drafted from their words: adjusted, reviewed with its preview, saved; its findings, the history, undo", async ({ page }) => {
   test.slow();
@@ -489,8 +473,6 @@ test("an admin adds a rule the AI drafted from their words: adjusted, reviewed w
   await expect(sheet.getByRole("button", { name: "Issue types Bug" })).toBeVisible();
   await expect(sheet.getByRole("radio", { name: "Breach" })).toBeChecked();
 
-  // The admin's judgement: two days, not three, before it is added. What the AI said it flags no longer holds, and
-  // the name still in the AI's words asks to be checked.
   const hours = sheet.getByRole("spinbutton", { name: "Time in the status" });
   await hours.fill("48");
   await hours.press("Tab");

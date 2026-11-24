@@ -9,11 +9,6 @@ const page = pageByKey("baseline");
 
 export const metadata: Metadata = { title: page.label };
 
-/**
- * Baseline: the snapshot report, readable by a project manager.
- * The frame renders on the server; the report is a client region, as every
- * data hook is.
- */
 export default function BaselinePage() {
   return (
     <PageSheet>

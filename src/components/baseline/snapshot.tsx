@@ -74,8 +74,6 @@ export function SnapshotBlock({ data }: { data: Baseline | undefined }) {
       description={data ? `Every issue in ${data.metadata.project} at the last sync, Epics included.` : "Every issue at the last sync, Epics included."}
     >
       <div className="flex flex-col gap-6">
-        {/* Labels levelled in the browser: where "Created before the window closed" takes a second line on a
-            MacBook (about 1280 to 1340 px), both keep two, so the figures stay level (the JO-14 review). */}
         <StatTileGrid columns={2} label="Snapshot totals" labelLines="auto">
           <div id="fig-total-issues" className={TILE}>
             <StatTile

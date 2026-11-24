@@ -3,13 +3,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { readableClipboard } from "./clipboard";
 
-/*
- * The Insights page: the weekly briefing as an editorial sheet. Sample mode,
- * pinned in time (the server at SAMPLE_NOW, the browser clock here), so the
- * briefing is always the week of 2 Nov 2026 with its five sentences and five
- * candidates. Every state is checked with axe in both themes.
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const BRIEFING_API = "**/api/oversight/insights/latest";
 
@@ -78,8 +71,6 @@ for (const colorScheme of ["light", "dark"] as const) {
     });
 
     test("the other states pass axe: no briefing yet, failed, not verified", async ({ page }) => {
-      // Three page loads, three axe passes and the query client's retry back-off
-      // before the failure shows: more than 30 s in a busy WebKit.
       test.slow();
       await page.route(BRIEFING_API, (route) =>
         route.fulfill({ status: 404, json: { error: "not_found", message: "No weekly briefing has been written yet." } }),
@@ -220,7 +211,7 @@ test("prints as a document: no actions, every candidate and every key on paper",
 });
 
 test("a briefing from a week that is over says so beside its date, here and on the Overview (SQA)", async ({ page }) => {
-  // The sample's briefing is the week of 2 Nov 2026; on 17 Nov that week is over and its figures may have moved on.
+  // The sample's briefing is a past week; once that week is over its figures may have moved on.
   await page.clock.setFixedTime(new Date("2026-11-17T09:00:00Z"));
   await page.goto("/insights");
   await briefingReady(page);

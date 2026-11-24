@@ -1,13 +1,6 @@
 import "server-only";
 
-/**
- * A person's picture as this interface hands it to the browser: the bytes
- * and nothing else, only as one of four image types and only when the bytes
- * are that type. The browser keeps it for a day, privately: its address
- * carries the picture's version (?v=), so a changed picture is never hidden
- * by a cached one. It is never sniffed as anything else, and is sandboxed
- * should anyone open it on its own.
- */
+/** A person's picture as this interface hands it to the browser: the bytes */
 
 export const PICTURE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"] as const;
 export type PictureType = (typeof PICTURE_TYPES)[number];

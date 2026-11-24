@@ -10,14 +10,6 @@ import { MEMBERS, personIdFor, personOf } from "../sample/team";
 import { DAY, HOUR } from "../sample/time";
 import type { Issue } from "../sample/world";
 
-/*
- * The sample's scorecards (JO-11) against the brief's definitions, worked out
- * again here straight from the sample's issues and findings: each person's
- * tickets now, every ticket for the board, the period's edges, the effort
- * limit read from the rules, too few tickets never compared, and every state
- * a page has to draw.
- */
-
 const dataset = buildDataset(Date.parse("2026-11-04T14:30:00Z"));
 const CARMEN = personIdFor("acc-03");
 const NOOR = personIdFor(MEMBERS[0].accountId);
@@ -50,8 +42,6 @@ describe("each measure, worked out again from the sample's tickets", () => {
       it(`${who}, last ${days} days`, () => {
         const card = body(days, [CARMEN]);
         const values = who === "the whole board" ? card.board.values : card.people[0].values;
-        // Their tickets now and every measure: the work among them, Epics left out, as every rule and GET /people count
-        // them (JO-12, G5).
         const issues = tickets.filter((issue) => issue.type !== "Epic");
         expect(who === "the whole board" ? card.board.tickets : card.people[0].tickets).toBe(issues.length);
         const open = issues.filter((issue) => STATUS[issue.status].category !== "done");
@@ -73,8 +63,6 @@ describe("each measure, worked out again from the sample's tickets", () => {
         expect(strip(values.within_estimate)).toEqual(rate(effort.filter((issue) => issue.effortRatio! < EFFORT_THRESHOLD).length, effort.length));
         expect(strip(values.stuck_now)).toEqual(rate(open.filter((issue) => openFinding(issue, "W-AGE-01")).length, open.length));
         expect(strip(values.reopened)).toEqual(rate(done.filter((issue) => issue.reopenCount > 0).length, done.length));
-        // Skipped stages are measured where the engine measures R-FLOW-02, as on DEMO (JO-12, G11): of the work done in
-        // the period, the tickets that skipped a stage on the way.
         expect(strip(values.skipped_stage)).toEqual(rate(done.filter((issue) => issue.skips.length > 0).length, done.length));
         // The open findings on the open work, beside the open work: both sides count the same tickets.
         const findings = open.reduce((sum, issue) => sum + (dataset.engine.byIssue.get(issue.key) ?? []).filter((finding) => finding.resolvedAt === null).length, 0);
@@ -163,7 +151,7 @@ describe("the sample holds every state a page must draw", () => {
 
   it("a measure the board cannot show, with its reason, and a member with no tickets", () => {
     const card = body(90, [NOOR]);
-    // Skipped stages are measured where the rules engine measures R-FLOW-02, as on DEMO; code review is not (JO-12, G11).
+    // Skipped stages are measured where the rules engine measures R-FLOW-02, as on DEMO; code review is not.
     expect(card.measures.filter((measure) => !measure.measurable).map((measure) => [measure.key, measure.reason])).toEqual([
       ["code_review", NOT_MEASURABLE_REASONS.code_review],
     ]);

@@ -29,8 +29,6 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  // The per-request nonce from src/proxy.ts. Reading it also makes every page
-  // render per request, which a nonce-based Content Security Policy requires.
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (

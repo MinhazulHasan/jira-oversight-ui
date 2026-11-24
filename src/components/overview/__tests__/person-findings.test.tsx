@@ -107,7 +107,7 @@ describe("Open findings by person", () => {
     expect(within(table).getByText("Carmen Ruiz")).toHaveClass("normal-nums");
     const body = within(table).getAllByRole("row").slice(1);
     expect(body).toHaveLength(9);
-    // Open tickets are the board's work, Epics left out, as the scorecard counts them (JO-12, G5).
+    // Open tickets are the board's work, Epics left out, as the scorecard counts them.
     expect(body[0]).toHaveTextContent(/Carmen Ruiz\s*88\s*36\s*124\s*7\s*117/);
     expect(body[8]).toHaveTextContent(/Unassigned\s*15\s*1\s*16\s*9\s*16/);
   });

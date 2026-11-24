@@ -8,12 +8,6 @@ import { insightsView } from "@/server/sample/insights";
 
 import { findingsTarget, needsRuleHint } from "../model";
 
-/*
- * Every number traces back: each chip that says "73 open breaches" must open
- * a Findings view holding exactly those 73 findings. Checked against the
- * sample at the frozen time the end-to-end suite uses, and at a later one.
- */
-
 for (const at of ["2026-11-04T14:30:00Z", "2027-01-15T12:00:00Z"]) {
   describe(`the briefing's findings links at ${at}`, () => {
     const dataset = buildDataset(Date.parse(at));

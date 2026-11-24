@@ -1,32 +1,3 @@
-/**
- * The sample project, simulated. One story, told the same way on every run:
- *
- * - DEMO holds 1,150 issues over the last year: 14 epics and the Tasks, Bugs,
- *   Subtasks and Tests in them, on the real project's three-status workflow
- *   (To Do, In Progress, Done).
- * - About two thirds carry story points; nobody uses original estimates.
- *   Points are often set at creation or in grooming, but a quarter arrive only
- *   after work has started, sized to the time already logged.
- * - One time-tracking account writes every worklog; most finished work has
- *   time logged.
- * - Until five weeks ago about a fifth of finished work went straight from To
- *   Do to Done. Then the team changed its process, and the share fell.
- * - Two epics, Data import pipeline and Integrations API, have been running
- *   further over their estimates every week for those same five weeks.
- * - The current sprint ends in two days with about a third of it not started.
- * - Eight fictional people (team.ts) hold the work. Most work is assigned when
- *   someone picks it up; a few tickets have nobody: the backlog no sprint has
- *   planned yet, and the work picked up before anyone was assigned to it.
- *
- * Every timestamp is an offset from `now`: activity sits on working hours
- * counted from the Monday of now's week, and the milestones (the last sync,
- * the process change, the end of the sprint) are measured back from now.
- *
- * The sample's other boards (boards.ts) are told by the same generator from a
- * seed and a size of their own: the same kind of story, smaller, with its own
- * keys, sprint ids and changelog ids.
- */
-
 import type { Stage } from "@/lib/api/schemas";
 
 import { DEFAULT_BOARD, type SampleBoard } from "./boards";
@@ -515,15 +486,6 @@ function deriveIssue(issue: Issue, syncAt: number): void {
   issue.statusAgeH = Math.max(0, (syncAt - intervals[intervals.length - 1].enteredAt) / HOUR);
 }
 
-/**
- * Whether anyone has the ticket now, as its own history tells it. Still In
- * Progress with nobody assigned (R-HYG-01) is no one, and the latest assignee
- * change says the rest where there is one. A ticket whose changelog never
- * mentions an assignee was either raised with one (Jira records no change for
- * that: epics, planned work, work closed straight from To Do) or never given
- * one: picked up and finished with nobody assigned, or waiting in the backlog
- * that no sprint has planned yet.
- */
 function assignedNow(issue: Issue, activeSprint: Sprint): boolean {
   const open = issue.unassigned[issue.unassigned.length - 1];
   if (open && open.to === null) return false;

@@ -22,19 +22,6 @@ import { createRng } from "./random";
 import { DAY, HOUR, MINUTE, addDays, iso, zonedMidnight } from "./time";
 import { personIdFor, TEAM } from "./team";
 
-/*
- * GET /access-log (JO-12) for the sample: who read person-level figures, and
- * when, as the service's access log records them. A fixed history of the last
- * 60 days, made up as the rest of the sample is: fictional viewers (two
- * admins, a user who filtered Findings by a person, a session from before
- * names were kept, and the local reader with sign-in off), the sample's own
- * people as the subjects, and one former member, on no board any more. It
- * does not record the reads made against the sample itself: that is the
- * service's work, and a demo would otherwise fill it with its own clicks.
- * Person cards (JO-13) are among the designed reads at the top, so the first
- * page shows one.
- */
-
 const SEED = 20261112;
 const HISTORY_DAYS = 60;
 const ENTRIES = 150;
@@ -197,10 +184,6 @@ function history(dataset: Dataset): AccessLogEntry[] {
 
 const fold = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("en");
 
-/**
- * Everyone the whole history holds, as the service's first page offers them to the filters: every viewer by the
- * name of their latest read, and every person read, by name folded, then id, a former member after everyone else.
- */
 function facetsOf(dataset: Dataset): NonNullable<AccessLog["facets"]> {
   return memo(dataset, "access-log-facets", () => {
     const viewers = new Map<string, string>();

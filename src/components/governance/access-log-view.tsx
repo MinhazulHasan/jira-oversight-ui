@@ -49,11 +49,6 @@ import {
   type PeriodPreset,
 } from "./model";
 
-/**
- * The Action menu's order, as the page's own words name the reads (its purpose line, the empty state): the reads of
- * people's figures together, a person card among them, then the log's own two. The catalogue's order (the contract's,
- * which the address and the service read) adds each new action at its end.
- */
 const ACTION_MENU: readonly AccessAction[] = [
   ...ACCESS_ACTIONS.filter((action) => !action.startsWith("access_log")),
   ...ACCESS_ACTIONS.filter((action) => action.startsWith("access_log")),
@@ -62,17 +57,6 @@ const ACTION_MENU: readonly AccessAction[] = [
 /** A filter's choice from the address that the log does not hold (or not yet: while the first page loads). */
 const NOT_IN_LOG = "Someone not in the log";
 const LOADING_NAME = "Loading…";
-
-/*
- * The access log (JO-12): every read of person-level figures, as the
- * oversight service recorded it, newest first, so an organisation can answer
- * "who looked at this person's figures, and when". Filters by period (calendar
- * days in the organisation's zone), action, the person read and the viewer,
- * all in the address. A page at a time (Show more follows the service's
- * cursor); the export writes every entry the filters keep (up to 10,000), and
- * the service records the export itself. Reading the log is recorded too, so
- * it is read only when the reader asks: never on focus or a timer.
- */
 
 const FILTER_TOAST = "access-log-filter";
 const MAX_SUBJECT_PILLS = 3;
@@ -108,11 +92,6 @@ function errorDetail(error: ApiError): string {
 
 /* ------------------------------------------------------------ period --- */
 
-/**
- * The period: the presets at a press, each the last n calendar days to the
- * log's today in the organisation's zone, or any two days typed in. The days
- * are the service's to cut, in that zone, both included.
- */
 function PeriodFilter({
   period,
   today,
@@ -251,15 +230,6 @@ function rangeLabel(period: Period): string {
 /** A subject's pill: the round ground, the picture at its start, the name after it. */
 const PILL = "pressable inline-flex h-6 max-w-[12rem] min-w-0 items-center rounded-full bg-hover text-xs text-ink hover:bg-pressed";
 
-/**
- * Whose figures were read: their picture and name on a pill. A press on the
- * name shows only the reads of their figures, and says so to a screen
- * reader. Their card (JO-13), read on the entry's board, is the pointer's on
- * the whole pill, and the picture is its own button for the keyboard and for
- * a tap: Enter, Space or a click pins it, a tap opens it as a bottom sheet.
- * Someone on no board any more has no card to show: their pill keeps its
- * tooltip, as one press.
- */
 function SubjectPill({ person, board, onPick }: { person: Person; board: string | null; onPick: (person: Person) => void }) {
   const hintId = useId();
   const former = person.name === FORMER_MEMBER && person.avatar === null;
@@ -339,10 +309,6 @@ function ViewerCell({ entry, onPick }: { entry: AccessLogEntry; onPick: (hash: s
   );
 }
 
-/**
- * The moment in the reader's own zone, the date in full: "4 Nov 2026, 2:18 PM", as every other time on screen reads
- * (SQA: in the organisation's zone, with no zone named, an entry read an hour or more off the top bar's sync time).
- */
 function TimeCell({ entry, className }: { entry: AccessLogEntry; className?: string }) {
   return <Timestamp value={entry.at} mode="datetime" className={cn("text-ink-mid", className)} />;
 }
@@ -408,11 +374,6 @@ function useColumns(pickPerson: (person: Person) => void, pickViewer: (hash: str
 
 /* --------------------------------------------------------- phone list --- */
 
-/**
- * The log on a phone: one entry per read, the action and when on the first
- * line, the viewer and the board under it, the people read as pills. The
- * same filters by a press on a pill or a viewer's name.
- */
 function EntryList({
   entries,
   empty,
@@ -530,8 +491,6 @@ export function AccessLogView() {
     () => ({
       from: filters.from ?? undefined,
       to: filters.to ?? undefined,
-      // With no action picked, every action but views of this log (SQA: each load added one, and a short session's
-      // fill the first page). Picking "Viewed the access log" under Action shows them.
       action: action.length > 0 ? action : DEFAULT_ACTIONS,
       person: filters.person ?? undefined,
       viewer: filters.viewer ?? undefined,
@@ -560,8 +519,6 @@ export function AccessLogView() {
     }
   };
 
-  // The people and viewers seen so far, by id and hash, so a filter can still name whoever it holds once the entries
-  // shown are narrowed to them (kept from render to render, as React's "information from previous renders").
   const [seen, setSeen] = useState<Seen>(NOTHING_SEEN);
   if (entries && entries !== seen.from) setSeen(seenWith(seen, entries));
   const seenPeople = seen.people;
@@ -738,8 +695,6 @@ export function AccessLogView() {
           />
         </div>
       ) : (
-        // A dense table where there is room; below 48rem one compact entry per read, so a phone never scrolls sideways.
-        // While other filters load, the entries shown are the last filters': dimmed and busy, as Findings does.
         <div
           aria-busy={updating || undefined}
           className={cn("@container transition-opacity duration-150 motion-reduce:transition-none", updating && "opacity-60")}

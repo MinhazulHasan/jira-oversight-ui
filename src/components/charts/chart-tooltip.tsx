@@ -57,14 +57,6 @@ export interface FloatingTooltipProps {
 const GAP = 10;
 const EDGE = 8;
 
-/**
- * A tooltip for the hand-built charts: above its point when there is room,
- * below when not, and never past the viewport's sides. It is rendered into
- * the body and placed after it has been measured, so a clipped container (a
- * tile grid, a scrolling table) can never cut it off and it never renders
- * once in the wrong spot. Purely visual: the same figures are in the mark's
- * accessible name and in the table view.
- */
 export function FloatingTooltip({ anchor, x, y, children }: FloatingTooltipProps) {
   const ref = useRef<HTMLDivElement>(null);
 

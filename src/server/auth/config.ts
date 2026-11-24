@@ -4,24 +4,8 @@ import { CALLBACK_ROUTE } from "@/lib/sign-in";
 
 import { ConfigError } from "../env";
 
-/**
- * Signing in with Atlassian: its configuration, read on every request like
- * the rest (src/server/env.ts), so a mistake shows where it bites and tests
- * can switch freely. When sign-in is on and anything it needs is missing or
- * wrong, it fails closed: pages send people to /login, which says sign-in is
- * not set up here (naming the variable, never its value), the oversight API
- * answers 500, and nobody gets in.
- *
- * Sign-in defaults to on wherever the data is live, and to off for the
- * bundled sample project, which has nothing to protect.
- */
+/** Signing in with Atlassian: its configuration, read on every request like */
 
-/**
- * Who is an admin (JO-16), ACCESS_MODE: "everyone-admin", the default, makes
- * everyone who signs in an admin; "admin-list" makes admins of the addresses on
- * ADMIN_EMAILS alone, and everyone else a user held to their own Jira boards.
- * roles.ts decides from it; nothing else does.
- */
 export const ACCESS_MODES = ["everyone-admin", "admin-list"] as const;
 export type AccessMode = (typeof ACCESS_MODES)[number];
 export const DEFAULT_ACCESS_MODE: AccessMode = "everyone-admin";
@@ -112,10 +96,7 @@ function baseUrl(raw: string, name: string, fallback: string): URL {
   return url;
 }
 
-/**
- * A site address in the one form compared: scheme, host and path, lower case,
- * no trailing slash, no query. Null when it is not an http(s) address.
- */
+/** A site address in the one form compared: scheme, host and path, lower case, */
 export function normaliseSiteUrl(raw: string): string | null {
   let url: URL;
   try {
@@ -146,11 +127,7 @@ function allowedDomains(raw: string): string[] {
 /** A plain ASCII email address: one "@", a local part of printable characters but "," and "@", a domain as DOMAIN has it. */
 const EMAIL = /^[!-+\--?A-~]{1,64}@([!-+\--?A-~]+)$/;
 
-/**
- * ADMIN_EMAILS: who sees everything. Optional: empty means no admins, and
- * everyone reads only their own boards. Each address must be on an allowed
- * domain, or its holder could never sign in.
- */
+/** ADMIN_EMAILS: who sees everything. Optional: empty means no admins, and */
 function adminEmails(raw: string, domains: readonly string[]): string[] {
   // Checked before case is folded, and folded for A to Z only (see asciiLower in ./roles.ts).
   const emails = raw
@@ -256,11 +233,7 @@ export function resolveAuth(env: Env = process.env): AuthResolution {
   }
 }
 
-/**
- * Whether sign-in is on, for a page to decide what to show: "off", "atlassian"
- * (on and working), or "unconfigured" (on, but nobody can get in; `problem`
- * says which variable to fix).
- */
+/** Whether sign-in is on, for a page to decide what to show: "off", "atlassian" */
 export function authStatus(env: Env = process.env): AuthStatus {
   const auth = resolveAuth(env);
   return auth.mode === "atlassian" ? { mode: "atlassian" } : auth;

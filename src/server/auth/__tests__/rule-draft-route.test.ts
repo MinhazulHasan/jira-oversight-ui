@@ -17,15 +17,6 @@ import { emailHash } from "../roles";
 
 import { APP, SECRET, SESSION_KEYS, stubAuthEnv } from "./fixtures";
 
-/*
- * The AI draft of a rule (JO-20) at the oversight route, and a custom rule's
- * changes in the allowlist: the draft is an admin's alone and only from this
- * dashboard's own pages, as JSON, its body at most 16 KB and its text 3 to 500
- * characters of plain text, rebuilt before anything is forwarded; it saves
- * nothing. Forwarded to the live service, it waits a model call's time, and
- * whatever the service sends is checked against the contract and the board.
- */
-
 const NOW = "2026-11-04T14:30:00Z";
 const SAMPLE = { OVERSIGHT_DATA: "sample", SAMPLE_NOW: NOW, SAMPLE_LATENCY: "0", AUTH_MODE: "off" };
 const LIVE = { OVERSIGHT_DATA: "live", OVERSIGHT_API_URL: "http://oversight.internal:3300", OVERSIGHT_SERVICE_KEY: "svc-key", AUTH_MODE: "off" };
@@ -328,8 +319,6 @@ describe("a custom rule's change forwarded to the live service", () => {
       const refused = await expectProblem(await post("rules/settings/preview", sent, { cookie: "jo-board=DEMO" }), 422, "rule_settings_invalid");
       expect(refused.issues, JSON.stringify(error)).toEqual([{ path: "new-1.params.hours", message: words }]);
     }
-    // An index alone names the change as a whole; an index at a rule's change, that rule's field; one past the
-    // request's changes, nothing.
     const limit = "A board can have at most 50 custom rules: delete one first.";
     vi.stubGlobal(
       "fetch",

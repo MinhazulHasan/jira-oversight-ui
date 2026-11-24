@@ -6,19 +6,7 @@ import { useHealth, useProjects, type ProjectSummary } from "@/lib/api/hooks";
 import { boardFromCookieHeader } from "@/lib/board";
 import { useHydrated } from "@/lib/use-hydrated";
 
-/*
- * The board every page reads (JO-17): the one the service says it served
- * (health), else the pick in the jo-board cookie when the board list holds it,
- * else the list's default. The top bar's picker and Sync, and the state every
- * page shows for a board that has not synced yet, all read it from here, so
- * they never disagree about which board is on screen.
- *
- * The pick is the cookie's: the server's reading of it for the page it
- * rendered (BoardPickProvider, from the (app) layout) until the page has
- * hydrated, the browser's after. A switch always ends in a whole page load,
- * so the two are the same; reading the server's first means the first render
- * already knows the board, and never shows another board's page for a moment.
- */
+/* The board every page reads. */
 
 const BoardPickContext = createContext<string | null>(null);
 

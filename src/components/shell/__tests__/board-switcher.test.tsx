@@ -16,13 +16,7 @@ import { BOARD_COOKIE } from "@/lib/board";
 
 import { BoardSwitcher, boardRepair } from "../board-switcher";
 
-/*
- * The board switcher repairs a board the dashboard cannot show: a pick that
- * is not in the board list (not served, or not one of the person's boards),
- * or, with no pick, a default board the service no longer serves. Each repair
- * writes the cookie and reloads, at most once a minute, so a cookie it cannot
- * change never sends the page round in a loop.
- */
+/* The board switcher repairs a board the dashboard cannot show. */
 
 const BOARDS = {
   default: "BRAVO",

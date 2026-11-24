@@ -42,12 +42,7 @@ import {
 import { LoginView } from "../login-view";
 import { NoAccessView } from "../no-access-view";
 
-/*
- * The two pages outside the shell. The views are checked as a reader meets
- * them (roles and names); the pages for what they decide: when to send the
- * reader straight on, and that a code in the address only ever picks one of
- * the fixed messages.
- */
+/* The two pages outside the shell. */
 
 type Query = Record<string, string | string[] | undefined>;
 

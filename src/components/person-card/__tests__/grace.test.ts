@@ -2,13 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { convexHull, edgeCrossing, insidePolygon, laneArea, wayArea, type Box, type Point } from "../grace";
 
-/*
- * The way from a name to its hover card (JO-13) in plain geometry: the way,
- * where the card stays (the whole name, the whole card, and room for a hand's
- * curve), and its lane, where no other name's card is armed (the straight
- * ways from where the pointer left to the whole card).
- */
-
 /** The People table's first name and the card beside it, level with it and moved up to fit a 900 px window. */
 const NAME = { left: 280, top: 380, right: 440, bottom: 416 };
 const CARD = { left: 448, top: 327, right: 788, bottom: 888 };
@@ -30,10 +23,6 @@ const waysOn = (card: Box): [string, Point][] => [
 
 const within = (box: Box, point: Point) => point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= box.bottom;
 
-/**
- * Points along a quadratic arc from `from` to `to`, its middle `bow` px off the straight line: positive bows to the
- * left of the way (on a way down to a card on the right, away from it), negative to the right.
- */
 function arc(from: Point, to: Point, bow: number, steps = 400): Point[] {
   const chord = Math.hypot(to.x - from.x, to.y - from.y);
   const normal = { x: -(to.y - from.y) / chord, y: (to.x - from.x) / chord };
@@ -47,10 +36,6 @@ function arc(from: Point, to: Point, bow: number, steps = 400): Point[] {
   });
 }
 
-/**
- * Follows a pointer along `path` from the name to the card as the trigger does: leaving the name draws the shape
- * from where it left; true when it is on the card before it is ever outside that shape.
- */
 function reaches(path: Point[], name: Box, card: Box, shape: (exit: Point, from: Box, to: Box) => Point[]): boolean {
   let area: Point[] | null = null;
   for (const point of path) {
@@ -65,10 +50,6 @@ function reaches(path: Point[], name: Box, card: Box, shape: (exit: Point, from:
   return true;
 }
 
-/**
- * The pointer as a browser that reports few moves delivers it (WebKit here: one every 150 px or so at a hand's
- * speed): one sample every `gap` px along the path, the first `offset` px in, and its end.
- */
 function sampled(path: Point[], gap: number, offset: number): Point[] {
   const samples = [path[0]];
   let travelled = 0;
@@ -83,10 +64,6 @@ function sampled(path: Point[], gap: number, offset: number): Point[] {
   return [...samples, path[path.length - 1]];
 }
 
-/**
- * Follows sampled moves from the name to the card as the trigger does, the exit read by `exitOf` from the last
- * sighting on the name and the first sample off it; true when the card is reached before a sample is off the way.
- */
 function reachesSampled(samples: Point[], name: Box, card: Box, exitOf: (seen: Point, now: Point) => Point): boolean {
   let area: Point[] | null = null;
   let seen = samples[0];
@@ -186,8 +163,6 @@ describe("the way, where the card stays", () => {
   });
 
   it("would lose a sampled curve if the first move off the name were taken for where it left (the WebKit case)", () => {
-    // From the assignee's picture, bowing 60 px, reported every 100 px: the first move off the picture lands below
-    // and to the left of the name, nearer its left side than its foot, a side facing away from the card.
     const samples = sampled(arc(LAYOUTS[1].picture, waysOn(ASSIGNEE_CARD)[0][1], 60, 2000), 100, 20);
     expect(reachesSampled(samples, ASSIGNEE, ASSIGNEE_CARD, (_seen, now) => now)).toBe(false);
     expect(reachesSampled(samples, ASSIGNEE, ASSIGNEE_CARD, (seen, now) => edgeCrossing(seen, now, ASSIGNEE))).toBe(true);

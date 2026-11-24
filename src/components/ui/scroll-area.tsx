@@ -15,26 +15,13 @@ export interface ScrollAreaProps {
   style?: CSSProperties;
   /** The colour the edges fade into; defaults to the sheet. */
   fade?: string;
-  /**
-   * Name the region, which also makes it focusable: a region with nothing
-   * focusable inside (a chart's table view) must still scroll by keyboard.
-   */
+  /** Name the region, which also makes it focusable. */
   label?: string;
-  /**
-   * The scrolling element's own identity, when it is more than a region (and
-   * `label` is unset): a listbox that scrolls, say, which ARIA (and axe) expect
-   * to be the scroller itself when it is a combobox's popup.
-   */
+  /** The scrolling element's own identity, when it is more than a region (and `label` is unset). */
   scrollerProps?: Pick<HTMLAttributes<HTMLDivElement>, "id" | "role" | "aria-label" | "aria-busy" | "onMouseDown">;
 }
 
-/**
- * A scroll region that says when there is more to see. macOS hides
- * scrollbars until the reader scrolls, so the edge it can still scroll
- * towards fades softly (wide tables fade at their right edge). Scrolling is
- * contained, so the page behind a panel does not move, and a horizontal
- * trackpad swipe scrolls a wide table.
- */
+/** A scroll region that says when there is more to see. */
 export function ScrollArea({
   axis,
   children,

@@ -19,11 +19,6 @@ export interface ChartFrameProps {
   title: string;
   /** A visible line under the title: the unit, the scope, the period. */
   description?: ReactNode;
-  /**
-   * One or two sentences saying what the chart shows, read by screen readers
-   * in place of the picture: "Median cycle time fell from 46 h to 38 h over
-   * the last 12 weeks."
-   */
   summary: string;
   /** A Legend, for two or more series. */
   legend?: ReactNode;
@@ -62,12 +57,6 @@ const VIEW_OPTIONS = [
   { value: "table", label: "Table", icon: Table2 },
 ] as const;
 
-/**
- * The frame every chart sits in: the title and its description, a
- * screen-reader summary, the legend, a Chart | Table switch, and the four
- * states of a data region (loading in the final shape, empty that says what
- * was looked at, an inline error with retry, and the chart).
- */
 export function ChartFrame({
   title,
   description,

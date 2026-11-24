@@ -4,18 +4,6 @@ import { RULE_ID_IN_TEXT, type Candidate, type InsightSentence } from "@/lib/api
 import type { CandidateDetail } from "./model";
 import type { TraceTarget } from "./use-trace";
 
-/*
- * Ties a sentence back to its candidates: each figure it quotes to the detail
- * it came from, and each issue key to its issue. The service checked every
- * number and key against the candidates before the briefing was shown; this
- * draws that check, so hovering a sentence lights the very rows it quotes.
- *
- * The briefing is written in en-GB conventions ("1,136", "65%", "12.5 h"), so
- * the figures are looked for in that form, whatever the reader's locale. A
- * figure that cannot be placed stays plain text: nothing is drawn in the
- * wrong place.
- */
-
 export type SentencePart =
   | { kind: "text"; text: string }
   | { kind: "figure"; text: string; candidateId: string; detailKey: string }
@@ -54,11 +42,6 @@ export function writtenForms(detail: CandidateDetail): string[] {
   }
 }
 
-/**
- * True when `token` at `at` stands on its own: not inside a key or a rule id
- * ("01" in R-EST-01), a longer number ("1" in "1.5") or a share ("65" in
- * "65%").
- */
 function standsAlone(text: string, at: number, token: string): boolean {
   const before = text.charAt(at - 1);
   const after = text.charAt(at + token.length);
@@ -151,12 +134,6 @@ export interface TraceFocus {
   figureLit: (sentenceId: string, candidateId: string) => boolean;
 }
 
-/**
- * The tick-and-tie for whatever the reader is on. A sentence lights the
- * candidates it was written from and the figures it quotes from them; a
- * candidate lights the sentences that quote it, and which of its figures
- * they quote.
- */
 export function traceFocus(
   trace: TraceTarget,
   sentences: readonly InsightSentence[],

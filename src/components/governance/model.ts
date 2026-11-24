@@ -1,11 +1,6 @@
 import type { CsvColumn } from "@/components/ui/csv";
 import { ACCESS_ACTION_LABELS, LOCAL_VIEWER, type AccessLogEntry } from "@/lib/api/schemas";
 
-/*
- * Governance's arithmetic (JO-12), kept apart from its pages so the filters,
- * the table, the export and the tests read the same words and the same days.
- */
-
 /* ---------------------------------------------------------------- days --- */
 
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -71,18 +66,10 @@ export function viewerRole(entry: Pick<AccessLogEntry, "viewer" | "level">): str
   return entry.level === "people" ? "Admin" : "User";
 }
 
-/**
- * The role line under a viewer's name in the table and the list: none for the
- * local reader, whose name already says sign-in is off ("Local (sign-in off)").
- */
 export function viewerRoleLine(entry: Pick<AccessLogEntry, "viewer" | "level">): string | null {
   return entry.viewer.hash === LOCAL_VIEWER ? null : viewerRole(entry);
 }
 
-/**
- * The organisation's zone in words, once, for the page's sentences ("Central Time", "United Kingdom Time"); UTC as
- * "UTC". The times themselves keep their short zone ("2:18 PM GMT-6"); the IANA id is never shown.
- */
 export function zoneName(zone: string, locale?: string): string {
   if (zone === "UTC" || zone === "Etc/UTC" || zone === "Etc/GMT") return "UTC";
   try {
@@ -109,10 +96,6 @@ export function detailWords(entry: AccessLogEntry, locale?: string): string | nu
   return null;
 }
 
-/**
- * The entries as the export writes them: the time in UTC (ISO), and every column the table shows, in full, in the
- * page's own words (the viewer's role as "Admin", "User" or "Sign-in off"; "Every board" for a read of the log).
- */
 export const ACCESS_LOG_CSV_COLUMNS: readonly CsvColumn<AccessLogEntry>[] = [
   { header: "Time (UTC)", value: (entry) => entry.at },
   { header: "Viewer", value: (entry) => entry.viewer.name },

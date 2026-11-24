@@ -27,12 +27,7 @@ import { pictureOf } from "../sample/pictures";
 import { resetSampleSync } from "../sample/sync";
 import { MEMBERS, personIdFor, TEAM } from "../sample/team";
 
-/*
- * /api/oversight/*, the credential boundary: an allowlist of read endpoints
- * plus POST ask; sample data or the live service behind it; and in live mode
- * the service key added here, every upstream body checked, and nothing about
- * the service ever passed on.
- */
+/** /api/oversight/*, the credential boundary: an allowlist of read endpoints */
 
 const SAMPLE_NOW = "2026-11-04T14:30:00Z";
 const KEY = "svc-key-that-must-never-leave-the-server";
@@ -449,8 +444,6 @@ describe("live mode", () => {
     expect(init?.signal).toBeInstanceOf(AbortSignal);
     const headers = new Headers(init?.headers);
     expect(headers.get("x-service-key")).toBe(KEY);
-    // Who is reading (JO-12), from this server alone: with sign-in off, the one local reader. The browser's own
-    // headers (its cookie, a bearer token, a forwarded address) go nowhere.
     expect([...headers.keys()].sort()).toEqual(["accept", "x-oversight-viewer", "x-oversight-viewer-name", "x-service-key"]);
     expect(headers.get("x-oversight-viewer")).toBe("local");
     expect(decodeURIComponent(headers.get("x-oversight-viewer-name") ?? "")).toBe("Local (sign-in off)");

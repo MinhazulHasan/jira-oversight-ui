@@ -1,20 +1,5 @@
 import localFont from "next/font/local";
 
-/*
- * Self-hosted, never fetched from a font service: no request leaves the
- * deployment at runtime.
- *
- * Inter (variable weight and optical size) from @fontsource-variable/inter.
- * The latin face is preloaded. Latin Extended (Polish, Czech, Turkish, ...)
- * is a separate face that declares its unicode-range, so the browser fetches
- * it only on a page that needs one of those letters; it has no metric
- * fallback of its own, because the latin face's adjusted fallback already
- * covers the wait.
- *
- * IBM Plex Mono 400/500 for issue keys, figures, timestamps and ids: the
- * same files Ask the System ships (licence in ./fonts).
- */
-
 export const inter = localFont({
   src: "../../node_modules/@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2",
   weight: "100 900",

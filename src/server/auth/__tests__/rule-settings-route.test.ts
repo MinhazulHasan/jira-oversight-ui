@@ -14,15 +14,6 @@ import { emailHash } from "../roles";
 
 import { APP, SECRET, SESSION_KEYS, stubAuthEnv } from "./fixtures";
 
-/*
- * Rule settings (JO-15) at the oversight route: an admin's alone (a reader Ask
- * answers at team level is refused before the sample or the service is asked
- * anything), and a change only from this dashboard's own pages, as JSON (its
- * Origin is held to APP_URL with sign-in on, to the host the browser addressed
- * with it off), so a page on another site can change nothing in an admin's
- * name.
- */
-
 const NOW = "2026-11-04T14:30:00Z";
 const SAMPLE = { OVERSIGHT_DATA: "sample", SAMPLE_NOW: NOW, SAMPLE_LATENCY: "0", AUTH_MODE: "off" };
 const IDENTITY = { sub: "557058:account", dom: "stellainternational.com", site: "cloud-id", eh: "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", boards: ["DEMO"] };
@@ -110,8 +101,6 @@ describe("rule settings with sign-in off (people level), on the sample", () => {
   });
 
   it("holds the Origin to the host the browser addressed, never the address the server is bound to", async () => {
-    // As Next.js builds the request's URL behind `next start -H 0.0.0.0` (the container's HOSTNAME), whatever the
-    // browser used: only the Host header (or a proxy's X-Forwarded-Host) says what that was.
     const bound = (origin: string, headers: Record<string, string>) =>
       change("rules/settings/preview", PREVIEW, { base: "http://0.0.0.0:3400", origin, headers });
     expect((await bound("http://localhost:3400", { host: "localhost:3400" })).status).toBe(200);

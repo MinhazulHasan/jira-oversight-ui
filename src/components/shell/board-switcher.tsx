@@ -13,20 +13,7 @@ import { cn } from "@/lib/utils";
 import { BoardPickerPanel } from "./board-picker";
 import { useCurrentBoard } from "./current-board";
 
-/**
- * The Jira board every page reads, and the way to switch to another (JO-17):
- * every board the service serves, which may be dozens, searchable, in two
- * groups, synced and not synced yet (board-picker.tsx). The board on screen is
- * the one the service says it served (health); while health cannot say, the
- * pick in the cookie, so the picker is always there to switch away
- * (current-board.tsx). Switching stores the pick in a cookie and reloads the
- * page: every figure, filter and answer on screen belongs to one board, so
- * nothing from the old board is kept. A board that has not synced yet can be
- * picked: every page on it offers its first sync. A pick of a board no longer
- * served is forgotten. In the top bar from 768px up; below that, at the top of
- * the navigation sheet, where the top bar has no room. In a crowded top bar the
- * name truncates (never below 7rem), and the key beside it waits for 1440px.
- */
+/** The Jira board every page reads, and the way to switch to another. */
 
 export function switchBoard(key: string, pathname: string): void {
   document.cookie = boardCookie(key);
@@ -36,11 +23,7 @@ export function switchBoard(key: string, pathname: string): void {
 /** The page load a switch ends with; replaceable in tests, since jsdom cannot navigate. */
 export const boardNavigation = { assign: (href: string) => window.location.assign(href) };
 
-/**
- * Pick `key` in the board picker and open `href` on it (the Portfolio's rows
- * and its oldest breaches): a whole page load, as a switch in the top bar
- * is, so nothing from the board before is shown for this one.
- */
+/** Pick `key` in the board picker and open `href` on it (the Portfolio's rows and its oldest breaches). */
 export function openOnBoard(key: string, href: string): void {
   document.cookie = boardCookie(key);
   boardNavigation.assign(href);
@@ -70,12 +53,7 @@ function repairOnce(write: string): void {
   boardRepair.reload();
 }
 
-/*
- * Opening the picker from elsewhere (the Portfolio's line about boards not
- * synced yet): a request the picker that is on screen takes up, the top bar's,
- * or on a phone the navigation sheet's, which opens for it (MobileNav). Kept
- * outside React, as the sign-out confirmation's state is, so anything can ask.
- */
+/* Opening the picker from elsewhere (the Portfolio's line about boards not synced yet). */
 let pickerRequested = false;
 const pickerListeners = new Set<() => void>();
 
@@ -117,8 +95,6 @@ export function BoardSwitcher({ className }: { className?: string }) {
   useEffect(() => {
     if (unshowable) repairOnce(boardCookie(null));
   }, [unshowable]);
-  // No pick, and the board read by default is not served (it was taken off since this person signed in):
-  // pick the default the board list names, which is served and theirs.
   const fallback = picked === null && health.error?.code === "unknown_board" ? projects.data?.default : undefined;
   useEffect(() => {
     if (fallback) repairOnce(boardCookie(fallback));

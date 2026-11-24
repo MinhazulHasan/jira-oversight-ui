@@ -2,16 +2,7 @@ import "server-only";
 
 import { ConfigError, readConfig, type PeopleComparison, type ServerConfig } from "./env";
 
-/*
- * Whether people may be compared side by side, as far as this server knows it
- * before the People page asks (the JO-11 check, G2: with comparison off, the
- * page drew the comparison's loading state, then jumped about 690 px when the
- * figures arrived). In sample mode it is the sample's own setting. In live
- * mode it is the service's PEOPLE_COMPARISON, an organisation-wide setting, as
- * the service last reported it on a scorecard this server passed on: on (the
- * service's default) until the first one, so after a restart of the service
- * with the setting changed, one load may still draw the other shape.
- */
+/** Whether people may be compared side by side, as far as this server knows it */
 
 let reported: PeopleComparison | null = null;
 

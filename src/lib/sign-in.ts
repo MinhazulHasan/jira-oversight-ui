@@ -1,12 +1,3 @@
-/*
- * Signing in, as the browser and the server both see it: the addresses
- * involved, the codes the sign-in pages are opened with, and the one rule for
- * where a person may be sent once signed in. Nothing here is secret and
- * nothing is client-only: the proxy, the auth routes, the API client and the
- * pages all share it. The sealing, the configuration and the Atlassian calls
- * live on the server, in src/server/auth/.
- */
-
 /** The sign-in page. Outside the shell, and it never calls the oversight API. */
 export const LOGIN_PATH = "/login";
 /** Where an account that signed in but may not use the dashboard is told so. */
@@ -17,21 +8,12 @@ export const SIGN_IN_ROUTE = "/api/auth/login";
 export const CALLBACK_ROUTE = "/api/auth/callback";
 /** Ends the session: POST, from this dashboard's own pages (Sign out sends it as a same-origin fetch). */
 export const SIGN_OUT_ROUTE = "/api/auth/logout";
-/** Every board at once (JO-12): where an admin's sign-in lands when it was going nowhere in particular. */
+/** Every board at once: where an admin's sign-in lands when it was going nowhere in particular. */
 export const PORTFOLIO_PATH = "/portfolio";
 
-/**
- * What /login?error= can say. Each is a technical failure, not a refusal, so
- * trying again is always the way on. A refusal goes to /no-access instead.
- */
 export const LOGIN_ERRORS = [
   /** The person chose Cancel on Atlassian's consent screen. */
   "denied",
-  /**
-   * The return from Atlassian could not be matched to this browser: the sign-in
-   * took longer than ten minutes, was started in another tab or browser, or
-   * was replayed.
-   */
   "state",
   /** Atlassian answered with an error, or with something this dashboard could not read. */
   "atlassian",
@@ -78,14 +60,6 @@ const PLAIN = /^[\x21-\x5b\x5d-\x7e]*$/;
 const NOT_A_DESTINATION = /^\/(?:login|no-access|api|_next)(?:[/?#;]|$)/i;
 const BASE = "http://next-path.invalid";
 
-/**
- * Where to send someone after signing in: `raw` when it is a path on this
- * dashboard, "/" otherwise. A protocol-relative address ("//host", "/\host"),
- * any scheme, anything carrying whitespace, control characters or a
- * backslash (raw or percent-encoded), dot segments, and the sign-in pages
- * themselves all fall back to "/". The fragment is dropped: it never reaches
- * a server.
- */
 export function safeNextPath(raw: unknown): string {
   if (typeof raw !== "string" || raw.length === 0 || raw.length > MAX_NEXT_LENGTH) return "/";
   if (!PLAIN.test(raw) || raw[0] !== "/" || raw[1] === "/") return "/";
@@ -156,17 +130,6 @@ function rememberDeparture(now: number): void {
   }
 }
 
-/**
- * The session has ended (an API call answered "unauthenticated"): go to the
- * sign-in page and come back to this page afterwards. True when the browser
- * is on its way; false when it stays.
- *
- * Several queries can find out at the same moment, so this leaves once. It
- * also stays put when it left less than ten seconds ago, even from the page
- * before: back so soon, the sign-in page found a session that this call did
- * not, and going round again would only loop. The page then shows its error
- * instead. The sign-in pages themselves never redirect.
- */
 export function sendToSignIn(): boolean {
   if (typeof window === "undefined") return false;
   const { pathname, search } = window.location;

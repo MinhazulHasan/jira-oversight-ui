@@ -2,30 +2,6 @@
 @import "../styles/components.css";
 @import "../styles/charts.css";
 
-/* ============================================================================
-   Jira Oversight: the token system.
-
-   Ported from Ask the System (same client, same team) and extended for a
-   dashboard. Light is authored first and is the primary theme: this audience
-   prints, sits near windows, and the screenshot that circulates in decks is
-   the light one. Dark is its own set of steps, never an inversion.
-
-   Every colour is defined on bare :root. Dark redefines only the tokens, once
-   under prefers-color-scheme and again under [data-theme], so an explicit
-   toggle wins in both directions and no colour has its only definition inside
-   a media query.
-
-   One accent. --cite means "traceable": links to evidence, citation markers,
-   bound values, the tick-and-tie line, the focus ring and the single primary
-   action. It is never decoration, never a chart series, never a nav highlight.
-
-   Status colour is reserved, and always ships with an icon and a label:
-   breach (clay), warn (amber), ok (green), and the hatch for "not measurable".
-   Each status has a mark step (--x: fills, bars, icons, badge edges) and an
-   ink step (--x-ink: text). In light the mark steps sit near 4:1, which is
-   enough for a mark next to a label but not for words, so text uses -ink.
-   ========================================================================= */
-
 :root {
   color-scheme: light;
 
@@ -40,15 +16,10 @@
   --rule-weak: #e8e4dc;
   --rule: #d9d4c9;
   --rule-strong: #bdb6a8;
-  /* The edge of a form control. A field has to be findable without its
-     placeholder, so this one clears 3:1 against the sheet and the desk. */
   --rule-control: #8c877d;
 
   --text-hi: #14181c;
   --text-mid: #434c56;
-  /* Informational muted. Ask the System used #687280, which measures 4.28:1 on
-     the desk and 4.47:1 on the rail; this step clears 4.5:1 on every ground
-     text sits on (sheet, desk, rail, hover). */
   --text-low: #5f6874;
   /* DECORATIVE ONLY: rules inside glyphs, disabled marks. Never words. */
   --text-dim: #9aa2ac;
@@ -72,15 +43,10 @@
   --breach-ink: #93484e;
   --breach-tint: rgba(162, 86, 92, 0.1);
 
-  /* The hatch: Ask the System's redaction texture, reused to mean NOT
-     MEASURABLE (the process step exists, but Jira holds no evidence for it).
-     Calm and deliberate, never an error look. */
   --hatch-a: #e6e2da;
   --hatch-b: #d5d0c5;
   --hatch-edge: #a39d91;
 
-  /* Focus is solid accent: the translucent ring Ask the System used measures
-     under 2:1 against white, and a focus indicator needs 3:1. */
   --focus: #1f6f8f;
   --focus-width: 2px;
   --focus-offset: 2px;
@@ -161,13 +127,6 @@
     --hairline: 0.5px;
   }
 }
-
-/* ------------------------------------------------------------ dark theme ----
-   Institutional dark: deep slate, not an editor palette. Depth is carried by
-   luminance steps and an inset top highlight rather than drop shadows. The
-   accent is a desaturated cyan-teal, still unmistakably the citation colour.
-   Semantic colours are muted so nothing glows, and every one of them already
-   clears 4.5:1 as text, so the ink steps equal the mark steps. */
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -297,12 +256,6 @@
   --raise-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* --------------------------------------------------- tailwind mapping ------
-   The default Tailwind palette and type scale are removed on purpose: the
-   only colours and sizes that exist are the ones above, so a second palette
-   cannot creep in through a utility class. Chart colours are added by the UI
-   kit in charts.css. */
-
 @theme {
   --color-*: initial;
   --text-*: initial;
@@ -347,10 +300,6 @@
   --color-focus: var(--focus);
   --color-overlay: var(--overlay);
 
-  /* Latin-ext first: it only claims the characters in its unicode-range, so
-     everything else falls through to the preloaded latin face. Each variable
-     carries a fallback so the stack stays valid in a document that does not
-     load the fonts (the global error page). */
   --font-sans:
     var(--font-inter-ext, ui-sans-serif), var(--font-inter, system-ui), ui-sans-serif, system-ui,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -411,9 +360,6 @@
     scroll-padding-top: calc(var(--topbar-h) + 16px);
   }
 
-  /* While a page's sticky bar of unsaved changes shows (the rule settings page, JO-15), a control the keyboard reaches
-     stops above it, never under it: the bar's 48 px, its 16 px from the foot, and room for the focus ring to show
-     (WCAG 2.4.11). */
   html:has([data-unsaved-bar]) {
     scroll-padding-bottom: 5.5rem;
   }
@@ -429,16 +375,6 @@
     text-rendering: optimizeLegibility;
   }
 
-  /*
-   * Tabular lining figures wherever figures are read: in tables, times, data,
-   * keys, code, and anything marked data-figure. A figure column that does not
-   * align is a tell. Figures in Plex Mono (.mono) are tabular by construction.
-   *
-   * Not on running text. Inter's tabular set also widens the hyphen-minus by
-   * half (it doubles as a minus sign) and the full stop, comma and colon, so
-   * applied to prose and labels it reads "read - only", "sign - off". For a
-   * figure anywhere else, use data-figure or the tabular-nums utility.
-   */
   :where(table, time, data, output, meter, progress, kbd, code, samp, [data-figure]) {
     font-variant-numeric: tabular-nums lining-nums;
   }
@@ -481,9 +417,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 }
-
-/* ---------------------------------------------------------- primitives ----
-   The few classes everything shares. Components live in components.css. */
 
 @layer components {
   .mono {
@@ -547,8 +480,6 @@
     transform: translateY(0.5px) scale(0.995);
   }
 
-  /* NOT MEASURABLE. Put it on any area or mark whose evidence Jira does not
-     hold. Pair it with --text-low text and the words "Not measurable". */
   .hatch {
     background-color: var(--hatch-a);
     background-image: repeating-linear-gradient(
@@ -613,8 +544,6 @@
     animation-delay: 120ms;
   }
 
-  /* A loading state that only appears if the wait is long enough to notice,
-     so a fast navigation never flashes a skeleton. */
   .reveal-late {
     animation: jo-fade-in var(--dur) ease 180ms both;
   }
@@ -638,13 +567,6 @@
   }
 }
 
-/* --------------------------------------------------------------- toast -----
-   Acknowledgement at the edge of the page, never data a reader must act on.
-   A ruled status line, not a card: hairline, square-ish, a 3px tone bar down
-   the leading edge and a small tone mark. Sonner runs unstyled and keeps only
-   its positioning; the tone bar is an inset shadow rather than a pseudo
-   element because Sonner uses ::before and ::after for its swipe areas. */
-
 .jo-toast {
   --toast-tone: var(--text-low);
   display: flex;
@@ -664,9 +586,6 @@
   font-family: var(--font-sans);
   cursor: default;
 }
-/* While a page's bar of unsaved changes shows (the rule settings page), a toast rises above it rather than lie over
-   its buttons (at a 13-inch MacBook's width the toast's column reaches "Review and save"; on a phone it covers the
-   bar): the bar's 48 px, its 16 px from the foot, and the toaster's own 20 px. */
 html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"] {
   bottom: 84px;
 }
@@ -717,9 +636,6 @@ html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"] {
   color: var(--text-low);
 }
 
-/* ------------------------------------------------------ command palette ---
-   cmdk renders its group headings itself, so they are styled by attribute. */
-
 .jo-palette [cmdk-group-heading] {
   padding: 10px 12px 6px;
   font-size: var(--t-micro);
@@ -729,10 +645,6 @@ html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"] {
   line-height: 1.2;
   color: var(--text-low);
 }
-
-/* ------------------------------------------------------------- motion -----
-   Restrained. Content rises 6px as it fades in; a trace line draws itself;
-   a wait sweeps. Nothing bounces, nothing spins. */
 
 @keyframes jo-rise {
   from {
@@ -793,10 +705,6 @@ html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"] {
   }
 }
 
-/* ------------------------------------------------------- forced colours ---
-   High-contrast mode drops backgrounds and shadows, which is where the sheet,
-   the current nav item and the hatch carry their meaning. Give each an edge. */
-
 @media (forced-colors: active) {
   .sheet,
   .raised,
@@ -821,11 +729,6 @@ html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"] {
     border: 1px dashed GrayText;
   }
 }
-
-/* ---------------------------------------------------------------- print ---
-   This audience presses Cmd-P inside the first minute. The page prints as a
-   document: no rail, no top bar, no toasts, the sheet flat on white, and the
-   provenance line (data source, last synced) at the top. */
 
 @media print {
   @page {

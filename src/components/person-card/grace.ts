@@ -1,32 +1,3 @@
-/*
- * The way from a name to its hover card (JO-13). A card can open beside a
- * name, or below it, with its far parts (the ways on at its foot) a long way
- * from where the pointer leaves the name; at an ordinary speed the pointer is
- * outside both for longer than the 150 ms a card waits before it closes, it
- * crosses other names on the way, and a hand rarely moves in a straight line:
- * its path bows, often by a tenth of its length. So the pointer leaving the
- * name (or the card, back towards the name) draws two shapes, in plain
- * geometry, so they are tested without a browser:
- *
- * - The way: the smallest convex shape holding the whole name, the whole
- *   card, and the side the pointer left by, reaching well beyond either side
- *   of where it left. While the pointer is on it, the card stays; once it
- *   leaves it, the 150 ms begin. Nothing of it lies past a side the other
- *   lies wholly behind, so a pointer that leaves by a side facing away from
- *   the card is off the way at once.
- * - The lane: the smallest convex shape holding where the pointer left and
- *   the whole of the other, the straight ways there (as Radix's tooltip draws
- *   its grace area). While the pointer is in it, no other name's card is
- *   armed, so a hand that pauses on a name it crosses keeps the card; on the
- *   rest of the way, a name the pointer rests on opens its own card as it
- *   would anywhere, once it has been reported at a second place on it (the
- *   trigger's rule: a pass over a name is one report, JO-14).
- *
- * Both are drawn from where the pointer crossed the edge it left by, read
- * from its last sighting on the name (or the card) and its first off it, so
- * a browser that reports the pointer only every 150 px or so draws the same
- * shapes as one that reports every pixel.
- */
 
 export interface Point {
   x: number;
@@ -43,11 +14,6 @@ export interface Box {
 
 /** How far either side of the exit point the lane starts, so a pointer leaving at a corner is not lost at once. */
 const LANE_PAD_PX = 5;
-/**
- * How far the way reaches either side of where the pointer left, along the side it left by: room for a hand's
- * curve. A path to a way on at a card's foot, 450 px off, that bows 60 px away from the card stays on the way with
- * room to spare, from the middle of the name or from its picture.
- */
 const WAY_REACH_PX = 96;
 
 type Side = "left" | "right" | "top" | "bottom";
@@ -141,12 +107,6 @@ export function convexHull(points: readonly Point[]): Point[] {
   return [...half(sorted), ...half([...sorted].reverse())];
 }
 
-/**
- * Where a pointer last seen at `inside` (on `box`) and now at `outside` (off it) crossed the box's edge. A browser
- * that delivers few moves (WebKit here sends one every 150 px or so at a hand's speed) first reports the pointer
- * well past the edge, where the nearest side can be one it never crossed; the side it left by, and the way drawn
- * from it, are read where it really left. Without a sighting on the box, where it is now is all there is.
- */
 export function edgeCrossing(inside: Point, outside: Point, box: Box): Point {
   const on = inside.x >= box.left && inside.x <= box.right && inside.y >= box.top && inside.y <= box.bottom;
   if (!on) return outside;
@@ -160,22 +120,10 @@ export function edgeCrossing(inside: Point, outside: Point, box: Box): Point {
   return { x: inside.x + t * dx, y: inside.y + t * dy };
 }
 
-/**
- * The way for a pointer that left `from` at `exit`, on its way to `to`: the
- * hull of both boxes and the side it left by, `WAY_REACH_PX` either side of
- * the exit, so a path that bows on its way from anywhere on `from` to
- * anywhere on `to` stays inside, while one that leaves by a side `to` lies
- * wholly behind is outside at once.
- */
 export function wayArea(exit: Point, from: Box, to: Box): Point[] {
   return convexHull([...corners(from), ...alongSide(exit, exitSide(exit, from), from), ...corners(to)]);
 }
 
-/**
- * The lane for a pointer that left `from` at `exit`, on its way to `to`: the
- * hull of the exit point (padded either side) and the corners of `to`, so
- * every straight path from where it left to anywhere on `to` lies inside.
- */
 export function laneArea(exit: Point, from: Box, to: Box): Point[] {
   return convexHull([...paddedExit(exit, exitSide(exit, from)), ...corners(to)]);
 }

@@ -70,10 +70,6 @@ const Sep = () => (
   </span>
 );
 
-/**
- * The answer's outcome and when it was asked, with "Ask again". Nothing a developer reads: no model, time taken or
- * reference (SQA, go-live).
- */
 function MetaLine({ response, onAskAgain, busy }: { response: AskResponse; onAskAgain: () => void; busy: boolean }) {
   const decline = declineOf(response);
   const outcome = response.outcome === "answered" ? "Answered" : decline ? DECLINE_FOOTER[decline] : OUTCOME_LABEL[response.outcome];
@@ -100,12 +96,6 @@ function MetaLine({ response, onAskAgain, busy }: { response: AskResponse; onAsk
 /** The sentences code closes a scorecard or comparison answer with, after its figures: the decision, then the caveat. */
 const CLOSING = [`\n\n${SCORECARD_SENTENCES.decision}`, "\n\nFigures from Jira over the last "];
 
-/**
- * The answer's words, and its closing paragraphs apart: the decision sentence
- * ("The figures are above") and the caveat follow the figures they speak of,
- * so the compact figures go between (DESIGN 6.4: words, figures, the caveat
- * last). No figure spans a paragraph break, so only words are ever split.
- */
 export function splitClosing(segments: readonly AnswerSegment[]): [AnswerSegment[], AnswerSegment[]] {
   const text = segments.map((segment) => segment.text).join("");
   const starts = CLOSING.map((marker) => text.indexOf(marker)).filter((at) => at > 0);
@@ -129,12 +119,6 @@ export function splitClosing(segments: readonly AnswerSegment[]): [AnswerSegment
   return [head, tail];
 }
 
-/**
- * One answer as an annotated document: the question as its title, then the
- * prose with every cited value bound to its row, the figures behind a
- * scorecard or comparison, the decision sentence and the caveat, or the calm
- * state for an outcome that is not an answer, then how it was made.
- */
 export function AnswerDocument({
   response,
   segments,
@@ -174,8 +158,6 @@ export function AnswerDocument({
         <OutcomeBody response={response} onAsk={onAsk} busy={busy} />
       )}
 
-      {/* A scorecard or comparison answer: its figures, compact, as the facts hold them (JO-11), before the sentences
-          that speak of them. */}
       {answered || response.outcome === "not_verified" ? <AskScorecards facts={response.facts} /> : null}
 
       {answered && closing.length > 0 ? (
@@ -184,7 +166,7 @@ export function AnswerDocument({
         </div>
       ) : null}
 
-      {/* A line the service adds under the answer (JO-12: the day's AI budget is used up, so code built it). */}
+      {/* A line the service adds under the answer. */}
       {response.note ? (
         <p data-answer-note className="flex max-w-[66ch] items-start gap-2 text-xs leading-relaxed text-ink-low">
           <Info aria-hidden size={13} strokeWidth={1.75} className="mt-0.5 shrink-0" />

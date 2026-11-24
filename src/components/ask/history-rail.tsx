@@ -24,11 +24,6 @@ function outcomeText(entry: AskResponse): string {
   return decline ? DECLINE_LABEL[decline] : OUTCOME_LABEL[entry.outcome];
 }
 
-/**
- * This tab's questions, newest first. Choosing one shows its answer again as
- * it was given, without asking twice; the list stays in this tab and is gone
- * when the tab closes.
- */
 export function HistoryRail({
   entries,
   currentId,

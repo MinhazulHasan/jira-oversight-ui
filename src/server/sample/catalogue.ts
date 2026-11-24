@@ -1,10 +1,4 @@
-/**
- * The rule catalogue and the process map for the sample project, mirroring
- * jira-oversight-sys/config/rules.yaml (v0.1.0) and the DEMO entry in
- * config/process.yaml. DEMO has the same three-status workflow as the real
- * project, so code review, sign-off and testing leave no evidence in Jira and
- * the rules that need them are "not measurable".
- */
+/** The rule catalogue and the process map for the sample project, mirroring */
 
 import { EVIDENCE_NAMES, type RuleKind, type Severity, type Stage, type StatusCategory } from "@/lib/api/schemas";
 
@@ -16,10 +10,6 @@ export const API_VERSION = "0.1.0";
 export const RULES_VERSION = "0.1.0";
 export const PROCESS_VERSION = "0.1.0";
 export const HOURS_PER_POINT = 8;
-/*
- * The catalogue's thresholds (rules.yaml): every board's defaults. A board's own, where an admin has changed
- * them, are its rule settings (JO-15, board-rules.ts), which the engine and the views read instead.
- */
 export const EFFORT_THRESHOLD = 1.5;
 export const EFFORT_WARNING = 0.8;
 export const ESTIMATE_GRACE_HOURS = 1;
@@ -74,7 +64,7 @@ export interface RuleDef {
   id: string;
   title: string;
   description: string;
-  /** The check it runs, as rules.yaml names it: what its params mean (and which of them a board may change, JO-15). */
+  /** The check it runs, as rules.yaml names it: what its params mean (and which of them a board may change, ). */
   check: string;
   /** Its params as rules.yaml sets them (a custom rule's statuses among them); a threshold the check reads with a default may be left out. */
   params: Readonly<Record<string, number | string | readonly string[]>>;
@@ -300,16 +290,8 @@ export function ruleDef(id: string): RuleDef {
   return rule;
 }
 
-/**
- * What a rule needs that the project lacks, the way the engine and
- * oversight_rule_status work it out: missing evidence first, then stages the
- * workflow does not map.
- */
-/**
- * Work, as every rule counts it: an Epic is a container, not work
- * (rules.yaml defaults.exclude_types). A person's tickets, open tickets and
- * findings count over work only, everywhere (JO-12, G5).
- */
+/** What a rule needs that the project lacks, the way the engine and */
+/** Work, as every rule counts it: an Epic is a container, not work */
 export const isWork = (issue: { type: string }) => issue.type !== "Epic";
 
 export function missingFor(rule: RuleDef): string[] {

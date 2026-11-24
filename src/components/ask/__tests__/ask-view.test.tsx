@@ -83,7 +83,7 @@ function renderAsk({ search = "", strict = false, level, cards = false }: { sear
   const view = renderKit(
     <QueryClientProvider client={client}>
       <NuqsTestingAdapter searchParams={search} onUrlUpdate={onUrlUpdate} hasMemory>
-        {/* `cards`: the shell's people level, so names open person cards (JO-13), as in the app for an admin. */}
+        {/* `cards`: the shell's people level, so names open person cards, as in the app for an admin. */}
         <PeopleLevelProvider peopleLevel={cards}>
           <AskView level={level} />
         </PeopleLevelProvider>

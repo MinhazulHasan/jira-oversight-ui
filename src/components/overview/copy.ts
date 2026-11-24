@@ -6,11 +6,6 @@ import { signed } from "@/components/ui/stat-tile";
 import type { CoverageEntry, Overview, TrendCard, ValueUnit } from "@/lib/api/schemas";
 import { formatByKind, formatCount, formatDelta, formatNumber } from "@/lib/format";
 
-/*
- * The Overview's words and the small pieces of arithmetic behind them, kept
- * apart from the markup so they can be tested and read in one place.
- */
-
 /** "1 rule", "12 rules", with the count formatted for the reader. */
 export function counted(count: number, singular: string, plural: string, locale?: string): string {
   return `${formatCount(count, { locale })} ${count === 1 ? singular : plural}`;
@@ -28,11 +23,6 @@ export function evidenceName(value: string): string {
   return label.toLowerCase();
 }
 
-/**
- * What a rule cannot see: "No code review or testing in Jira". Where Jira is
- * already the subject (the "Rules not measurable" tile), `inJira: false`
- * keeps it to one line: "No code review or testing".
- */
 export function missingEvidenceText(missing: readonly string[], { inJira = true }: { inJira?: boolean } = {}): string {
   const names = [...new Set(missing.map(evidenceName))];
   if (names.length === 0) return "Jira holds no evidence for it";

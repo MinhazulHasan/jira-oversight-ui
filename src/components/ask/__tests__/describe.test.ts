@@ -24,7 +24,7 @@ import { nextQuestions, STARTERS } from "../suggestions";
 const answered = askResponseSchema.parse(answeredJson);
 const trend = askResponseSchema.parse(trendJson);
 const noData = askResponseSchema.parse(noDataJson);
-/** JO-09 judgement words, as an older service would still send them (since JO-11 the sample answers with figures). */
+/** Judgement words, as an older service would still send them. */
 const judgement = { ...askResponseSchema.parse(notUnderstoodJson), message: ASK_DECLINES.judgement };
 const teamLevel = { ...judgement, message: ASK_DECLINES.teamLevel };
 const unknownMention = { ...judgement, message: ASK_DECLINES.unknownMention };
@@ -64,15 +64,11 @@ describe("the calls in words", () => {
   });
 
   it("says a comparison's order as it was asked for, never best or worst (JO-14)", () => {
-    // Regression: the plan said "most first" for any order but fewest, so a rate asked for highest first, or closer
-    // to the process first, read as a count's order.
     const compare = (measure: string, order: string) => paramsText("oversight_people_compare", { measure, days: 90, order });
     expect(compare("reopened", "most")).toBe("reopened · highest first · last 90 days");
     expect(compare("stuck_now", "fewest")).toBe("stuck now · lowest first · last 90 days");
     expect(compare("open_findings_per_10", "closer")).toBe("open findings per 10 · closer to the process first · last 90 days");
     expect(compare("overall", "closer")).toBe("every measure · closer to the process first · last 90 days");
-    // A count, JO-09's ranking by one and the overall number of measures closer: most or fewest first, in the words of
-    // the answer and its table's caption (the JO-14 review: "Open tickets, fewest first" over "lowest first" in one card).
     expect(paramsText("oversight_people_compare", { measure: "open_tickets", order: "most" })).toBe("open tickets · most first");
     expect(paramsText("oversight_people_compare", { measure: "open_tickets", order: "fewest" })).toBe("open tickets · fewest first");
     expect(paramsText("oversight_people_compare", { measure: "done_in_period", days: 30, order: "fewest" })).toBe("done in period · fewest first · last 30 days");

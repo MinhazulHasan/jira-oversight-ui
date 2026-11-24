@@ -2,15 +2,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { ACCOUNTS, EVERYONE_APP_URL } from "./settings";
 
-/*
- * Everyone who signs in is an admin (JO-16, ACCESS_MODE left empty: its
- * default, everyone-admin), end to end against the mock Atlassian, on a
- * dashboard of its own (playwright.auth.config.ts). Sign-in itself is
- * unchanged: only an address on ALLOWED_EMAIL_DOMAINS gets in. Once in,
- * anyone sees what an admin sees: every board, people level and Governance,
- * and the top bar shows no "Admin" badge, since it would tell nobody anything.
- */
-
 test.use({ baseURL: EVERYONE_APP_URL });
 
 /** From the dashboard's sign-in page, through the mock's consent screen, as one of its test accounts. */
@@ -28,7 +19,7 @@ test.describe("everyone-admin, the default", () => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/login/);
     await chooseAccount(page, ACCOUNTS.allowed);
-    // An admin's landing page, going nowhere in particular (JO-12).
+    // An admin's landing page, going nowhere in particular.
     await expect(page).toHaveURL(`${EVERYONE_APP_URL}/portfolio`);
     await expect(page.getByRole("heading", { level: 1, name: "Portfolio" })).toBeVisible();
     const banner = page.getByRole("banner");

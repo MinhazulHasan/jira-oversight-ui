@@ -24,12 +24,6 @@ import {
   type RuleSettingsPreview,
 } from "../schemas";
 
-/*
- * The JO-15 contract: the bodies the page sends (held to the service's bounds
- * before anything is forwarded) and the three answers it reads, each refusing
- * a body that contradicts itself.
- */
-
 const settings = ruleSettingsSchema.parse(settingsJson);
 const preview = ruleSettingsPreviewSchema.parse(previewJson);
 
@@ -207,8 +201,6 @@ describe("GET /rules/settings and a save's answer", () => {
     expect(field({ field: "enabled", from: 1, to: 0 }).success).toBe(false);
     expect(field({ field: "params.threshold", from: "1.5", to: 2 }).success).toBe(false);
     expect(field({ field: "params.threshold", from: 2, to: 2 }).success).toBe(false);
-    // JO-20 adds a custom rule's own fields (its title, description, what it looks at, the rule as a whole); a field
-    // no rule has is refused, and a param is one kind of value on both sides.
     expect(field({ field: "name", from: "a", to: "b" }).success).toBe(false);
     expect(field({ field: "params.statuses", from: ["To Do"], to: 3 }).success).toBe(false);
   });

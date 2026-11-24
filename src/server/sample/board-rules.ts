@@ -24,18 +24,6 @@ import {
   type CustomRuleRecord,
 } from "./custom-rules";
 
-/*
- * A board's rules as its settings make them (JO-15), for the sample: the
- * sample's mirror of the service's oversight/rules/settings.py. The catalogue
- * (rules.yaml, sample/catalogue.ts) is every board's default; a board keeps
- * only what differs from it, per rule: on or off, the severity, and the
- * thresholds the contract's registry lets an admin change. Since JO-20 a
- * board also keeps rules of its own (custom-rules.ts), after the catalogue's:
- * each with its check, params and scope as it was added or last edited, on or
- * off and its severity kept as a catalogue rule's are. Pure functions: the
- * settings themselves live in settings-store.ts.
- */
-
 /** What a board keeps for one rule: only the fields that differ from the catalogue (a custom rule: from how it was added). */
 export interface RuleOverride {
   enabled?: boolean;
@@ -46,23 +34,18 @@ export interface RuleOverride {
 export type BoardOverrides = ReadonlyMap<string, RuleOverride>;
 export const NO_OVERRIDES: BoardOverrides = new Map();
 
-/** One rule as a board runs it: a catalogue rule, or (JO-20) one of the board's own. */
+/** One rule as a board runs it: a catalogue rule, or one of the board's own. */
 export interface BoardRule {
   /** The rule as the board reports it: the catalogue's, with the board's severity and threshold in words. */
   def: RuleDef;
   /** The catalogue's rule; a custom rule's own as it was added or last edited, at the severity it was added with. */
   catalogue: RuleDef;
   enabled: boolean;
-  /**
-   * Its findings' rule version: the catalogue's while the severity is the catalogue's, else "0.1.0+breach", so a
-   * severity change alone gives the rule new finding ids; on or off and thresholds never do. A custom rule's is the
-   * revision that added it, `c3` (`c3+warning` at another severity than it was added with).
-   */
   version: string;
   /** Every number param's value on the board: a catalogue rule's editable thresholds, a custom rule's numbers. */
   params: Readonly<Record<string, number>>;
   customised: boolean;
-  /** A board's own rule (JO-20), as the board keeps it; null for a catalogue rule. */
+  /** A board's own rule, as the board keeps it; null for a catalogue rule. */
   custom: CustomRuleRecord | null;
 }
 
@@ -85,10 +68,6 @@ export function numberWords(value: number): string {
   return String(Number(value.toPrecision(6)));
 }
 
-/**
- * A rule's threshold in words, with its check's defaults, as the service's GET /rules writes it; null when it has
- * none. The four checks JO-20 added read as their limits do ("Over 3 days in In Progress", "Open over 30 days").
- */
 export function thresholdText(rule: Pick<RuleDef, "check">, params: Readonly<Record<string, number | string | readonly string[]>>): string | null {
   const fresh = newCheckThreshold(rule.check, params);
   if (fresh !== null) return fresh;
@@ -136,7 +115,7 @@ function numbersOf(params: Readonly<Record<string, ParamValue>>): Record<string,
   return Object.fromEntries(Object.entries(params).filter((entry): entry is [string, number] => typeof entry[1] === "number"));
 }
 
-/** One of the board's own rules (JO-20) under its override: on or off, and the severity the board reports it at. */
+/** One of the board's own rules under its override: on or off, and the severity the board reports it at. */
 export function customBoardRule(record: CustomRuleRecord, override: RuleOverride | undefined): BoardRule {
   const severity = override?.severity ?? record.severity;
   const threshold = thresholdText(record, record.params);
@@ -151,7 +130,7 @@ export function customBoardRule(record: CustomRuleRecord, override: RuleOverride
   };
 }
 
-/** Every rule a board runs, in order: the catalogue's, then (JO-20) its own that stand, oldest first. */
+/** Every rule a board runs, in order: the catalogue's, then its own that stand, oldest first. */
 export function boardRules(overrides: BoardOverrides = NO_OVERRIDES, custom: readonly CustomRuleRecord[] = []): BoardRule[] {
   return [
     ...RULES.map((rule) => boardRule(rule, overrides.get(rule.id))),
@@ -180,10 +159,6 @@ export function estimateGraceHours(rules: readonly BoardRule[]): number {
   return boardParam(rules, "R-EST-02", "grace_hours");
 }
 
-/**
- * What a board keeps for a rule set as `wanted`: only the fields that differ from the catalogue (undefined for none).
- * A custom rule's numbers live in its own definition, so only its switch and severity are kept here.
- */
 function overrideFor(rule: BoardRule, wanted: { enabled: boolean; severity: Severity; params: Readonly<Record<string, number>> }): RuleOverride | undefined {
   const base = rule.custom ? rule.custom.severity : rule.catalogue.severity;
   const params = rule.custom ? {} : Object.fromEntries(Object.entries(wanted.params).filter(([name, value]) => value !== catalogueParam(rule.catalogue, name)));
@@ -201,11 +176,6 @@ export interface SettingsProblem {
   message: string;
 }
 
-/**
- * What a change set reads beyond the board's rules (JO-20): the board's own rules as they stand, deleted ones too
- * (an undo brings one back), what a custom rule may name there, and the moment, the reader and the revision the
- * change would make; and the next free number of a custom rule's id of each kind, across every board.
- */
 export interface ChangeContext {
   options: BoardOptions;
   custom: readonly CustomRuleRecord[];
@@ -235,17 +205,7 @@ function inputOf(record: CustomRuleRecord): CustomRuleInput {
   };
 }
 
-/**
- * Whether a set of changes may be made to a board as it is (the service's
- * validation, beyond what the request's schema already checked): every rule
- * is the board's, every threshold one of its rule's, every change changes
- * something, and a warning that escalates to a breach of the same check keeps
- * its threshold strictly below the breach's while both run. A new rule (JO-20)
- * is checked against the board's checks and names, as the page checks it, and
- * given its id; an edit, a delete and a restore are for the board's own rules
- * alone, and a board holds at most 50 of them. The new overrides and custom
- * rules when it may.
- */
+/** Whether a set of changes may be made to a board as it is (the service's */
 export function applyChanges(rules: readonly BoardRule[], changes: readonly RuleSettingsChange[], context?: ChangeContext): Applied {
   const current = rulesById(rules);
   const problems: SettingsProblem[] = [];
@@ -410,12 +370,7 @@ export function applyChanges(rules: readonly BoardRule[], changes: readonly Rule
   return problems.length > 0 ? { ok: false, problems } : { ok: true, overrides: next, custom: records, created };
 }
 
-/**
- * The cross-rule rule: a warning that escalates to a breach rule with the same
- * check and a threshold (W-EFF-01 to R-EFF-01) fires strictly below it while
- * both run on the board. Said on the threshold the change set touched, or on
- * the warning's when it touched neither.
- */
+/** The cross-rule rule: a warning that escalates to a breach rule with the same */
 export function crossRuleProblems(rules: readonly BoardRule[], changes: readonly RuleSettingsChange[] = []): SettingsProblem[] {
   const byId = rulesById(rules);
   const touched = new Set(changes.flatMap((change) => ("rule_id" in change ? [change.rule_id] : [])));
@@ -444,11 +399,6 @@ export function crossRuleProblems(rules: readonly BoardRule[], changes: readonly
   return problems;
 }
 
-/**
- * Each field a change set moved, as the history records it: the values the board ran before and after. A custom
- * rule added, deleted or brought back (JO-20) is one `rule` field with its definition; an edit names each of its
- * fields that moved (title, description, what it looks at, each param), after its switch and its severity.
- */
 export function fieldChanges(before: readonly BoardRule[], after: readonly BoardRule[]): RuleSettingsFieldChange[] {
   const then = rulesById(before);
   const now = rulesById(after);
@@ -487,10 +437,6 @@ export function fieldChanges(before: readonly BoardRule[], after: readonly Board
   return [...lines, ...deleted];
 }
 
-/**
- * A canonical key for a board's settings: equal settings share it (an undo back to the catalogue is the catalogue).
- * A custom rule's whole definition is in it, its name too, which its findings carry.
- */
 export function settingsKey(overrides: BoardOverrides, custom: readonly CustomRuleRecord[] = []): string {
   return JSON.stringify([
     [...overrides.entries()]

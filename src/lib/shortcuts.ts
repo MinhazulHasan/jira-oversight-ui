@@ -1,13 +1,5 @@
 import { pageForChord } from "./nav";
 
-/**
- * The global keyboard map, as pure functions so it can be tested without a
- * browser. The rule that matters most: a single-key shortcut never fires while
- * the reader is typing, or inside something that has keys of its own (a menu,
- * a listbox, a dialog). Only Cmd/Ctrl+K reaches through, because it is how a
- * reader gets out of a field to the palette.
- */
-
 /** How long `g` waits for its second key. */
 export const CHORD_TIMEOUT_MS = 1200;
 
@@ -70,10 +62,6 @@ export function isTypingTarget(target: EventTarget | null): boolean {
   return target.closest('[role="dialog"], [role="alertdialog"], [role="menu"]') !== null;
 }
 
-/**
- * What a keystroke asks for, given whether `g` was pressed recently.
- * `chordArmedAt` is when `g` was pressed (ms), or null.
- */
 export function resolveShortcut(
   event: KeyInput,
   options: { typing: boolean; chordArmedAt: number | null; now: number; peopleLevel?: boolean },

@@ -68,12 +68,7 @@ export interface SeverityMarkProps {
   className?: string;
 }
 
-/**
- * The shape that carries a status, so it never rests on colour alone:
- * breach is a filled square, warning a triangle, resolved a tick, not
- * measurable a hatched square and neutral a dot. Decorative: the label beside
- * it says the same in words.
- */
+/** The shape that carries a status, so it never rests on colour alone. */
 export function SeverityMark({ severity, size = 10, palette = "ui", muted = false, className }: SeverityMarkProps) {
   const colour = muted ? MARK_COLOUR.ui.neutral : MARK_COLOUR[palette][severity];
   return (
@@ -146,11 +141,7 @@ export interface SeverityBadgeProps {
   className?: string;
 }
 
-/**
- * A status in words with its mark: breach, warning, resolved, or not
- * measurable. The text uses the ink step of the status colour, which clears
- * 4.5:1; the mark carries the shape.
- */
+/** A status in words with its mark. */
 export function SeverityBadge({ severity, children, size, className }: SeverityBadgeProps) {
   return (
     <span className={cn(severityBadge({ severity, size }), className)}>

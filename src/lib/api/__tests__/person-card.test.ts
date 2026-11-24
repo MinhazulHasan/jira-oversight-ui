@@ -5,13 +5,6 @@ import memberSample from "../../../../docs/sample-responses/person-card-member.j
 import { normalizePersonCardQuery, parsePersonCardQuery, personCardSearchParams } from "../params";
 import { ACCESS_ACTION_LABELS, ACCESS_ACTIONS, accessLogEntrySchema, personCardSchema, type PersonCard } from "../schemas";
 
-/*
- * The person card's contract (JO-13, docs/API_CONTRACT.md 4.19): the shape,
- * and only what no reading of the figures allows is refused (a card that
- * contradicts itself is never shown as if it were true). The parameters are
- * the scorecard's period and, where the page names one, the board.
- */
-
 const card = (): PersonCard => structuredClone(cardSample) as PersonCard;
 const issues = (value: unknown) => {
   const parsed = personCardSchema.safeParse(value);
@@ -55,8 +48,6 @@ describe("personCardSchema", () => {
   });
 
   it("takes a ticket whose start the service does not know (since null) listed last, and refuses it before a dated one", () => {
-    // The service sends null only for a ticket with neither a status timeline nor a creation, which it lists last
-    // (oversight/api/routes/person_card.py); the card says no time for it rather than failing as a whole.
     const unknown = card();
     unknown.in_progress_now[2] = { ...unknown.in_progress_now[2], since: null };
     expect(issues(unknown)).toEqual([]);

@@ -10,11 +10,6 @@ import { formatCount, formatHours } from "@/lib/format";
 
 import { MetersSkeleton } from "./coverage";
 
-/**
- * How many hours a story point turned out to cost on resolved work: the
- * median and the middle half, then how often work landed near the agreed
- * rate and how often the estimate came after the work had started.
- */
 export function EstimatesBlock({ data }: { data: Baseline | undefined }) {
   const locale = useFigureLocale();
   const estimates = data?.figures.estimates;

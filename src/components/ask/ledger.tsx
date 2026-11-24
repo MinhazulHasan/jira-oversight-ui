@@ -16,7 +16,6 @@ import { Markers, useTraceTarget, type CitationIndex } from "./ledger-parts";
 import { ParamsInWords } from "./plan-steps";
 import { useActiveCitation } from "./trace";
 
-
 const HOT = "rounded-[3px] bg-cite-tint text-cite-hot shadow-[0_0_0_3px_var(--cite-tint)]";
 
 /** A part of a fact set an answer can cite (its parameters, row count, note or as-of time), tied like a row. */
@@ -137,11 +136,6 @@ function summary(state: LedgerState): string {
   return `${sets} ${sets === 1 ? "source" : "sources"}`;
 }
 
-/**
- * The answer's sources: every catalogue call behind it, as returned, with the
- * cited cells marked. It sits beside the prose (sticky, scrolling on its own)
- * so a value and its row are both in view while the line ties them.
- */
 export function Ledger({ state, className }: { state: LedgerState; className?: string }) {
   const response = state.kind === "response" ? state.response : null;
   const index = useMemo(() => indexCitations(response?.citations ?? []), [response]);

@@ -1,21 +1,6 @@
 import "server-only";
 
-/*
- * Sealed cookies: AES-256-GCM through Web Crypto, which works the same in the
- * proxy and in the route handlers, so no dependency is needed. A sealed value
- * reads
- *
- *   "v1." + base64url(iv ‖ ciphertext ‖ tag)
- *
- * with a fresh random 96-bit IV for every seal. The key is derived from
- * AUTH_SECRET with HKDF-SHA-256, separately for each purpose, so a sign-in
- * state can never be passed off as a session or the other way round. A seal
- * can also be bound to a context (a session to the Jira site it was issued
- * for), which goes into GCM's additional data: it is not stored, so it must
- * be given again to open the value. GCM authenticates as well as encrypts:
- * anything tampered with, sealed under another key, purpose or context, or
- * simply malformed opens as null.
- */
+/** Sealed cookies: AES-256-GCM through Web Crypto, which works the same in the */
 
 export type SealPurpose = "session" | "state";
 
@@ -84,12 +69,7 @@ export async function seal(payload: unknown, secret: string, purpose: SealPurpos
   return `${VERSION}.${toBase64Url(bytes)}`;
 }
 
-/**
- * The payload sealed in `sealed`, or null when it was tampered with, sealed
- * under another secret, for another purpose or bound to another context, or
- * is not a sealed value at all. Never throws: an unreadable cookie only means
- * "signed out".
- */
+/** The payload sealed in `sealed`, or null when it was tampered with, sealed */
 export async function unseal(
   sealed: string | null | undefined,
   secret: string,

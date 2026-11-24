@@ -40,13 +40,6 @@ const STEP_KEYS: Record<string, Step> = {
   End: "last",
 };
 
-/**
- * A value the answer quotes, bound to the cell it was read from: set in Plex
- * Mono on a teal underline, with its citation marker. One tab stop for all of
- * them (the held one, else the first); the arrow keys step, Home and End jump,
- * Esc lets go. Hover traces it for as long as the pointer stays; a click or
- * focus holds it.
- */
 function BoundValue({ text, marker, description }: { text: string; marker: number; description: string }) {
   const trace = useTrace();
   const ref = useRef<HTMLButtonElement>(null);
@@ -129,32 +122,12 @@ function IssueLink({ issueKey }: { issueKey: string }) {
   );
 }
 
-/**
- * Someone the answer names, marked as Jira marks a mention: their picture
- * and name on a neutral pill. The pill takes its baseline from the name, so
- * the name sits on the sentence's own line; the picture is centred in the
- * pill on its own, the same for a picture as for initials. Shorter than the
- * line, so nothing moves; a name too long for the column wraps inside the
- * pill rather than running off it.
- *
- * Ask names people only at people level (an admin, or sign-in off), where
- * the pill opens the person's card, as a mention does in Jira and Confluence
- * (JO-13): resting on it shows the card, a press pins it, and the card leads
- * on to their findings, their scorecard and Ask. Without the card (a reader
- * the card is not for), the pill leads to their open findings; someone who
- * holds none of the board's tickets gets the same pill with no link
- * (`linked={false}`): their open findings would be an empty page.
- */
 export function PersonMention({ person, linked = true, tight = false }: { person: Person; linked?: boolean; tight?: boolean }) {
   const peopleLevel = usePeopleLevel();
-  // Tight before the punctuation that touches it ("Ada Brooks,"): the pill ends close to the name, so the comma reads
-  // as the sentence's, not a space away (the JO-11 check, G7).
   const pill = cn("inline-flex max-w-full items-baseline gap-1.5 rounded-full bg-hover py-px pl-px text-ink", tight ? "pr-1" : "pr-2");
   const content = (
     <>
       <PersonAvatar person={person} className="self-center" />
-      {/* Never clipped: a clipped box would hand the pill a baseline of its own. A name too long for the column wraps
-          inside the pill, even where the pill is held to the punctuation after it (Glued). */}
       <span className="min-w-0 leading-5 whitespace-normal [overflow-wrap:anywhere]">{person.name}</span>
     </>
   );
@@ -192,12 +165,6 @@ export function PersonMention({ person, linked = true, tight = false }: { person
 /** The sentence the service builds in code for people mentioned who hold none of the board's tickets (contract 4.6). */
 const NO_TICKETS_SENTENCE = /^(.+) (?:has|have) no tickets on this board\.$/u;
 
-/**
- * The ids of the people an answer's closing no-tickets sentence names: the
- * whole `no_data` answer, or the last paragraph of a mixed one. They hold none
- * of the board's tickets, so their pill leads nowhere. Empty when the answer
- * does not end so.
- */
 export function withoutTickets(answer: string | null | undefined, people: readonly Person[]): ReadonlySet<string> {
   const last = answer?.trim().split(/\n[^\S\n]*\n/u).at(-1)?.trim() ?? "";
   const names = NO_TICKETS_SENTENCE.exec(last)?.[1];
@@ -211,27 +178,10 @@ const OPEN = "\uE000";
 const CLOSE = "\uE001";
 const PLACEHOLDER = /\uE000(\d+)\uE001/g;
 
-/**
- * Punctuation that closes onto what stands before it ("88.", "Ada Brooks,", "DEMO-12)", "Ada Brooks's"), and
- * punctuation that opens onto what follows it ("(DEMO-12").
- */
 const CLOSING = /^(?:['’]s(?!\p{L}))?[.,;:!?…)\]}’”"'%]*/u;
 const OPENING = /[([{‘“"]+$/u;
-/**
- * A unit symbol after a figure, a space after it or touching it ("161.6 h", "3 d", "8 pts", "1.42×"): held to the
- * figure, so no line starts with a unit (the JO-12 check; the marker before it is a box a line may break after).
- * Symbols and their short forms only: a unit in words ("12 hours") is prose, and may break as prose does.
- */
 const UNIT = /^[  ]?(?:h|hrs?|d|mins?|wks?|pts?|x|×|%)(?![\p{L}\p{N}_])/u;
 
-/**
- * A cited value or a person's pill held together with the punctuation that
- * touches it, so no line starts with a full stop, a comma or a link's lone
- * arrow (the JO-11 check, G7): the value, its marker and its arrow, or the
- * pill, with an opening bracket before and the punctuation after, on one
- * line. Only the touching characters: the line still breaks at the spaces
- * around them.
- */
 function Glued({ children }: { children: ReactNode }) {
   return (
     <span data-glued="" className="whitespace-nowrap">
@@ -250,14 +200,6 @@ function Bound({ children }: { children: ReactNode }) {
   return <>{bind(children)}</>;
 }
 
-/**
- * How each Markdown element renders: defined once, here, never per render.
- * react-markdown takes each entry as a component type, so a map built inline
- * would hand React new types on every render, and every paragraph, value,
- * pill and picture would be unmounted and mounted again (the JO-11 check, G1:
- * a mention's picture measured as it was being replaced). The answer's own
- * values reach them through BindContext instead.
- */
 const COMPONENTS: Components = {
   p: ({ children }) => (
     <p className="whitespace-pre-line">
@@ -328,14 +270,6 @@ const COMPONENTS: Components = {
 
 const REMARK_PLUGINS = [remarkGfm];
 
-/**
- * A run of text, values and pills with the punctuation that touches a value
- * or a pill held to it (Glued): a closing mark after, an opening one before.
- * A cited figure is held to the unit symbol after it too, with the
- * punctuation that closes onto the unit ("161.6 h."). A cited key is held to
- * its arrow as well (`arrowed`): the arrow is a box of its own, which a line
- * may otherwise break before.
- */
 function glue(parts: readonly ReactNode[], arrowed: ReadonlySet<string> = new Set()): ReactNode[] {
   const queue = [...parts];
   const out: ReactNode[] = [];
@@ -380,15 +314,6 @@ function glue(parts: readonly ReactNode[], arrowed: ReadonlySet<string> = new Se
   return out;
 }
 
-/**
- * The written answer as an annotated document: the model's Markdown
- * (paragraphs, bullet lists, bold, tables) with every cited figure bound to
- * its row, every cited issue key a link, and everyone it names (the answer's
- * verified `people`) marked with their picture wherever their name stands.
- * Raw HTML, images and the model's own links are never rendered: the only
- * links are the ones this page makes. A re-render updates the document in
- * place: nothing in it is mounted again (COMPONENTS).
- */
 export function AnswerProse({
   segments,
   describe,

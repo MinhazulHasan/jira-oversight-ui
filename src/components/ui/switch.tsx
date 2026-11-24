@@ -17,14 +17,7 @@ export interface SwitchProps {
   className?: string;
 }
 
-/**
- * On or off (Radix Switch): a button with the switch role, which Space and
- * Enter toggle and a screen reader reads as on or off. The state is in ink and
- * shape, never the accent (teal means traceable): on is a filled ink track
- * with the thumb at its end, off a track in the 3:1 field edge with the thumb
- * at its start. Say the state in words beside it ("On", "Off"): the switch is
- * the control, the words are for reading at a glance.
- */
+/** On or off (Radix Switch). */
 export function Switch({ checked, onCheckedChange, label, labelledBy, describedBy, disabled, id, className }: SwitchProps) {
   return (
     <SwitchPrimitive.Root

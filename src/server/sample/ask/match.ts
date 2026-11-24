@@ -1,9 +1,4 @@
-/**
- * Matching a typed question to one of the sample's scripted questions. The
- * real service asks a model to plan; the sample has to recognise questions
- * written many ways, so it matches on concepts (a word and its common
- * variants), and on letter pairs for the rest, which forgives typos.
- */
+/** Matching a typed question to one of the sample's scripted questions. The */
 
 export function normalise(question: string): string {
   return question
@@ -40,11 +35,7 @@ const CONCEPTS = {
 
 type Concept = keyof typeof CONCEPTS;
 
-/**
- * Questions about individuals. Oversight reports at team and process level
- * (Planning.md principle 8), so these are declined before anything else is
- * considered. "Assignee" is a process fact (R-HYG-01), not a person, so it is not here.
- */
+/** Questions about individuals. Oversight reports at team and process level */
 const PERSON =
   /\b(who|whom|whose|developers?|engineers?|person|people|individuals?|programmers?|testers?|employees?|staff|colleagues?|team members?|somebody|someone|anybody|by name)\b/;
 
@@ -52,14 +43,7 @@ export function asksAboutPeople(text: string): boolean {
   return PERSON.test(normalise(text));
 }
 
-/**
- * At people level, the words that make a question about people (a mention
- * does too), as the service reads them (oversight/ask/router.py,
- * _ABOUT_PEOPLE), and, beside a word that evaluates people, the words that
- * name them as a group ("rank the team", "which assignee is best?", "rank the
- * rest"): "the team's open tickets" is about the work. Team level keeps
- * PERSON alone, unchanged.
- */
+/** At people level, the words that make a question about people (a mention */
 const ABOUT_PEOPLE =
   /\b(?:who|whom|whose|developers?|devs|engineers?|programmers?|testers?|person|people|individuals?|team\s*-?\s*members?|members?|teammates?|colleagues?|staff|employees?|users?|everyone|everybody|anyone|anybody|someone|somebody|performers?|per\s+person|by\s+person|by\s+name|each\s+person|headcount)\b/;
 const PEOPLE_AS_A_GROUP = /\b(?:assignees?|dev|(?:the\s+)?team|squad|the\s+others|the\s+rest|each\s+other)\b/;
@@ -69,14 +53,6 @@ export function asksAboutPeopleAtPeopleLevel(text: string): boolean {
   return ABOUT_PEOPLE.test(words) || (PEOPLE_AS_A_GROUP.test(words) && asksToEvaluate(text));
 }
 
-/**
- * Words that evaluate someone (JO-11): how someone is doing, who follows the
- * process, best, worst, rank, compare. A question about someone that uses one
- * is answered with figures, never declined: their scorecard, several side by
- * side, or everyone in order of how closely they follow the process. The
- * service reads the very same list (oversight/ask/people.py, SCORECARD_WORDS),
- * and the personnel words below (PERSONNEL_WORDS), word for word.
- */
 const EVALUATIVE =
   /\b(?:slow\w*|fast\w*|quick\w*|best|worst|better|worse|good|bad|badly|great|poor(?:ly)?|productiv\w*|unproductive|perform\w*|underperform\w*|effort\w*|hard(?:er|est|ly)?|hard[\s-]?work\w*|slack(?:er|ers|ing|ed)|weak\w*|strong\w*|efficien\w*|inefficien\w*|diligen\w*|careful\w*|conscientious\w*|judge\w*|rating|rated|doing (?:well|badly|ok|okay|fine)|how (?:is|are|was|were|has|have)\b.*\bdoing|sincer\w*|insincer\w*|follow(?:s|ing|ed)?\s+(?:the\s+)?(?:agile|process)\w*|pull(?:s|ing)?\s+(?:their|his|her)\s+(?:own\s+)?weight|struggl\w*|(?:fall(?:s|ing|en)?|fell|running|lagging|is|are|was|were|get(?:s|ting)?|got)\s+behind|need(?:s|ed|ing)?\s+(?:\w+\s+){0,2}?(?:help|support|attention|coaching|mentoring)|mvps?|most\s+valuable|valuable|(?:rock|super)?stars?|standouts?|stand(?:s|ing)?\s+out|outperform\w*|lagg(?:ing|ed|ards?)|lags?|complian\w*|non-?complian\w*|compl(?:y|ies|ied|ying)|adher\w*|deviat\w*|stray\w*|non-?conform\w*|(?:further|furthest|farthest|closest|closer)\s+(?:away\s+)?(?:from|to)\s+(?:the\s+|our\s+)?(?:agile\s+)?process|(?:ignor|break|bend|skirt|flout|disregard)\w*\s+(?:the\s+|our\s+|their\s+)?(?:agile\s+)?(?:process|workflow|rules?)|rank\w*|top|bottom|scorecards?|compar\w*|versus|vs|side[\s-]by[\s-]side)\b/;
 
@@ -84,14 +60,7 @@ export function asksToEvaluate(text: string): boolean {
   return EVALUATIVE.test(normalise(text));
 }
 
-/**
- * Personnel words: firing (sacking, letting go, dismissing, laying off,
- * demoting, replacing), promoting, rewarding (a bonus, a pay rise),
- * deserving, blaming, trusting, an appraisal, and character (lazy, attitude,
- * competence, skill, reliability, and the labels an answer may never use).
- * Answered with the same figures, then "The figures are above; the decision
- * is yours.": the decision about a person is always the admin's.
- */
+/** Personnel words: firing (sacking, letting go, dismissing, laying off, */
 const PERSONNEL =
   /\b(?:fire|fired|fires|firing|sack\w*|dismiss\w*|terminat\w*|let\s+(?:\S+\s+){0,3}?go|laid\s+off|lay(?:s|ing)?\s+(?:\S+\s+){0,3}?off|made\s+redundant|make\s+(?:\S+\s+){0,3}?redundant|redundanc(?:y|ies)|demot\w*|(?:should|could|must|can|do|would|shall)\s+(?:we|i|you)\s+replace|be\s+replaced|replac(?:e|ing)\s+(?:him|her|them)|promot\w*|reward\w*|bonus\w*|appraisal\w*|performance\s+reviews?|pay\s+(?:rise|raise|increase)|(?:get|gets|give|deserves?|earn|earns|got)\s+(?:\S+\s+){0,2}?(?:raise|rise)|deserv\w*|blam\w*|fault\w*|trust\w*|disciplin\w*|probation\w*|lazy|lazi\w*|attitude\w*|competen\w*|incompeten\w*|skill\w*|reliab\w*|unreliab\w*|useless\w*|careless\w*|dishonest\w*|stupid\w*|idiot\w*|hopeless\w*|worthless\w*|pathetic\w*)\b/;
 
@@ -99,10 +68,6 @@ export function asksPersonnel(text: string): boolean {
   return PERSONNEL.test(normalise(text));
 }
 
-/**
- * The ranking and comparing words: alone, beside a count ("top 5 people by breaches", "bottom 3 people by open
- * tickets"), they rank by that count.
- */
 const RANKING_WORD = /^(?:rank\w*|top|bottom|compar\w*|versus|vs|side[\s-]by[\s-]side)$/;
 
 /** Whether the only evaluating words a question holds are ranking words: a raw-count ranking when it names a count. */
@@ -112,11 +77,6 @@ export function ranksOnly(text: string): boolean {
   return found.length > 0 && found.every((word) => RANKING_WORD.test(word)) && !PERSONNEL.test(words);
 }
 
-/**
- * What a question about people asks for, as the service reads it: tickets
- * that have findings, findings by severity (or all of them), or the tickets
- * someone holds.
- */
 export function peopleTopic(text: string): "breach" | "warning" | "finding" | "tickets" | "tickets_with_findings" | null {
   const words = normalise(text);
   if (/\bbreach|\bviolation/.test(words) && /\bwarning/.test(words)) return "finding";
@@ -130,9 +90,7 @@ export function peopleTopic(text: string): "breach" | "warning" | "finding" | "t
   return null;
 }
 
-/*
- * The word lists below are the service's (oversight/ask/router.py), read alike.
- */
+/** The word lists below are the service's (oversight/ask/router.py), read alike */
 
 /** "What is @X's backlog?": their open tickets, as "working on" is their tickets in progress. */
 const BACKLOG = /\b(?:backlog|to[\s-]?do|open work|outstanding|on (?:their|his|her) plate)\b/;
@@ -149,22 +107,8 @@ export function asksAboutOverload(text: string): boolean {
   return OVERLOAD.test(normalise(text));
 }
 
-/**
- * The synonym table for how much work people have (JO-12, G3/G4: never turn
- * an admin away), the service's words (oversight/ask/router.py, _SPARE,
- * _BUSIEST, _DOING) read over the normalised question, which has no
- * punctuation left to end on. The least: nothing to do, room for more, could
- * take more work, the least busy, doing the least, underworked, capacity,
- * available: the open tickets, fewest first, and the members who hold no
- * ticket at all.
- */
 const SPARE_ROOM =
   /\bnothing to do\b|\b(?:spare|free|most) capacity\b|\bcapacity\b|\bbandwidth\b|\bunder-?(?:used|utili[sz]ed|loaded|work\w*|employ\w*|occupied)\b|\b(?:lightest|smallest|least) (?:load|workload)\b|\blightest\b|\bon the bench\b|\broom for more\b|\bavailab(?:le|ility)\b|\bquietest\b|\bfree\s+(?:to|for)\b|\b(?:take|taking|took|handle|pick)\s+(?:on\s+|up\s+)?(?:more|extra|another|additional)\b|\b(?:least|less|not(?:\s+very)?)\s+busy\b|n't(?:\s+very)?\s+busy\b|\bleast\s+loaded\b|\b(?:spare|free)\s+(?:time|cycles?)\b|\blight(?:ly)?\s+(?:on\s+(?:work|load|tickets|tasks)|loaded)\b|\blight\s+(?:work)?load\b|\b(?:got|has|have|had)\s+(?:the\s+)?least\s+on\b/;
-/**
- * The words that only say how little ("the least work", "does the least", "the fewest tasks"), which a figure named
- * beside them makes that figure's (JO-14, the service's _SPARE_HOW_MUCH): "who reopens the least work?" is reopened,
- * "who has the least work in progress?" the work in progress, each fewest first; "who has the least work?" stays.
- */
 const SPARE_HOW_MUCH =
   /\b(?:do|does|doing|did)\s+(?:the\s+)?least\b|\bwork(?:s|ing|ed)?\s+(?:the\s+)?least\b|\bleast\s+(?:work|tasks|to\s+do|going\s+on|on\s+(?:their|his|her)\s+plate)\b|\bfewest\s+tasks\b|\b(?:has|have|got|holds?)\s+(?:the\s+)?(?:least|fewest)$/;
 const SPARE = new RegExp(`${SPARE_ROOM.source}|${SPARE_HOW_MUCH.source}`);
@@ -173,13 +117,6 @@ export function asksAboutSpareCapacity(text: string): boolean {
   return SPARE.test(normalise(text));
 }
 
-/**
- * How much work people have, said the other way round (the JO-12 review, the
- * G4 class), as the service reads it (_NO_ROOM): a qualifier before a word of
- * room ("at full capacity", "the least bandwidth", "isn't available", "can't
- * take on more", "no room for more"), or a heavy load in plain words ("flat
- * out", "maxed out", "overworked", "who has the most on"): the busiest.
- */
 const NO_ROOM =
   /\b(?:no|zero|little|limited|least|full)\s+(?:spare\s+|free\s+)?(?:capacity|bandwidth|room)\b|\b(?:at|near|nearing|reached|reaching|hit|hitting|over|beyond|out\s+of)\s+(?:(?:their|his|her|full)\s+)?capacity\b|\b(?:not|never)\s+(?:very\s+)?available\b|n't\s+(?:very\s+)?available\b|\bunavailable\b|\b(?:can't|cant|cannot|can\s+not|couldn't|could\s+not|unable\s+to)\s+(?:take|handle|pick)\s+(?:on\s+|up\s+)?(?:any\s+)?(?:more|extra|another|additional)\b|\bmaxed(?:\s+out)?\b|\bflat\s+out\b|\bover-?worked\b|\bover-?stretched\b|\b(?:got|has|have|had)\s+(?:the\s+)?most\s+on\b/;
 /** A negation (or "least") before a load word turns it round, as the service reads it. */
@@ -200,22 +137,12 @@ export function loadIn(text: string): Load | null {
   return null;
 }
 
-/**
- * Whether a question's words of room only say how little ("the least work", "does the least"), with no word of room
- * itself ("capacity", "available", "not overloaded"), as the service reads it (_how_little_only): then a figure named
- * beside them is the question's.
- */
 export function saysOnlyHowLittle(text: string): boolean {
   const words = normalise(text);
   return SPARE_HOW_MUCH.test(words) && !SPARE_ROOM.test(words) && !NOT_OVERLOADED.test(words);
 }
 
-/**
- * The most: the busiest, doing the most, the most work, over capacity aside:
- * the open tickets, most first; and where the question says what someone is
- * doing ("doing", "does", "did"; never "to do"), the tickets done in the
- * period, most first, beside them.
- */
+/** The most: the busiest, doing the most, the most work, over capacity aside: */
 const BUSIEST =
   /\bbusiest\b|\bbusy\b|\bmost\s+(?:busy|loaded|work|tasks|going\s+on|on\s+(?:their|his|her)\s+plate)\b|\b(?:do|does|doing|did)\s+(?:the\s+)?most\b|\bwork(?:s|ing|ed)?\s+(?:the\s+)?most\b|\b(?:has|have|got|holds?)\s+(?:the\s+)?most$/;
 const DOING = /(?<!\bto )\b(?:do|does|doing|did)\b/;
@@ -236,11 +163,6 @@ export function asksWhoIsIdle(text: string): boolean {
   return IDLE.test(normalise(text));
 }
 
-/**
- * "How many open tickets are there?", "How many tickets are in progress?": a
- * count of the board's work by status category (the service's _count with
- * `state`); null for any other question.
- */
 export function countStateIn(text: string): "open" | "in_progress" | null {
   const words = normalise(text);
   if (!/\bhow many\b|\bcount\b|\bnumber of\b/.test(words) || !/\b(?:tickets?|issues?|work items?)\b/.test(words)) return null;
@@ -249,19 +171,6 @@ export function countStateIn(text: string): "open" | "in_progress" | null {
   return null;
 }
 
-/**
- * The order a question asks for, for every measure: rates, the ratio and counts (JO-14, the product owner's decision
- * of 13 Nov 2026: answer exactly what was asked), the service's words (oversight/ask/router.py: _MOST, _FEWEST,
- * _order). "most": most, highest, largest, biggest, greatest, maximum, top N, more, higher, larger, bigger, greater,
- * descending, high to low (the figure highest first). "fewest": fewest, least, lowest, smallest, minimum, bottom N,
- * fewer, less, lower, smaller, ascending, low to high (lowest first). Null with no such word: closer to the process
- * first (a count, most first). "At most" and "at least" are thresholds, and "most closely" or "more closely" is how
- * closely someone follows the process: no direction. Which word decides (the service's _direction): a range's first
- * word ("from most to least": most first); "top N", "bottom N", "at the top" and "at the bottom" only where no other
- * direction word stands ("top 3 people with the fewest reopened tickets": fewest); a question that asks both ways
- * ("the most reopened and the fewest stuck"), the word nearest the measure it is answered by (orderNear); else the
- * first.
- */
 export const N_WORDS = String.raw`(?:\d{1,2}|two|three|four|five|six|seven|eight|nine|ten|twenty)`;
 const MOST = String.raw`(?<!\bat )\bmost\b(?!\s+closely)|\bmore\b(?!\s+closely)|\b(?:highest|largest|biggest|greatest|maximum)\b|\b(?:higher|larger|bigger|greater)\b|\bdescending\b|\bhigh\s+to\s+low\b`;
 const FEWEST = String.raw`(?<!\bat )\bleast\b|\b(?:fewest|lowest|smallest|minimum)\b|\b(?:fewer|less|lower|smaller)\b|\bascending\b|\blow\s+to\s+high\b`;
@@ -276,10 +185,6 @@ function directionWords(words: string): { start: number; end: number; kind: Aske
   return [...found(MOST, "most"), ...found(FEWEST, "fewest")].sort((a, b) => a.start - b.start);
 }
 
-/**
- * Which way a question points (the service's _direction), the word nearest `near` (a measure's own words) deciding
- * where it asks both ways.
- */
 export function orderNear(text: string, near: RegExp | null): AskedOrder | null {
   const words = normalise(text);
   const found = directionWords(words);
@@ -305,14 +210,6 @@ export function orderIn(text: string): AskedOrder | null {
   return orderNear(text, null);
 }
 
-/**
- * The other side of following the process (the service's _FURTHER, the JO-14 review): who is further from it,
- * struggling, falling behind or needing help, the worst, the slowest or the weakest, who deviates from or ignores the
- * process, who has trouble with something, and the character words a question may use and an answer never does
- * (laziest, slacking, not pulling their weight). Their figure's order runs the other way (orderFor): with no direction word
- * or "the most", further from the process first; with "the least", "less" or "fewest", closer first. A negation
- * before one ("not struggling", "never needs help", "no trouble with") is not further.
- */
 const FURTHER =
   /\b(?:worst|worse|weak(?:est|er)?|poor(?:est|er|ly)?|bad(?:ly)?|slow(?:est|er|ly)?|underperform\w*|lagg\w*|lags?|struggl\w*|(?:fall(?:s|ing|en)?|fell|running|lagging|is|are|was|were|get(?:s|ting)?|got)\s+behind|need(?:s|ed|ing)?\s+(?:\w+\s+){0,2}?(?:help|support|attention|coaching|mentoring|improv\w*)|troubl\w*|difficult(?:y|ies)|problems?\s+(?:with|in|at|on|over|\w+ing)|mistakes?|(?:further|furthest|farthest)\s+(?:away\s+)?from|deviat\w*|stray\w*|non-?complian\w*|non-?conform\w*|(?:ignor|break|bend|skirt|flout|disregard)\w*\s+(?:the\s+|our\s+|their\s+)?(?:agile\s+)?(?:process|workflow|rules?)|lazy|laz(?:ier|iest|iness)|slack(?:er|ers|ing|ed)|unproductive|inefficien\w*|careless\w*|unreliab\w*|incompeten\w*|useless\w*|hopeless\w*|(?:not|n't|never)\s+(?:\w+\s+)?pull\w*\s+(?:their|his|her)\s+(?:own\s+)?weight)\b/g;
 /** A negation at most two words before a measure's words, or before a word of the other side of the process. */
@@ -328,10 +225,6 @@ export function asksForFewest(text: string): boolean {
   return orderIn(text) === "fewest";
 }
 
-/**
- * The ratio named as one ("open findings per 10 open tickets", "findings per ticket", "the findings rate"), as the
- * service reads it (_RATIO): findings named alone are a count, the people view's ranking by open findings.
- */
 const RATIO = /\bper\s+(?:10|ten)\b|\b(?:findings?|breach(?:es)?|warnings?)\s+(?:per\s+(?:open\s+)?(?:tickets?|issues?)|ratio|rate|density)\b/;
 
 export function namesTheRatio(text: string): boolean {
@@ -381,13 +274,7 @@ export function asksForACount(text: string): boolean {
   );
 }
 
-/**
- * Whether a question asks something of one person in its own words, as the
- * service reads it with one mention (oversight/ask/router.py,
- * asks_of_someone): how they are doing, their backlog or load, what they
- * finished, what they work on or whether they are idle, their tickets or
- * findings. "When will the sprint end?" asks nothing of anyone.
- */
+/** Whether a question asks something of one person in its own words, as the */
 export function asksOfSomeone(text: string): boolean {
   return asksToEvaluate(text) || asksPersonnel(text) || asksForACount(text) || asksWhatTheyWorkOn(text) || FINISHED.test(normalise(text)) || peopleTopic(text) !== null;
 }

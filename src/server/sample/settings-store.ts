@@ -6,16 +6,6 @@ import { NO_OVERRIDES, type BoardOverrides } from "./board-rules";
 import { PROJECT_KEY } from "./catalogue";
 import { customRuleNumber, type CustomRuleRecord } from "./custom-rules";
 
-/*
- * The sample's rule settings (JO-15): in memory, per server process and per
- * board (DEMO, and any other synced board an admin picks), as the service
- * keeps them in its snapshot database: the board's revision, what each change
- * set, the board's own rules (JO-20, every one it ever had, deleted ones
- * too), and the re-check after a save. A restart forgets them, as a demo
- * should. Tests reset them with resetSampleRuleSettings; an end-to-end run sets
- * them back through the page, or with a save that resets every rule.
- */
-
 /** One change to a board's settings, never purged: the audit trail, and what an undo sets back. */
 export interface StoredChange {
   changeId: string;
@@ -29,7 +19,7 @@ export interface StoredChange {
   changes: RuleSettingsFieldChange[];
   /** The board's settings once it was made: only what differs from the catalogue. */
   overrides: BoardOverrides;
-  /** Its own rules once it was made (JO-20), deleted ones too, oldest first. */
+  /** Its own rules once it was made, deleted ones too, oldest first. */
   custom: readonly CustomRuleRecord[];
 }
 
@@ -66,15 +56,11 @@ export function overridesOf(settings: BoardSettings): BoardOverrides {
   return settings.history.at(-1)?.overrides ?? NO_OVERRIDES;
 }
 
-/** The board's own rules as they stand (JO-20), deleted ones too. */
+/** The board's own rules as they stand, deleted ones too. */
 export function customOf(settings: BoardSettings): readonly CustomRuleRecord[] {
   return settings.history.at(-1)?.custom ?? [];
 }
 
-/**
- * The next free number for a custom rule's id of a kind (R for a breach, W for a warning), across every board: one
- * more than the highest any board has ever given, so an id is never given twice, a deleted rule's included.
- */
 export function nextCustomNumber(letter: "R" | "W"): number {
   let highest = 0;
   for (const settings of boards.values()) {

@@ -49,32 +49,6 @@ import {
   type Selected,
 } from "./draft";
 
-/*
- * The question box's editor: a small controlled rich-text field on
- * contenteditable, so a person picked from the @ list stands in the question
- * as a chip (their picture and name), as in Jira and Confluence. The DOM is
- * drawn from the draft (draft.ts) and never edited by the browser: every
- * beforeinput is refused and made into a change of the draft instead, and
- * React draws the result. The one exception is an input method's
- * composition, which is left to the browser while it runs and read back from
- * the DOM when it ends, React's own nodes put back first.
- *
- * WebKit (and at times Chromium) draws no caret, or a wrong one, beside a
- * non-editable inline element. The established remedy, as Slate's: every
- * chip has a run of text on each side, a zero-width space when the run is
- * empty, so there is always a text position to hold the caret; the editor
- * ends with a <br>, so the line after a final chip or line break has a line
- * box; the arrow keys are the model's, so a chip is one step and a
- * zero-width space none; and a press on a chip never puts the caret in it.
- *
- * At people level a press on a chip opens the person's card (JO-13), as
- * Jira's editor does for a mention: the question and its caret stay exactly
- * as they were, and when the card closes (Escape, its close button, a press
- * on the chip again) focus comes back here with the caret just after the
- * chip. Keys typed here never open a card. For anyone else (where no chip is
- * drawn today) a press on a chip puts the caret on its nearer side.
- */
-
 /** What an input method sends while it composes: the browser's own, read back when the composition ends. */
 const COMPOSITION = new Set(["insertCompositionText", "deleteCompositionText", "insertFromComposition", "deleteByComposition"]);
 /** Plain text in: typing, the spelling fixer's replacement, a paste or drop the browser hands over itself, a yank. */
@@ -110,12 +84,6 @@ function chipOf(node: Node | null, root: Node): Element | null {
   return null;
 }
 
-/**
- * The box's DOM read back as the question it shows: runs of text (less the
- * caret holders) and the chips, each the drawn draft's own by its number,
- * whatever else a browser put around them; and where each point given falls
- * in that text (a point in a chip at the chip's edge).
- */
 function readBox(root: HTMLElement, drawn: Draft, points: readonly Point[]): { runs: Run[]; offsets: (number | null)[] } {
   const runs: Run[] = [];
   const offsets: (number | null)[] = points.map(() => null);
@@ -217,12 +185,6 @@ function targetOf(event: InputEvent, root: HTMLElement, drawn: Draft): [number, 
   return start === null || end === null ? null : wholeRange(drawn, start, end);
 }
 
-/**
- * Where the caret is drawn. Just after a line break, browsers misreport a
- * collapsed caret: Chromium gives it no box at all, WebKit the end of the line
- * before. It stands where what follows it does: the next character, the chip
- * after it, or, with nothing after it, the box's closing line break.
- */
 function caretBox(root: HTMLElement, range: Range): DOMRect | null {
   const own = range.getBoundingClientRect();
   const { startContainer: node, startOffset: offset } = range;
@@ -260,9 +222,6 @@ function reveal(root: HTMLElement): void {
   if (typeof range.getBoundingClientRect !== "function") return;
   const caret = caretBox(root, range);
   if (!caret) return;
-  // The caret's whole line box, not the caret: it is shorter than the line, and browsers place it differently
-  // within it. Every line is the field's line height (a chip is shorter than its line), so the line is the
-  // slot of that height the caret's middle falls in.
   const style = getComputedStyle(root);
   const line = parseFloat(style.lineHeight);
   const box = root.getBoundingClientRect();
@@ -309,17 +268,6 @@ function putBack(root: HTMLElement, drawn: Drawn): void {
   if (now.length !== drawn.nodes.length || now.some((node, index) => node !== drawn.nodes[index])) root.replaceChildren(...drawn.nodes);
 }
 
-/**
- * A person in the question: their picture and name on the neutral pill, as
- * the answer marks them, on the text's baseline and shorter than its line,
- * never split across lines (a long name is cut short; the person's card,
- * JO-13, names them in full). Not editable: it goes whole or not at all. At
- * people level resting on it opens the person's card and a press opens and
- * pins it, the question and its caret unchanged; the pill takes the pressed
- * ground while the pointer is on it and while its card is open, as the
- * answer's pills do. A screen reader reads the name in the sentence; the
- * picture is decorative.
- */
 function Chip({ person, index, selected, onReturn }: { person: Person; index: number; selected: boolean; onReturn: (index: number) => void }) {
   return (
     <PersonCardChip person={person} onReturnFocus={() => onReturn(index)}>
@@ -442,8 +390,6 @@ export function QuestionEditor({ handle, draft, placeholder, labelledBy, describ
   const place = (selected: Selected) => {
     const root = box.current;
     if (!root) return;
-    // Noted first: a selection put in the box while focus is elsewhere moves focus into it (Chromium), and the box's own
-    // focus handling puts back the caret it has noted (a card's "Ask about" for someone already in the question).
     last.current = selected;
     select(root, drawn.current, selected);
     reveal(root);
@@ -526,9 +472,6 @@ export function QuestionEditor({ handle, draft, placeholder, labelledBy, describ
     event.preventDefault();
     const root = box.current;
     if (!root) return;
-    // Only keys pressed in the box edit the question. Safari edits at the selection wherever focus is, so with focus
-    // in a person's pinned card (a press on a chip leaves the caret in the box) a key pressed there would otherwise
-    // change the question unseen (JO-13).
     if (!DRAGS.has(event.inputType) && !root.contains(root.ownerDocument.activeElement)) return;
     catchUp();
     const from = drawn.current;
@@ -544,8 +487,6 @@ export function QuestionEditor({ handle, draft, placeholder, labelledBy, describ
       commit(replaceRange(from, start, end, "\n"), "type", selected);
     } else if (type in DELETIONS) {
       const [direction, unit] = DELETIONS[type];
-      // The browser's own range where it names one (it knows words and lines as they are laid out); one that holds
-      // nothing of the question (only a caret holder) means the chip beside the caret.
       const named = start === end ? targetOf(event, root, from) : null;
       const range = named && named[0] !== named[1] ? named : deletionRange(from, selected, direction, unit);
       if (range) commit(replaceRange(from, range[0], range[1], ""), "delete", selected);
@@ -618,7 +559,7 @@ export function QuestionEditor({ handle, draft, placeholder, labelledBy, describ
       if (event.key !== "Tab") event.preventDefault();
       return;
     }
-    // Typing never opens a person's card, even with the pointer resting on a chip (JO-13).
+    // Typing never opens a person's card, even with the pointer resting on a chip.
     noteTyping();
     // The keys belong to an input method until it is done.
     if (event.nativeEvent.isComposing || event.keyCode === 229) return;
@@ -660,8 +601,6 @@ export function QuestionEditor({ handle, draft, placeholder, labelledBy, describ
     if (!root || !chip || !root.contains(chip) || event.button !== 0) return;
     // A chip is never entered, dragged or half selected by a press.
     event.preventDefault();
-    // At people level a plain press opens the person's card (the chip's own click, JO-13): the question, its caret and
-    // its focus stay exactly as they were. Shift and a press still reach the selection to the chip's nearer side.
     if (peopleLevel && !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) return;
     // Anywhere else the press puts the caret beside the chip, on the nearer side.
     const mention = drawn.current.mentions[Number(chip.getAttribute("data-chip"))];
@@ -672,10 +611,6 @@ export function QuestionEditor({ handle, draft, placeholder, labelledBy, describ
     place({ anchor: event.shiftKey ? current(root).anchor : at, focus: at });
   };
 
-  /**
-   * A chip's card has closed with focus to give back (JO-13): the box takes it, the caret just after that chip, as
-   * Jira's editor leaves it after a mention's card.
-   */
   const returnAfter = (index: number) => {
     const root = box.current;
     if (!root) return;
@@ -691,8 +626,6 @@ export function QuestionEditor({ handle, draft, placeholder, labelledBy, describ
   const focus = () => {
     const root = box.current;
     if (!root || pending.current || performance.now() - pressedAt.current < POINTER_FOCUS_MS) return;
-    // Focus from the keyboard (Tab, the / shortcut) puts the caret back where it was, or at the end; a browser may
-    // then place its own (Chromium at the start), so it is put back once more before the next frame or key.
     const from = drawn.current;
     const target = last.current ? { anchor: snapPoint(from, last.current.anchor), focus: snapPoint(from, last.current.focus) } : caretAt(from.text.length);
     focusTarget.current = target;
@@ -814,8 +747,6 @@ export function QuestionEditor({ handle, draft, placeholder, labelledBy, describ
           setComposingShown(true);
         }}
         onCompositionEnd={() => {
-          // Chromium ends a composition after its last change, Safari before it: read it back at Safari's next
-          // input, or once this event is done, and before any other key or change either way.
           if (settling.current !== null) window.clearTimeout(settling.current);
           settling.current = window.setTimeout(() => settleLatest.current(), 0);
         }}

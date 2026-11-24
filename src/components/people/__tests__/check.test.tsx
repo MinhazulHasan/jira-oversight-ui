@@ -9,15 +9,6 @@ import type { DirectoryEntry } from "@/lib/api/schemas";
 import directoryJson from "../../../../docs/sample-responses/people-directory.json";
 import { pickerGroups, PersonPicker } from "../person-picker";
 
-/*
- * The JO-11 final check's finding on the person picker (comparison off), with
- * the test that would have caught it: as soon as the list opened, the field's
- * aria-activedescendant named a row that was not there (axe: critical
- * aria-valid-attr-value), and no row was highlighted. A browser fits the
- * list's height once it is laid out, which draws the list a second time on
- * its own; the rows' ids moved then. Here the height is fitted the same way.
- */
-
 vi.mock("@/components/ask/mention-menu", async (importOriginal) => {
   const actual = await importOriginal<typeof MentionMenu>();
   const { useLayoutEffect, useState } = await import("react");

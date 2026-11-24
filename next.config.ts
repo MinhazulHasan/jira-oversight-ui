@@ -1,10 +1,5 @@
 import type { NextConfig } from "next";
 
-/*
- * Headers every response carries, pages, API and static files alike. The
- * Content Security Policy is not here: it needs a fresh nonce per request, so
- * src/proxy.ts sets it on pages.
- */
 const securityHeaders = [
   // Filtered views put issue keys and filters in the URL; none of it should leave with a click.
   { key: "Referrer-Policy", value: "no-referrer" },
@@ -22,8 +17,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // The Docker image (Dockerfile) and the IIS pack (jira-oversight-sys/deploy/iis/Publish-Dashboard.ps1) build a
-  // self-contained server with STANDALONE_OUTPUT=1; `next dev` and `next start` stay as they were.
   output: process.env.STANDALONE_OUTPUT === "1" ? "standalone" : undefined,
   // The floating dev badge sits over the page in every screenshot.
   devIndicators: false,

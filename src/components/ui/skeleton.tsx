@@ -10,11 +10,7 @@ export interface SkeletonProps {
   still?: boolean;
 }
 
-/**
- * A placeholder in the final shape of what it stands for, so nothing moves
- * when the content arrives. Decorative: wrap a group of them in
- * SkeletonGroup, which tells assistive technology what is loading.
- */
+/** A placeholder in the final shape of what it stands for, so nothing moves when the content arrives. */
 export function Skeleton({ className, style, still = false }: SkeletonProps) {
   return <span aria-hidden className={cn("skeleton block", still && "skeleton-still", className)} style={style} />;
 }
@@ -30,10 +26,7 @@ export function SkeletonText({ lines = 3, className }: { lines?: number; classNa
   );
 }
 
-/**
- * A region that is loading: one status message for screen readers ("Loading
- * findings") over any number of silent placeholder shapes.
- */
+/** A region that is loading. */
 export function SkeletonGroup({
   label,
   children,

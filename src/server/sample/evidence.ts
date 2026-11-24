@@ -11,10 +11,6 @@ export interface Threshold {
   n: number;
 }
 
-/**
- * The `pct` percentile of the time finished work spent in each open status over the last 180 days, measured on
- * closed intervals; a status with too little history has none, and its warning stays silent, as the live engine's.
- */
 export function stuckThresholds(world: World, pct: number): Map<StatusName, Threshold> {
   const thresholds = new Map<StatusName, Threshold>();
   const since = world.syncAt - HISTORY_DAYS * DAY;
@@ -29,22 +25,12 @@ export function stuckThresholds(world: World, pct: number): Map<StatusName, Thre
   return thresholds;
 }
 
-/*
- * What a finding shows as its evidence, the way rules/checks.py writes it:
- * a metric, a status change, the status an issue was created in, and the
- * moment work started. Shared by the catalogue's rules (engine.ts) and a
- * board's own (custom-checks.ts, JO-20), so a finding reads alike whichever
- * kind of rule raised it.
- */
+/** What a finding shows as its evidence, the way rules/checks.py writes it: */
 
 export const hours = (from: number, to: number) => (to - from) / HOUR;
 export const fixed1 = (value: number) => round1(value).toFixed(1);
 export const fixed2 = (value: number) => round2(value).toFixed(2);
 
-/**
- * A length of time in a finding's message, as the service says it (rules/checks.py `_duration`): in days with one
- * decimal from 48 hours, else in hours with one decimal ("15.0 days", "26.4 h").
- */
 export const duration = (value: number) => (value >= 48 ? `${(value / 24).toFixed(1)} days` : `${value.toFixed(1)} h`);
 
 export function metric(label: string, value: number | string | null, unit: EvidenceItem["unit"]): EvidenceItem {

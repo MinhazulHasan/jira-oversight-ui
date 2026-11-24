@@ -6,13 +6,6 @@ import { KeyValueList } from "@/components/ui/key-value";
 
 import { RangeBars, type RangeRow } from "../range-bars";
 
-/*
- * Time in status at any width (JO-13m): beside each status and its three
- * figures on a wide frame; below 42rem, each status's bar on a line of its
- * own under one scale, as BarList's stacked rows. Nothing is cut short, and a
- * reader of the table hears each status and figure once.
- */
-
 const ROWS: RangeRow[] = [
   { id: "todo", label: "To Do", detail: "Backlog", count: 319, median: 161.6, p75: 396, p90: 533.3 },
   { id: "progress", label: "In Progress", detail: "Development", count: 284, median: 96.4, p75: 174.4, p90: 336.4 },

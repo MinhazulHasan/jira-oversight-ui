@@ -3,14 +3,6 @@ import { findingsSearchParams } from "@/lib/api/params";
 import { UNNAMED_ACCOUNT, type PersonCard, type PersonCardProcess, type ScorecardDays } from "@/lib/api/schemas";
 import { formatCount } from "@/lib/format";
 
-/*
- * The person card (JO-13) in words and links: what its lines say, where its
- * actions lead, how long a ticket has been in progress. Pure functions, so
- * every phrase is tested without a browser. The card states facts about
- * tickets, next to the whole board's; it never rates anyone, and its marks
- * are drawn in the neutral inks, as the scorecard's are.
- */
-
 /** The period a card reads, from a page's own: 30, 90 or 180 days as the scorecard reads them, 90 for anything else. */
 export function cardDays(days: number): ScorecardDays {
   return days === 30 || days === 180 ? days : 90;
@@ -41,14 +33,6 @@ export interface HeaderLine {
   title: string;
 }
 
-/**
- * "Holds 13 open tickets on Demo project", "No open tickets on Demo
- * project" (they hold only finished ones), or "Member of Demo project · no
- * tickets" (a member who holds none of the board's tickets). The board by
- * its name, as the top bar and the brief name it ("on AILED"); its key is in
- * the tooltip. The count is of open tickets: GET /people's and the
- * scorecard's figure, Epics left out.
- */
 export function headerLine(card: Pick<PersonCard, "membership" | "work" | "board">, locale?: string): HeaderLine {
   const board = card.board.name || card.board.key;
   const titled = (text: string) => ({ text, title: board === card.board.key ? text : `${text} (${card.board.key})` });
@@ -62,21 +46,11 @@ export function headerLine(card: Pick<PersonCard, "membership" | "work" | "board
   return { lead: "Holds ", figure, middle, board, tail: "", ...titled(`Holds ${figure}${middle}${board}`) };
 }
 
-/**
- * The process meter's sentence, as the scorecard says it: "Closer to the
- * process than the board on 5 of 8 measures." The second figure counts the
- * measures they were compared on (closer, level or further), so the card
- * and the People page say the same.
- */
 export function processSentence(process: PersonCardProcess, locale?: string): string {
   const parts = processSentenceParts(process, locale);
   return `${parts.lead} on ${parts.closer} of ${parts.compared} ${parts.noun}.`;
 }
 
-/**
- * The sentence in its parts, so the card can set its two figures in Plex
- * Mono: "Closer to the process than the board", "5", "8", "measures".
- */
 export function processSentenceParts(process: PersonCardProcess, locale?: string): { lead: string; closer: string; compared: string; noun: string } {
   const compared = process.closer + process.level + process.further;
   return {
@@ -121,14 +95,6 @@ export function meterSummary(process: PersonCardProcess, locale?: string): strin
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
-/**
- * How long a ticket has been in progress, up to `asOf`: now, on the same
- * clock as the card's last activity, or the last sync once that is stale
- * (the card then says so): "for 3 days", "for 1 day", "for 5 hours", "for
- * less than an hour". Whole units, rounded down. Null when the
- * start is not known (the contract allows it, a synced ticket never has it):
- * the row then says no time at all.
- */
 export function inProgressFor(since: string | null, asOf: string, locale?: string): string | null {
   if (since === null) return null;
   const span = Math.max(0, Date.parse(asOf) - Date.parse(since));
@@ -146,13 +112,6 @@ export function moreText(more: number, locale?: string): string | null {
   return more > 0 ? `and ${formatCount(more, { locale })} more` : null;
 }
 
-/**
- * The findings line's label: what its counts cover, said where everyone sees
- * it (not only in a tooltip, which touch and the keyboard never get). They
- * are the open findings on every ticket the person holds, done ones too, as
- * Findings filtered to them lists them, so they can outnumber the open
- * tickets many times; the scorecard says the same of its link to them.
- */
 export const FINDINGS_LABEL = "Open findings on all their tickets";
 
 /** The findings line's tooltip, the scope said in full. */
@@ -171,14 +130,6 @@ export function findingsText(count: number, severity: "breach" | "warning", loca
 
 /* -------------------------------------------------------- other boards -- */
 
-/**
- * How many of the other boards fit whole on the card's one line, in order:
- * all of them when they fit beside "Also on"; else as many as fit with room
- * left for "+N more" after them; at least one, however narrow the line (it
- * then ends in an ellipsis). `lead` is the width "Also on" takes, `widths`
- * each board's (its separator included), `more` the width "+N more" takes
- * and `room` the line's. Widths in CSS pixels, so half a pixel is allowed.
- */
 export function boardsThatFit(lead: number, widths: readonly number[], more: number, room: number): number {
   const whole = lead + widths.reduce((sum, width) => sum + width, 0);
   if (whole <= room + 0.5) return widths.length;

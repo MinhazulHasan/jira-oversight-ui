@@ -3,20 +3,6 @@ import { expect, test, type APIRequestContext, type Locator, type Page } from "@
 
 import { expectQuestion, questionBox, questionText } from "./question";
 
-/*
- * The person card (JO-13), end to end on the sample server: sign-in is off
- * there, so the reader is at people level, as an admin is (the sign-in suite
- * holds a user to team level, where there is no card). Resting on a name
- * opens the card after 350 ms; it stays while the pointer is on the name or
- * the card and closes after both; a press pins it, focus inside, and Escape
- * gives focus back; one card at a time; every surface that names someone;
- * a bottom sheet on a phone; nothing moves while the figures load; axe on
- * the open card in both themes. A chip in Ask's question box (the product
- * owner's own example, 12 Nov 2026): a click opens and pins its card with the
- * question untouched, Escape gives the caret back just after the chip, and
- * Enter still asks; nothing typed ever opens a card.
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const BREACH_ID = "0b7b3b0f61c477e61699982f24892735";
 const CARD = /\/api\/oversight\/people\/p[0-9a-f]{12}\/card(\?.*)?$/;
@@ -35,12 +21,6 @@ async function landmarkProblems(page: Page) {
   return results.violations.map((violation) => ({ id: violation.id, targets: violation.nodes.map((node) => node.target.join(" ")) }));
 }
 
-/**
- * The pointer moved at `speed` px/s by the clock, as a hand moves it: in a straight line, or along a curve whose
- * middle is `bow` px off it (positive: to the left of the way, which on a way down to a card on the right is away
- * from the card). Each step goes where the pointer would be by now, every 16 ms or as often as the browser takes a
- * move, so a slow browser is not a slow hand.
- */
 async function glide(page: Page, from: { x: number; y: number }, to: { x: number; y: number }, speed = 600, bow = 0) {
   const chord = Math.hypot(to.x - from.x, to.y - from.y);
   const control = { x: (from.x + to.x) / 2 - (2 * bow * (to.y - from.y)) / chord, y: (from.y + to.y) / 2 + (2 * bow * (to.x - from.x)) / chord };
@@ -110,11 +90,6 @@ const nameIn = (scope: Locator | Page, name: string) => scope.locator(`[data-per
 const cardOf = (page: Page, name: string) => page.getByRole("dialog", { name });
 /** Waits for the card's figures. */
 const ready = (card: Locator) => expect(card.locator("[data-person-card]")).toHaveAttribute("data-card-state", "ready");
-/**
- * Waits for a card beside a name to stand where Radix places it. Radix measures it off the page first (above the
- * window), and a card opened again, its figures already read, is ready and names its side before then: its box read
- * in that moment (where to move the pointer, where it stands) is off the page (JO-14).
- */
 const placed = (card: Locator) =>
   expect
     .poll(async () => {
@@ -132,10 +107,6 @@ function watchAsks(page: Page): unknown[] {
   return bodies;
 }
 
-/**
- * Where the page is, by meaning: its path and its query decoded. The Ask page writes its question back into the
- * address in its own form ("+" for "%20"), at a moment of its own, so two raw addresses can differ for the same page.
- */
 function whereIs(page: Page): string {
   const url = new URL(page.url());
   return `${url.pathname}?${[...url.searchParams].map(([key, value]) => `${key}=${value}`).join("&")}`;
@@ -327,8 +298,6 @@ test.describe("on a desktop", () => {
       expect(Math.round(box.width)).toBe(340);
       expect(box.y).toBeGreaterThanOrEqual(0);
       expect(box.y + box.height).toBeLessThanOrEqual(900);
-      // No words cut flat at the foot of their own line box (the p and g of "In progress" under a label as tall as its
-      // type): every element that clips its text is at least 1.2 times its type's size tall, as Inter's descenders need.
       await expect(card.locator("[data-card-ticket]").first()).toBeVisible();
       const clipped = await card.evaluate((root) =>
         [...root.querySelectorAll<HTMLElement>("*")].flatMap((element) => {
@@ -449,8 +418,6 @@ test.describe("on a desktop", () => {
     await page.keyboard.type(" Really");
     await expectQuestion(box, `Is @${lead.name} on track? Really`);
 
-    // The chip again, twice: open, then closed, the caret just after it. Space still types a space there, and
-    // Backspace beside the chip still takes it whole.
     await chip.click();
     await expect(card).toBeFocused();
     await chip.click();
@@ -467,8 +434,6 @@ test.describe("on a desktop", () => {
   });
 
   test("keys pressed in a pinned card never change the question: a chip's card, and a pill's after typing in the box", async ({ page, request }) => {
-    // Regression: Safari types at the selection wherever focus is, and a press on a chip leaves the caret in the box,
-    // so x, Space, Backspace and Enter pressed in the card changed the question unseen (Chromium ignored them).
     const asks = watchAsks(page);
     const [lead] = await holders(request);
     const chip = await askWithChip(page, lead);
@@ -522,8 +487,6 @@ test.describe("on a desktop", () => {
   });
 
   test("Ask about from a card on the Ask page: the person joins the question being written, the answer and the address stay", async ({ page, request }) => {
-    // Regression: the card's link went to /ask?about=<id>, which dropped the question: the answer left, the box was
-    // emptied and its draft lost, and a toast said the person was in the question. Someone already in it got a second chip.
     const asks = watchAsks(page);
     const [lead] = await holders(request);
     const first = lead.name.split(" ")[0];
@@ -823,9 +786,6 @@ test.describe("on a phone", () => {
   });
 
   test("Backspace in the sheet keeps the page: the answer, and the question being written, stay", async ({ page, request }) => {
-    // Regression: WebKit takes Backspace pressed outside a field for Back. With a pill's sheet open (or a chip's), it
-    // left Ask for the page before, and the answer and the question went with it; twice reached a blank page. The
-    // pinned card kept the key; the sheet did not.
     const asks = watchAsks(page);
     const [lead] = await holders(request);
     /** A mark on the page's window: anything but leaving the page (for the one before it) keeps it. */
@@ -912,8 +872,6 @@ test.describe("reaching a card, leaving it, and its failures (on a desktop)", ()
     await glide(page, start, await middle(card.getByRole("heading", { name: who })));
     await page.waitForTimeout(300);
     await expect(card).toBeVisible();
-    // Back on the name, then down to the ways on at the card's foot, across the names below, at 600 px/s: it stays,
-    // and no other card opens on the way.
     await glide(page, await middle(card.getByRole("heading", { name: who })), start);
     const findings = card.getByRole("link", { name: "Open findings" });
     await glide(page, start, await middle(findings));

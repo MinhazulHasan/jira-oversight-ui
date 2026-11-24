@@ -13,22 +13,9 @@ import { usePageFindingClock } from "./clock";
 import { findingAgeMs, findingStatus, formatAge, NO_ONES_LABEL, noOnesReason, SETTINGS_CHANGED_TITLE, STATUS_LABEL } from "./model";
 import type { FindingsFilters, FindingsSort } from "./url-state";
 
-/*
- * The API sorts and pages the findings, so the table must never reorder a
- * page itself: every sortable column compares rows as equal (the table then
- * keeps the order it was given) and leaves empty values where the API put
- * them. A header click only changes the sort in the URL, and the API answers.
- */
 const keepServerOrder = () => 0;
 const SERVER_SORTED = { sortFn: keepServerOrder, sortUndefined: false } as const;
 
-/**
- * The rule's title, with the column's whole width, then its id and why it
- * fired on this issue in the finding's own words ("Logged 11.0 h against an
- * estimate of 4.0 h"), so a row answers "why is this a breach?" without a
- * click. The evidence behind it is in the drawer. (SQA: with the id before
- * it on one line, a title read "Effort b…" at a MacBook's width.)
- */
 function RuleCell({ finding }: { finding: Finding }) {
   return (
     <span className="flex min-w-0 flex-col gap-0.5" title={`${finding.rule_id} · ${finding.rule_title}\n${finding.message}`}>
@@ -71,8 +58,6 @@ function IssueCell({ finding }: { finding: Finding }) {
 function EpicCell({ finding }: { finding: Finding }) {
   if (finding.epic_key === null) return <span className="text-ink-low">No epic</span>;
   const title = finding.epic_title ?? finding.epic_key;
-  // Two lines before it is cut short, like the rule and the issue beside it; the whole title is in its tooltip.
-  // A word longer than the column is hyphenated where the language allows ("Perfor-mance"), broken only otherwise.
   return (
     <span
       className="line-clamp-2 whitespace-normal break-words hyphens-auto text-ink-mid"
@@ -83,13 +68,6 @@ function EpicCell({ finding }: { finding: Finding }) {
   );
 }
 
-/**
- * Who the issue is assigned to now. A sprint finding, and one whose ticket has
- * left the synced data, belong to no one, so they say nothing rather than
- * "Unassigned" (which the Unassigned filter would not find). At people level
- * the name opens the person's card (JO-13): the pointer's way in, the row
- * keeping its one tab stop; the drawer's assignee is the keyboard's.
- */
 function AssigneeCell({ finding }: { finding: Finding }) {
   const reason = noOnesReason(finding);
   if (reason !== null) {
@@ -115,11 +93,6 @@ function AgeCell({ finding }: { finding: Finding }) {
   return <span className="text-ink-mid">{formatAge(findingAgeMs(finding, clock.now), locale)}</span>;
 }
 
-/**
- * "Open for", and under it "at last sync" once the board's data is stale: an
- * open finding's age then stops at that sync, while "First seen 9 d ago"
- * beside it reads the reader's clock, so the two never seem to disagree.
- */
 function OpenForHeader() {
   const clock = usePageFindingClock();
   if (!clock.stale || clock.syncedAt === null) return <>Open for</>;
@@ -142,8 +115,6 @@ function StateCell({ finding }: { finding: Finding }) {
     );
   }
   if (status === "settings_changed") {
-    // Two short lines in the column: "Closed", then why, read whole as "Closed: rule settings changed" (JO-15). The
-    // column holds "settings changed" under the word, never cut short; "rule" is heard, and the tooltip says it all.
     return (
       <span className="flex flex-col leading-tight" title={SETTINGS_CHANGED_TITLE} data-state="settings_changed">
         <StateDot tone="neutral" size="sm" label={<span className="text-ink-mid">Closed<span className="sr-only">:</span></span>} />{" "}
@@ -162,11 +133,6 @@ function StateCell({ finding }: { finding: Finding }) {
 
 const col = dataTableColumns<Finding>();
 
-/**
- * Severity, rule, issue, epic, assignee, first seen, open for and state;
- * every sortable header is an API sort. The API cannot sort by assignee, so
- * that header does not offer to.
- */
 export const FINDING_COLUMNS: DataTableColumn<Finding>[] = col.columns([
   col.accessor("severity", {
     header: "Severity",
@@ -182,8 +148,6 @@ export const FINDING_COLUMNS: DataTableColumn<Finding>[] = col.columns([
     cell: ({ row }) => <RuleCell finding={row.original} />,
     sortDescFirst: false,
     ...SERVER_SORTED,
-    // No width: the rule takes what the others leave, so its title reads whole, on two lines at most, at a MacBook's
-    // width (about 11rem at 1280 px with the rail open, 18rem at 1440 px; SQA).
   }),
   col.accessor((finding) => finding.issue_key ?? undefined, {
     id: "issue_key",
@@ -208,9 +172,6 @@ export const FINDING_COLUMNS: DataTableColumn<Finding>[] = col.columns([
     header: "Assignee",
     cell: ({ row }) => <AssigneeCell finding={row.original} />,
     enableSorting: false,
-    // The picture (20 px and its gap) and about 10 characters of a name at 1440 px; a longer one is cut short,
-    // whole in its tooltip. A plain share: a column's width that mixes a share and a length (calc) is ignored, and
-    // the column then split what was left with the rule (SQA: the rule's title read "Effort b…").
     meta: { width: "9%" },
   }),
   col.accessor("first_seen_at", {
@@ -233,8 +194,6 @@ export const FINDING_COLUMNS: DataTableColumn<Finding>[] = col.columns([
     cell: ({ row }) => <StateCell finding={row.original} />,
     sortDescFirst: true,
     ...SERVER_SORTED,
-    // The header and its sort arrow, and a finding closed by a settings change (JO-15): "settings changed" under its
-    // dot's word, whole, in WebKit as in Chromium.
     meta: { width: "8.5rem" },
   }),
 ]);

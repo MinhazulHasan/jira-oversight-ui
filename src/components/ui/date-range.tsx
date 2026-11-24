@@ -48,11 +48,6 @@ export interface DateRangeProps {
   className?: string;
 }
 
-/**
- * The time filter every reader reaches for first, as preset rows (nobody
- * fights a calendar grid for "last 30 days"). Each row says where it starts,
- * so "Last 30 days" can be checked against a date.
- */
 export function DateRange({ label, value, onValueChange, now, size = "md", className }: DateRangeProps) {
   const clock = useNow();
   const reference = now ?? clock;

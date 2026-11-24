@@ -11,15 +11,7 @@ import { HOUR, WEEK, addDays, iso, zonedDay } from "./time";
 import { verify, type VerifiableFacts } from "./verify";
 import { workItems, type Issue } from "./world";
 
-/**
- * The weekly briefing (Planning.md Phase 7), built as oversight/insights/weekly.py
- * specifies: candidates computed in code, scored as issues affected × severity
- * weight × week-on-week trend, the top five written up one sentence each, and
- * the whole text checked against the candidates before it is shown.
- *
- * The sample writes it from the latest rules run, so its figures match every
- * other page; a live briefing is written on Monday and dated by generated_at.
- */
+/** The weekly briefing (Planning.md Phase 7), built as oversight/insights/weekly.py */
 
 const SEVERITY_WEIGHT = { breach: 3, warning: 2, info: 1 } as const;
 const TONE = { breach: "blatantly_bad", warning: "trending_bad", info: "neutral" } as const;
@@ -180,11 +172,6 @@ function hotSpotDrafts(dataset: Dataset): Draft[] {
     });
 }
 
-/**
- * Rules first seen on more issues this week than last (weekly.py's rising_rule): the board's rules (JO-20: its own
- * among them, by their own titles, once they have run through both weeks; a rule added this week did not fire last
- * week because it was not there, which is not a rise).
- */
 function risingRules(dataset: Dataset): Draft[] {
   const { now } = dataset;
   const rules = dataset.rules

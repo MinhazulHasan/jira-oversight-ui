@@ -123,8 +123,6 @@ describe("the Findings list", () => {
     expect(screen.queryByRole("button", { name: "Clear filters" })).not.toBeInTheDocument();
     // The button went with the filters; focus goes to the search, not to the page.
     expect(screen.getByRole("searchbox", { name: "Search findings" })).toHaveFocus();
-    // Typing 13 characters through userEvent plus the search debounce takes about
-    // 5 s when the whole suite runs in parallel; the default 5 s limit was flaky.
   }, 20_000);
 
   it("sorts through the API: a header click writes the sort and the table keeps the API's order", async () => {

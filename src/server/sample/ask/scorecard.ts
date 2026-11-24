@@ -26,20 +26,6 @@ import { asksAboutTheFurtherSide, NEGATION_BEFORE, normalise, orderNear, type As
 import { boardPeopleFacts, boardPeoplePieces } from "./people";
 import type { ScriptResult } from "./scripts";
 
-/*
- * Ask's scorecards at people level, in sample mode (JO-11), as the service's
- * catalogue path answers them (oversight/ask/people.py and scorecards.py): a
- * question that evaluates someone is answered with figures, never declined.
- * One person, or several side by side: their scorecards
- * (oversight_person_scorecard). No one named ("who is best on the board?"):
- * everyone in order of how closely they follow the process
- * (oversight_people_compare). A personnel question gets the same figures,
- * then the decision sentence. Every such answer ends with the caveat. The
- * facts' columns and the answer's words are the service's own, so the sample
- * reads as the live product does; the answer orders and summarises, and never
- * labels anyone or calls anyone "best".
- */
-
 type Row = Record<string, FactCell>;
 
 interface Column {
@@ -107,10 +93,6 @@ const OVERALL_COLUMNS: Column[] = [
   { key: "standing", label: "Standing", kind: "text" },
 ];
 
-/**
- * How the facts are read: the service's own words (oversight/ask/scorecards.py, _READING and _OVERALL_READING),
- * each column named in plain lower-case words mid-sentence, and never "X is X" (JO-12, G9).
- */
 const READING =
   "by each ticket's current assignee, Epics left out; a rate's value is a percentage of its denominator, a count's " +
   "value is the count, and open findings per 10 open tickets is the open breaches and warnings on the person's open " +
@@ -125,7 +107,7 @@ const OVERALL_READING =
   "and warnings on the person's open tickets for every 10 of those tickets, compared only when it rests on enough " +
   "tickets";
 
-/** The work nobody holds, as a ranking by a count names it after the people (JO-12, G5): "148 open tickets". */
+/** The work nobody holds, as a ranking by a count names it after the people: "148 open tickets". */
 export const UNASSIGNED_WORDS: Record<RankedCount, readonly [string, string]> = {
   open_tickets: ["open ticket", "open tickets"],
   in_progress: ["ticket in progress", "tickets in progress"],
@@ -135,7 +117,7 @@ export const UNASSIGNED_WORDS: Record<RankedCount, readonly [string, string]> = 
 /** A measure named mid-sentence, as a reader writes it: "by reopened after Done", never "by Reopened after Done". */
 const named = (label: string) => label.slice(0, 1).toLowerCase() + label.slice(1);
 
-/** "the last 90 days (6 Aug 2026 to 4 Nov 2026)": the days as the service writes them, readable on both sides of the Atlantic. */
+/** "the last 90 days ( to )": the days as the service writes them, readable on both sides of the Atlantic. */
 function periodWords(set: ScorecardSet): string {
   return `the last ${set.period.days} days (${spelledDay(set.period.from)} to ${spelledDay(set.period.to)})`;
 }
@@ -201,12 +183,7 @@ export function scorecardFacts(dataset: Dataset, ref: string, people: readonly P
 
 /** The measures a comparison can be over: those compared with the board (rates and the ratio). */
 export type ComparedKey = Exclude<ScorecardMeasureKey, "open_tickets" | "in_progress" | "done_in_period">;
-/**
- * The counts everyone can be put in order by, most first (whose backlog is
- * biggest, who has the most in progress, who finished the most), or fewest
- * first. The open tickets are the scorecard's (Epics left out), so the
- * biggest backlog is counted as one person's backlog is.
- */
+/** The counts everyone can be put in order by, most first (whose backlog is */
 export type RankedCount = "open_tickets" | "in_progress" | "done_in_period";
 /** The counts of now, which no period bounds: their comparison takes no days, and their answer states none. */
 const NOW_COUNTS: readonly RankedCount[] = ["open_tickets", "in_progress"];
@@ -215,10 +192,6 @@ export const OVERALL = "overall";
 /** The rates of now: the open tickets stuck now, the open findings per 10 open tickets now (the service's NOW_MEASURES). */
 const NOW_MEASURES: readonly string[] = ["stuck_now", "open_findings_per_10"];
 
-/**
- * The order a comparison is asked for (JO-14, the service's oversight_people_compare `order`): "closer" (the
- * default, no direction word) closer to the process first, "most" the figure highest first, "fewest" lowest first.
- */
 export type CompareOrder = "closer" | "most" | "fewest";
 
 /** How a comparison is asked for beyond its measure: its order, a question's "top N" or "bottom N", the people asked about. */
@@ -231,33 +204,17 @@ export interface CompareOptions {
 
 const isCount = (measure: string) => measure === "open_tickets" || measure === "in_progress" || measure === "done_in_period";
 
-/**
- * The order a comparison is put in, as its facts record it (the service's effective_order): as asked, but a count
- * has no closer side, so "closer" is most first; and overall the most measures closer to the process first is the
- * closer order itself, so "most" is "closer" there.
- */
 export function effectiveOrder(measure: string, order: CompareOrder): CompareOrder {
   if (order === "fewest") return "fewest";
   if (isCount(measure)) return "most";
   return measure === OVERALL || order === "closer" ? "closer" : "most";
 }
 
-/**
- * The order's words in a comparison's first sentence (the service's order_words): a rate or the ratio "closest to
- * the process first", "highest first" or "lowest first"; a count, and the overall number of measures closer, "most
- * first" or "fewest first". It reports the order, and never calls the highest worst or the lowest best.
- */
 export function orderWords(measure: string, order: CompareOrder): string {
   if (measure === OVERALL || isCount(measure)) return order === "fewest" ? "fewest first" : "most first";
   return order === "most" ? "highest first" : order === "fewest" ? "lowest first" : "closest to the process first";
 }
 
-/**
- * The comparison's order for one measure (the service's scorecard.order): closer to the process first (a higher
- * rate where higher is closer, a lower one where lower is), or the figure highest first ("most") or lowest first
- * ("fewest") as asked; people with too few tickets last whatever the order; ties keep the directory's order. A count
- * goes most first ("closer" too: it has no closer side), or fewest first.
- */
 export function compareOrder(measure: Pick<ScorecardMeasure, "key" | "direction">, people: readonly ScorecardPerson[], order: CompareOrder = "closer"): ScorecardPerson[] {
   const counted = measure.direction === "neutral";
   const used = counted && order === "closer" ? "most" : order;
@@ -279,15 +236,7 @@ interface Overall {
   tooFew: number;
 }
 
-/**
- * The overall order: the number of measures on which a person is closer to
- * the process than the board, most first; ties by open findings per 10 open
- * tickets, fewest first (too few tickets for it counts as the most); anyone
- * with no measure compared, last. "fewest" is the exact reverse for those
- * compared (the fewest measures closer first, ties by the ratio highest
- * first), anyone compared on none still last. Ties then keep the directory's
- * order.
- */
+/** The overall order: the number of measures on which a person is closer to */
 export function overallOrder(measures: readonly ScorecardMeasure[], people: readonly ScorecardPerson[], order: CompareOrder = "closer"): Overall[] {
   const tally = people.map((row): Overall => {
     const compared = measures.filter((measure) => measure.measurable && measure.kind !== "count");
@@ -313,13 +262,7 @@ export function overallOrder(measures: readonly ScorecardMeasure[], people: read
   return tally.sort((a, b) => Number(a.compared === 0) - Number(b.compared === 0) || b.closer - a.closer || tie(ratio(a) - ratio(b)));
 }
 
-/**
- * oversight_people_compare(project, measure, days, order, n): everyone with
- * tickets in the order asked (a measure's, then the board's row). As the
- * service records the call: days only where the figures are over a period (a
- * count of now has none), always the order used (effectiveOrder), n only for
- * a question's "top N" or "bottom N" (everyone otherwise).
- */
+/** oversight_people_compare(project, measure, days, order, n): everyone with */
 export function compareFacts(
   dataset: Dataset,
   ref: string,
@@ -339,8 +282,6 @@ export function compareFacts(
     ...(n ? { n } : {}),
     ...(only ? { person_ids: [...only] } : {}),
   };
-  // Two to ten people side by side (the service's person_ids): those people alone, then the whole board, never the
-  // tickets nobody holds (no one asked about them).
   const askedAbout = (person: Person) => only === null || only.includes(person.id);
   const everyone = only ? "the people asked about" : "everyone who holds a ticket";
   const limit = n ?? Number.POSITIVE_INFINITY;
@@ -393,8 +334,6 @@ export function compareFacts(
     measurable: definition.measurable,
     reason: definition.reason,
   });
-  // A ranking by a count ranks people only (JO-12, G5): the work nobody holds comes after it as one row, never ranked
-  // (even when its count is 0), then the whole board's. A measure the board cannot show has no one's figures at all.
   const nobody = counted && definition.measurable && set.unassigned && only === null ? [line(null, set.unassigned.values[measure], UNASSIGNED_LABEL)] : [];
   const people = definition.measurable ? ordered.slice(0, limit).map((row) => line(row.person, row.values[measure])) : [];
   // A count of now states no period, and its label may say "now" already ("In progress now").
@@ -440,7 +379,7 @@ function caveatPieces(fact: FactSet, days: number, codeReview: boolean): Piece[]
   return [before, param(fact, String(days)), after];
 }
 
-/** Whether the board records code review, as the caveat says it (JO-15: R-FLOW-01 turned off there is no "not recorded"). */
+/** Whether the board records code review, as the caveat says it. */
 const codeReviewShown = (set: ScorecardSet) => recordsCodeReview(set.measures);
 
 /** "{Name}, last {days} days, next to the board: closer to the process on …; further from it on …; level on …." */
@@ -467,11 +406,7 @@ function closing(fact: FactSet, set: ScorecardSet, days: number, personnel: bool
   return [...(personnel ? ["\n\n", SCORECARD_SENTENCES.decision] : []), "\n\n", ...caveatPieces(fact, days, codeReviewShown(set))];
 }
 
-/**
- * One person's scorecard, or several side by side: a summary each, next to
- * the board; what the board cannot show once (in the one person's summary, or
- * a paragraph of its own after several).
- */
+/** One person's scorecard, or several side by side: a summary each, next to */
 export function scorecardAnswer(dataset: Dataset, people: readonly Person[], days: ScorecardDays, personnel: boolean): ScriptResult {
   const fact = scorecardFacts(dataset, "F1", people, days);
   const set = scorecards(dataset, days);
@@ -483,15 +418,7 @@ export function scorecardAnswer(dataset: Dataset, people: readonly Person[], day
   return { outcome: "answered", facts: [fact], pieces };
 }
 
-/**
- * Everyone in order by one measure, or overall, in the order asked
- * (options.order: closer to the process first, or the figure highest or
- * lowest first; a count most or fewest first), its first sentence saying
- * which; those with too few tickets last. With `members` the board's members
- * who hold no ticket at all after it (a question about who is idle or has
- * nothing to do). A count of now states no period and closes with no caveat:
- * there is no period to state.
- */
+/** Everyone in order by one measure, or overall, in the order asked */
 export function comparisonAnswer(
   dataset: Dataset,
   measure: ComparedKey | RankedCount | typeof OVERALL,
@@ -519,7 +446,7 @@ export function comparisonAnswer(
     return { outcome: "no_data", facts: [fact], message: "No ticket on this board is assigned to anyone, so there is no one to compare.", suggestions: [] };
   }
   const pieces: Piece[] = [];
-  // The order the facts are in, said in plain words (JO-14): "highest first", "lowest first", "most first", ...
+  // The order the facts are in, said in plain words: "highest first", "lowest first", "most first", ...
   const firstWords = orderWords(measure, fact.params.order as CompareOrder);
   let compared: typeof people;
   if (measure === OVERALL) {
@@ -566,7 +493,7 @@ export function comparisonAnswer(
         ".",
       );
     }
-    // After the ranking, never in it (JO-12, G5): "Unassigned: 148 open tickets.", only when it holds some.
+    // After the ranking, never in it: "Unassigned: 148 open tickets.", only when it holds some.
     const unassigned = unassignedIndex >= 0 ? Number(fact.rows[unassignedIndex].value ?? 0) : 0;
     if (counted && unassigned > 0) {
       const [one, several] = UNASSIGNED_WORDS[measure as RankedCount];
@@ -582,13 +509,6 @@ export function comparisonAnswer(
   return { outcome: "answered", facts, pieces };
 }
 
-/**
- * "Who is the busiest?" (the synonym table, JO-12 G3/G4): everyone by open
- * tickets, most first; and for "who is doing the most?" (doing, does, did),
- * everyone by the tickets done in the period beside it, as two comparisons in
- * one paragraph, as the service answers both calls. The period, and so the
- * caveat, comes with the work done.
- */
 export function busiestAnswer(dataset: Dataset, days: ScorecardDays, personnel: boolean, { n = null, doing = false }: CompareOptions & { doing?: boolean } = {}): ScriptResult {
   const open = comparisonAnswer(dataset, "open_tickets", days, personnel, { n, order: "most" });
   if (!doing || open.outcome !== "answered") return open;
@@ -615,11 +535,6 @@ const TICKET_COLUMNS: Column[] = [
 /** The longest list of one person's tickets an answer asks for (their backlog, what they finished): the whole of it. */
 const WHOLE_LIST = 200;
 
-/**
- * oversight_person_tickets(project, person, state=open): the tickets someone
- * holds now that are not done, newest first; Epics left out, as the
- * scorecard's Open tickets leaves them out, so the figure and this list agree.
- */
 export function openTicketsFacts(dataset: Dataset, ref: string, person: Person, n = WHOLE_LIST): FactSet {
   const issues = dataset.world.issues
     .filter((issue) => isWork(issue) && STATUS[issue.status].category !== "done" && personOf(issue)?.id === person.id)
@@ -644,11 +559,6 @@ export function openTicketsFacts(dataset: Dataset, ref: string, person: Person, 
   };
 }
 
-/**
- * oversight_person_tickets(project, person, state=done, days): the tickets
- * someone holds now that were done in the period, newest first, as the
- * scorecard's "Done in the period" counts them (Epics left out).
- */
 export function doneTicketsFacts(dataset: Dataset, ref: string, person: Person, days: ScorecardDays, n = WHOLE_LIST): FactSet {
   const set = scorecards(dataset, days);
   const issues = dataset.world.issues
@@ -740,12 +650,7 @@ export function backlogAnswer(dataset: Dataset, person: Person): ScriptResult {
 
 /* ------------------------------------------------------- reading a question -- */
 
-/**
- * The period a question names, in the days a scorecard reads: 180 for half a
- * year or all time, 30 for a week, a month or a sprint, else 90. The
- * service reads the same words (oversight/ask/router.py: _HALF_YEAR,
- * _SHORT_PERIOD).
- */
+/** The period a question names, in the days a scorecard reads: 180 for half a */
 export function daysIn(question: string): ScorecardDays {
   const words = normalise(question);
   if (/\b(?:180|hundred and eighty)\s+days\b|\b(?:6|six)\s+months\b|\bhalf[\s-](?:a[\s-])?year\b|\b(?:26|twenty[\s-]six)\s+weeks\b|\ball[\s-]time\b|\bsince the (?:beginning|start)\b/.test(words)) {
@@ -757,12 +662,7 @@ export function daysIn(question: string): ScorecardDays {
   return SCORECARD_DEFAULT_DAYS;
 }
 
-/**
- * Which measure a comparison question names, if any (the compared ones: rates
- * and the ratio), first match wins: the service's words in the service's
- * order (oversight/ask/router.py: _MEASURE_WORDS), so the sample and the live
- * product read a question alike.
- */
+/** Which measure a comparison question names, if any (the compared ones: rates */
 const MEASURE_WORDS: readonly [ComparedKey, RegExp][] = [
   [
     "within_estimate",
@@ -771,9 +671,6 @@ const MEASURE_WORDS: readonly [ComparedKey, RegExp][] = [
   ["estimated_before_start", /\bun-?estimat\w*|\bunsized\b|\bestimat\w*|\bsized?\b|\bsizing\b|\bstory points?\b/],
   [
     "time_logged",
-    // Hours in either word order ("logged the most hours", "has the most hours logged"): one question, one figure; time
-    // or hours with what is done with them after ("how much time do they log on their done work?"); and time tracked,
-    // recorded, booked or filled in, or hours worked or spent ("do they track time?", "who worked the most hours?").
     new RegExp(
       [
         String.raw`\blog(?:s|ged|ging)?\s+(?:\w+\s+){0,2}?time\b|\btime[\s-]?(?:logged|logging|tracking|sheets?)\b|\bworklogs?\b|\btimesheets?\b`,
@@ -797,14 +694,6 @@ export function measureIn(question: string): ComparedKey | null {
   return MEASURE_WORDS.find(([, pattern]) => pattern.test(words))?.[0] ?? null;
 }
 
-/**
- * A measure named the other way round turns the order, as the service reads it (oversight/ask/router.py: _turned):
- * going over the effort limit is the other side of "Done within the effort limit" (and so is the effort ratio, actual
- * over estimate: the higher it is, the further over), and a measure's words after a negation ("without an estimate",
- * "not logging time", "never reopened"), at most two words before them, or with "un" before them ("unestimated"), are
- * its other side too; both at once is the measure itself again. "Who overruns the most?" and "who has the highest
- * effort ratio?" are the lowest share done within the limit first.
- */
 const OVER_THE_LIMIT =
   /\b(?:over|beyond)\s+(?:the |their |its )?(?:estimates?|effort(?: limit)?|limit)\b|\bover[\s-]?r[au]n\w*|\bburn\w*|\bexceed\w*|\beffort[\s-]?ratios?\b|\bover-?spen[dt]\w*|\bactuals?\s+(?:vs\.?|versus|against|over|to)\s+(?:the\s+)?estimates?\b/;
 
@@ -817,22 +706,11 @@ function turned(words: string, measure: ComparedKey): boolean {
   return negated !== over;
 }
 
-/**
- * The order that puts those further from the process first (the service's _further_first): overall, the fewest
- * measures closer first; a rate or the ratio, the highest first where lower is closer, the lowest where higher is.
- */
 function furtherFirst(measure: ComparedKey | typeof OVERALL): AskedOrder {
   if (measure === OVERALL) return "fewest";
   return SCORECARD_MEASURES.find((candidate) => candidate.key === measure)?.direction === "lower_is_closer" ? "most" : "fewest";
 }
 
-/**
- * The order a comparison by this measure is asked for (the service's _order with its measure): the question's
- * direction word (orderNear: where it asks both ways, the one nearest the measure's words); a question about the
- * other side of the process ("who struggles the most?", "who is worst for reopened work?") further from it first, and
- * the least of that ("who needs the least help?") closer first; else turned when it names the measure the other way
- * round. Null with no direction word: closer to the process first.
- */
 export function orderFor(question: string, measure: ComparedKey | typeof OVERALL): CompareOrder | null {
   const words = normalise(question);
   const asked = orderNear(words, measure === OVERALL ? null : (MEASURE_WORDS.find(([key]) => key === measure)?.[1] ?? null));

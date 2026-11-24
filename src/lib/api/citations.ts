@@ -1,17 +1,7 @@
 import type { Citation } from "./schemas";
 
-/**
- * An answer, split into prose and the values its citations bind: what the Ask
- * page renders, with a marker and a tick-and-tie line on each cited value.
- */
 export type AnswerSegment = { kind: "text"; text: string } | { kind: "cite"; text: string; citation: Citation };
 
-/**
- * Where `token` next stands on its own in `text`, at or after `from`: not inside
- * a rule id ("02" in R-FLOW-02), a key or a longer number ("1" in "1.5"). These
- * are the boundaries the validator reads values by, so a citation lands on the
- * occurrence it was bound to.
- */
 function findToken(text: string, token: string, from: number): number {
   for (let at = text.indexOf(token, from); at >= 0; at = text.indexOf(token, at + 1)) {
     const before = text.charAt(at - 1);
@@ -24,12 +14,6 @@ function findToken(text: string, token: string, from: number): number {
   return -1;
 }
 
-/**
- * Citations arrive in text order, and the contract finds each by searching from
- * the end of the one before, so a value written twice binds to the right
- * occurrence. One that cannot be found is left out rather than drawn in the
- * wrong place.
- */
 export function segmentAnswer(answer: string, citations: readonly Citation[]): AnswerSegment[] {
   const segments: AnswerSegment[] = [];
   let from = 0;

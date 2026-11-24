@@ -7,15 +7,6 @@ import type { Citation, Person } from "@/lib/api/schemas";
 import { AnswerProse } from "../answer-prose";
 import { TraceProvider } from "../trace";
 
-/*
- * The JO-11 check's G1 and G7, on the answer's prose:
- * - G1: a re-render updates the document in place. Built inline, react-markdown's components map handed React new
- *   component types on every render, so each paragraph, value, pill and picture was unmounted and mounted again
- *   (WebKit measured a mention's picture as it was being replaced).
- * - G7: a cited value, its marker and its link's arrow, and a person's pill, keep the punctuation that touches them on
- *   their line: no line starts with a full stop, a comma or a lone arrow.
- */
-
 const ADA: Person = { id: "pada000000001", name: "Ada Brooks", avatar: null };
 const CARMEN: Person = { id: "pcar000000002", name: "Carmen Ruiz", avatar: null };
 

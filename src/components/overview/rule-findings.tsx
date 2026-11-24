@@ -27,10 +27,6 @@ const LEGEND = [
   { id: "not-measurable", label: "Not measurable", hatch: true },
 ];
 
-/**
- * Most open findings first (ties keep catalogue order), then the rules Jira
- * cannot evaluate, in catalogue order: they have no count to rank by.
- */
 export function rankRules(rules: readonly RuleSummary[]): RuleSummary[] {
   const measurable = rules
     .map((rule, index) => ({ rule, index }))
@@ -62,11 +58,6 @@ function summarise(rules: readonly RuleSummary[], locale: string | undefined): s
   return `${first} ${counted(gaps.length, "rule cannot", "rules cannot", locale)} be measured in Jira: ${listWords(gaps.map((rule) => rule.rule_id))}.`;
 }
 
-/**
- * Which rules fire: every rule in the catalogue with its open findings, as a
- * compact ranked list. A rule Jira cannot evaluate shows the hatch and names
- * the evidence it lacks rather than a misleading zero.
- */
 export function RuleFindings({ data, className }: { data?: Overview; className?: string }) {
   const locale = useFigureLocale();
   const rules = data ? rankRules(data.by_rule) : [];

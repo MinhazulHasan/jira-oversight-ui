@@ -1,34 +1,7 @@
 import { RULE_ID_IN_TEXT, SCORECARD_MEASURES, type FactCell, type FactColumnKind, type FactSet, type PlanStep } from "@/lib/api/schemas";
 import { foldText } from "@/lib/names";
 
-/**
- * Numbers, issue keys and dates in a written answer must exist in the facts it
- * was written from (Planning.md principle 3). A port of the backend's
- * oversight/ask/validate.py, so a sample answer passes exactly when a live one
- * would: the same patterns, the same display forms, the same trusted sources.
- *
- * Where a value may come from: number columns (number, count, hours, share,
- * ratio); issue-key columns; date columns; text that code wrote (labels,
- * messages, notes); the plan's parameters; each fact's row count. Ticket text
- * (summary, epic_title) never supplies a number, because anyone who can edit a
- * ticket can write one there. Rule ids such as R-EST-01 are vocabulary, not data.
- *
- * Each verified value is bound to the place it came from, as validate.py binds
- * it: a key to the first place that holds it; a number or date that only one
- * place holds, there; one that several places hold (a 3 in three people's
- * rows) to the place its context points at, the places narrowed in turn and
- * each step kept only when some place survives it: (a) to the rows of the
- * entities around it (in a Markdown table, those named anywhere in its row;
- * in prose, those named before it in its sentence, which ends at . ; ! or ?
- * before a space or at a line break, never at a dot inside a name), people
- * and issue keys first, then other row labels, each kind nearest first; (b) to
- * the fact of the figures bound before it in its sentence, or above it in its
- * table column; (c) in a table, to the fact columns whose label or key
- * matches its column's header; (d) in a table, to the fact of the figures
- * bound anywhere in the table; then (e) the first place left. A name of two
- * words or more is found whole in any case and with or without its accents
- * (foldText); a one-word label only as the data writes it ("will" is not Will).
- */
+/** Numbers, issue keys and dates in a written answer must exist in the facts it */
 
 export interface Binding {
   marker: number;
@@ -50,7 +23,7 @@ export type VerifiableFacts = Pick<FactSet, "ref" | "columns" | "rows" | "as_of"
 
 export const KEY = /\b[A-Z][A-Z0-9_]+-\d+\b/g;
 export const NUM = /(?<![\w-])(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?%?|\d+(?:\.\d+)?%?)/g;
-/** A rule id, R-EFF-01 or (JO-20) a board's own R-CUS-101: never read as a key or a number. */
+/** A rule id, R-EFF-01 or a board's own R-CUS-101: never read as a key or a number. */
 const RULE_ID = RULE_ID_IN_TEXT;
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}/;
 const ISO_DATETIME = /\b\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?)?/g;
@@ -83,12 +56,7 @@ function toNumber(value: unknown): number | null {
   return null;
 }
 
-/**
- * Round the shortest decimal form of `value` (what Python's repr and JS's
- * String both print) to `decimals` places, half up or half to even. Working on
- * the digits rather than the float keeps 1.005 rounding to 1.01, as a reader
- * (and Python's Decimal) would.
- */
+/** Round the shortest decimal form of `value` (what Python's repr and JS's */
 function roundDecimal(value: number, decimals: number, mode: "up" | "even"): string {
   const shortest = String(Math.abs(value));
   if (/e/i.test(shortest)) return value.toFixed(decimals);
@@ -512,8 +480,6 @@ class Reading {
       const together = before.filter(([at]) => this.row(at) === null && this.sentence(at) === sentence).map(([, source]) => source);
       return byFact(byEntities(sources, named), together)[0];
     }
-    // A table row: the entities named anywhere in it (those before the figure first), then the figures bound above it in
-    // its column, then its column's header, then the figures bound anywhere in the table.
     const after = (entity: Entity) => (entity.start > start ? 1 : 0);
     const named = this.entities
       .filter((entity) => row.start <= entity.start && entity.start < row.end)

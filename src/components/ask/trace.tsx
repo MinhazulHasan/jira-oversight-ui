@@ -7,17 +7,6 @@ import { isTypingTarget } from "@/lib/shortcuts";
 
 import { cellId, targetKey, valueKey } from "./describe";
 
-/**
- * Tick and tie: which cited value is traced to its row, and how the reader
- * moves between them.
- *
- * A value is traced while the pointer is on it or on its row (transient), or
- * while it is held. An answer that arrives holds its first value by itself
- * ("auto"), so the apparatus shows before anyone touches it. Clicking a
- * value, focusing it or stepping to it holds it for the reader ("user"):
- * from then on the arrow keys step through the values, and Esc lets go.
- */
-
 type Source = "auto" | "user";
 export type Step = "next" | "previous" | "first" | "last";
 

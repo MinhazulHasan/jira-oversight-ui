@@ -22,19 +22,10 @@ import type { LiveConfig } from "./env";
 import { json, problem } from "./http";
 import { isPicture, MAX_PICTURE_BYTES, NO_PICTURE, picture, PICTURE_TYPES, pictureType } from "./pictures";
 
-/**
- * Live mode: one validated request to the oversight dashboard API, with the
- * service key added here and nowhere else. The browser never learns where the
- * service is, what key it takes, or anything the service said about itself:
- * every failure is reported in this interface's own words, and every success
- * is parsed against the contract before it is passed on.
- */
+/** Live mode: one validated request to the oversight dashboard API, with the */
 
 export const READ_TIMEOUT_MS = 15_000;
-/**
- * Ask waits on the analyst: several rounds of model calls and queries (6 at
- * most), then a check of every figure. A typical answer takes 10 to 30 s.
- */
+/** Ask waits on the analyst: several rounds of model calls and queries (6 at */
 export const ASK_TIMEOUT_MS = 120_000;
 /** Far above any real body (a 100-row findings page is about 150 KB); a guard, not a limit anyone meets. */
 const MAX_BODY_CHARS = 8 * 1024 * 1024;
@@ -83,14 +74,12 @@ function upstreamFailure(status: number, resolved: Resolved): Response {
   if (status === 404 && route.name === "people_scorecard" && route.query.person.length > 0) {
     return problem(404, "not_found", SCORECARD_PERSON_NOT_FOUND);
   }
-  // The person is not on the board read (neither assigned one of its tickets now nor a member), as the picture says.
-  // (A board the service does not serve says so by its code, unknown_board, read before this: see forward.)
   if (status === 404 && route.name === "person_card") return problem(404, "not_found", PERSON_CARD_NOT_FOUND);
-  // Rule settings (JO-15) on a service from before them: a route it does not have, never the board.
+  // Rule settings on a service from before them: a route it does not have, never the board.
   if (status === 404 && (route.name === "rule_settings" || route.name === "rule_settings_preview" || route.name === "rule_settings_save")) {
     return problem(502, "upstream_error", RULE_SETTINGS_MISSING);
   }
-  // An AI draft of a rule (JO-20) on a service from before it: the same, said of the draft.
+  // An AI draft of a rule on a service from before it: the same, said of the draft.
   if (status === 404 && route.name === "rule_settings_draft") return problem(502, "upstream_error", RULE_DRAFT_MISSING);
   // Every other 404 here is a board the service no longer serves: the top bar resets the pick.
   if (status === 404) return unknownBoard(resolved);
@@ -104,22 +93,15 @@ function upstreamFailure(status: number, resolved: Resolved): Response {
   return problem(502, "upstream_error", `The oversight service could not answer this request (HTTP ${status}).`);
 }
 
-/**
- * The routes that are the same whichever board is picked: the board list and (JO-12) the Portfolio, the access
- * log and Ask's usage, which cover every board at once. Sync is not one of them (JO-18): it syncs the board picked.
- */
 export const BOARDLESS_ROUTES: ReadonlySet<Resolved["route"]["name"]> = new Set(["projects", "portfolio", "access_log", "usage"]);
 
-/** A served board that has never synced (JO-17): every page offers its first sync instead of figures. */
+/** A served board that has never synced: every page offers its first sync instead of figures. */
 export const BOARD_NOT_SYNCED = "This board hasn't been synced yet.";
 
 /** The longest wait a Retry-After is taken at: a day. Longer is a service's mistake, read as a day. */
 const MAX_RETRY_AFTER_S = 24 * 60 * 60;
 
-/**
- * The wait a 429 asks for, in seconds: its Retry-After (seconds, or an HTTP
- * date), or a minute when it gives none that can be read.
- */
+/** The wait a 429 asks for, in seconds: its Retry-After (seconds, or an HTTP */
 export function retryAfterSeconds(header: string | null, now = Date.now()): number {
   const text = header?.trim() ?? "";
   if (/^\d{1,9}$/.test(text)) return Math.min(Number(text), MAX_RETRY_AFTER_S);
@@ -129,9 +111,9 @@ export function retryAfterSeconds(header: string | null, now = Date.now()): numb
 }
 
 export const SCORECARD_PERSON_NOT_FOUND = "Someone asked for is not on this board.";
-/** A service from before rule settings (JO-15) answers their routes 404 without a code: said as what it is. */
+/** A service from before rule settings answers their routes 404 without a code: said as what it is. */
 export const RULE_SETTINGS_MISSING = "The oversight service does not offer rule settings yet: it may be an earlier version than this dashboard.";
-/** A service from before JO-20 has no AI draft of a rule: said as what it is. */
+/** A service from before has no AI draft of a rule: said as what it is. */
 export const RULE_DRAFT_MISSING = "The oversight service does not draft rules yet: it may be an earlier version than this dashboard.";
 export const PERSON_CARD_NOT_FOUND = "This person is not on this board.";
 /** A card read on a board the service does not serve (an access log entry's board, since taken off its list). */
@@ -146,12 +128,7 @@ export function unknownBoard({ route }: Resolved): Response {
 /** A refusal's body is a line or two of JSON; nothing longer is read. */
 const MAX_REFUSAL_CHARS = 4 * 1024;
 
-/**
- * Whether the service refused a scorecard because comparing people is turned
- * off there (PEOPLE_COMPARISON=off), by the code in its error body, wherever
- * FastAPI's body puts it ({"detail": {"code": ...}}, {"code": ...}, ...). Only
- * that code is read; the rest of the body never goes anywhere.
- */
+/** Whether the service refused a scorecard because comparing people is turned */
 export async function refusedForComparison(response: Response): Promise<boolean> {
   return (await refusalCodes(response)).includes("comparison_off");
 }
@@ -182,11 +159,7 @@ async function refusalCodes(response: Response): Promise<string[]> {
   return codes(body);
 }
 
-/**
- * Ask's 429 for a reader over the service's limit on questions
- * (ASK_RATE_LIMIT, code ask_rate_limited), in the contract's words and with
- * its Retry-After; null for any other 429, which is the service being busy.
- */
+/** Ask's 429 for a reader over the service's limit on questions */
 async function rateLimited(response: Response): Promise<Response | null> {
   const wait = retryAfterSeconds(response.headers.get("retry-after"));
   if (!(await refusalCodes(response)).includes("ask_rate_limited")) return null;
@@ -199,10 +172,6 @@ async function rateLimited(response: Response): Promise<Response | null> {
 
 /** A preview works the rules over the board's data, and a save writes and starts a re-check: more than a read's time. */
 export const SETTINGS_TIMEOUT_MS = 30_000;
-/**
- * An AI draft of a rule (JO-20) waits on the model: a call, its adaptive thinking, and one repair call when the first
- * draft does not pass the board's checks. A minute covers both; a single Ask answer can take longer (ASK_TIMEOUT_MS).
- */
 export const DRAFT_TIMEOUT_MS = 60_000;
 /** A refusal of rule settings names each problem: more than a line or two, never more than this. */
 const MAX_SETTINGS_REFUSAL_CHARS = 32 * 1024;
@@ -210,14 +179,14 @@ const MAX_SETTINGS_PROBLEMS = 24;
 const MAX_PROBLEM_CHARS = 300;
 /** A problem's place, in this interface's form: "R-EFF-01.params.threshold", "new-0.title", "reason"; "(settings)" for the whole. */
 const PROBLEM_PATH = /^(?:[A-Za-z0-9_.-]{1,80}|\(settings\))$/;
-/** A field of one rule's change, as the service names it beside the rule (JO-20: a custom rule's definition among them). */
+/** A field of one rule's change, as the service names it beside the rule. */
 const SETTING_FIELD =
   /^(?:rule_id|enabled|severity|reset|op|rule|title|description|check|applies_to(?:\.(?:status_category|issue_type))?|params(?:\.[a-z][a-z0-9_]{0,39})?)$/;
 /** A field of the request itself, which the service names with no rule. */
 const REQUEST_FIELD = /^(?:changes|revision|reason|undo_of)$/;
-/** A place within one of the request's changes, as a path: "changes.2.rule.title" (a new rule's, JO-20). */
+/** A place within one of the request's changes, as a path: "changes.2.rule.title" (a new rule's, ). */
 const CHANGE_PLACE = /^changes\.\d+(?:\.[A-Za-z0-9_]+)*$/;
-/** A field of a new rule's definition (JO-20), which the service names with no rule: the rule has no id yet. */
+/** A field of a new rule's definition, which the service names with no rule: the rule has no id yet. */
 const NEW_RULE_FIELD = /^(?:title|description|check|severity|applies_to(?:\.(?:status_category|issue_type))?|params(?:\.[a-z][a-z0-9_]{0,39})?)$/;
 
 /** The change a problem's `index` names, by its place in the request (as FastAPI's own `loc` counts it); null for none. */
@@ -226,11 +195,6 @@ function changeIndex(request: unknown, index: unknown): number | null {
   return Array.isArray(changes) && typeof index === "number" && Number.isInteger(index) && index >= 0 && index < changes.length ? index : null;
 }
 
-/**
- * Where a problem the service names at a field of a new rule, and at no rule, stands: at the change its `index` names,
- * so a field of the second of two new rules is "new-1.params.days"; with no index, at the request's one new rule
- * ("new-0.title"); null when the request adds more than one and nothing says which.
- */
 function newRulePlace(request: unknown, field: string, index: unknown): string | null {
   const at = changeIndex(request, index);
   if (at !== null) return settingsProblemPath(request, ["changes", at, ...field.split(".")]);
@@ -245,11 +209,7 @@ export const SETTINGS_REFUSED = "The oversight service refused these rule settin
 /** A save the service could not write because a rules run held the board's lock (503 rule_settings_busy). */
 export const SETTINGS_BUSY = "The rules are running on this board right now. Try again in a moment.";
 
-/**
- * Words from the service fit to show a reader: plain text on one line, not
- * too long, with no markup, no address and no email address. Anything else is
- * dropped: the service's body itself never reaches the browser.
- */
+/** Words from the service fit to show a reader: plain text on one line, not */
 export function plainWords(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const text = value.trim();
@@ -258,15 +218,7 @@ export function plainWords(value: unknown): string | null {
   return text;
 }
 
-/**
- * The problems a refusal names, wherever the service's body puts them (a list
- * of `{rule_id, field, message}` under `errors`, a new rule's with the
- * `index` of its change, or FastAPI's `{loc, msg}` under `detail`), each as a
- * place this interface names and words fit to show: a rule's field
- * ("R-EFF-01.params.threshold"), a rule ("R-EFF-01"), a new rule's field
- * ("new-1.params.days"), a field of the request ("reason"), or the settings as
- * a whole; the request's own changes say which rule a `changes.N` place is.
- */
+/** The problems a refusal names, wherever the service's body puts them (a list */
 function settingsProblems(body: unknown, request: unknown): { path: string; message: string }[] {
   const record = (value: unknown): Record<string, unknown> | null =>
     typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
@@ -284,8 +236,6 @@ function settingsProblems(body: unknown, request: unknown): { path: string; mess
     let path = WHOLE;
     if (ruleId) path = named !== null && SETTING_FIELD.test(named) ? `${ruleId}.${named}` : ruleId;
     else if (named !== null && REQUEST_FIELD.test(named)) path = named;
-    // A new rule's field, named with no rule (the service's own way, JO-20): the new rule at the change its index
-    // names, else the request's one new rule's.
     else if (named !== null && NEW_RULE_FIELD.test(named)) path = newRulePlace(request, named, entry.index) ?? WHOLE;
     // A change named by its place in the request (a new rule has no id yet): its rule's, or "new-0" for the first new rule.
     else if (named !== null && CHANGE_PLACE.test(named)) path = settingsProblemPath(request, named.split("."));
@@ -303,12 +253,7 @@ function settingsProblems(body: unknown, request: unknown): { path: string; mess
   return problems;
 }
 
-/**
- * The service's refusal of rule settings in this interface's words: 409
- * rule_settings_conflict (the board has moved on since the reader's revision)
- * and 422 rule_settings_invalid (with each problem it names, checked); null
- * for any other answer, which is an upstream failure as everywhere.
- */
+/** The service's refusal of rule settings in this interface's words: 409 */
 async function settingsRefusal(response: Response, request: unknown): Promise<Response | null> {
   if (Number(response.headers.get("content-length")) > MAX_SETTINGS_REFUSAL_CHARS) return null;
   let body: unknown;
@@ -332,14 +277,9 @@ async function settingsRefusal(response: Response, request: unknown): Promise<Re
   return null;
 }
 
-/** The service refused an AI draft's words (JO-20) and gave no words of its own that can be shown. */
+/** The service refused an AI draft's words and gave no words of its own that can be shown. */
 export const DRAFT_REFUSED = "The oversight service can't draft from these words. Describe the rule another way.";
 
-/**
- * The service's refusal of what an admin wrote for a draft (422 rule_settings_invalid on `text`: an email address or
- * an account id it found, which this interface checks too) as the request's fault, in the service's own words when
- * they are fit to show.
- */
 async function draftRefusal(response: Response): Promise<Response> {
   let said: string | null = null;
   try {
@@ -351,12 +291,7 @@ async function draftRefusal(response: Response): Promise<Response> {
   return problem(400, "bad_request", said ?? DRAFT_REFUSED, [{ path: "text", message: "was refused by the oversight service" }]);
 }
 
-/**
- * Whether one page of the access log is other than what was asked for: an
- * entry the filters leave out (an action, a viewer, a person whose figures
- * were not read), or more entries than a page holds. The days are the
- * service's to cut, in the organisation's zone, and are not checked here.
- */
+/** Whether one page of the access log is other than what was asked for: an */
 function accessLogMismatch(log: AccessLog, query: Extract<Resolved["route"], { name: "access_log" }>["query"]): boolean {
   if (log.entries.length > query.limit) return true;
   return log.entries.some(
@@ -399,12 +334,7 @@ async function readBytes(response: Response, limit: number): Promise<Uint8Array<
   return bytes;
 }
 
-/**
- * A person's picture, which the service fetched from Jira at sync and keeps:
- * the bytes are passed on only as one of the four image types and only when
- * they are that type; anything else is 502. The version in the browser's
- * address is never forwarded (the service ignores it).
- */
+/** A person's picture, which the service fetched from Jira at sync and keeps: */
 async function forwardPicture(config: LiveConfig, resolved: Resolved, board: string | null): Promise<Response> {
   const url = new URL(`api/v1/${resolved.upstream}`, config.apiUrl);
   if (board) url.searchParams.set("project", board);
@@ -433,15 +363,7 @@ async function forwardPicture(config: LiveConfig, resolved: Resolved, board: str
   }
 }
 
-/**
- * `board` is the board picked in the top bar (a checked project key), or null
- * for the service's default. The board list itself is the same for every
- * board, so it is asked for without one: a stale pick can always be undone.
- * `reader` says who is reading and at what level (auth/viewer.ts): every JSON
- * request carries it, so the service's access log can name the reader of any
- * person-level figure (JO-12). Signing in asks for the board list before
- * anyone is signed in, and sends none.
- */
+/** `board` is the board picked in the top bar (a checked project key), or null */
 export async function forward(
   config: LiveConfig,
   resolved: Resolved,
@@ -451,9 +373,9 @@ export async function forward(
   const { route, upstream } = resolved;
   if (route.name === "person_avatar") return forwardPicture(config, resolved, board);
   const ask = route.name === "ask";
-  // A change to rule settings (JO-15): its body the one this interface checked and rebuilt (endpoints.ts).
+  // A change to rule settings: its body the one this interface checked and rebuilt (endpoints.ts).
   const settingsBody = route.name === "rule_settings_preview" || route.name === "rule_settings_save" ? route.body : null;
-  // An AI draft of a rule (JO-20): the admin's words as this interface checked them, as plain text.
+  // An AI draft of a rule: the admin's words as this interface checked them, as plain text.
   const draftBody = route.name === "rule_settings_draft" ? route.body : null;
   const post = ask || route.name === "refresh_start" || settingsBody !== null || draftBody !== null;
   const headers = new Headers({
@@ -477,7 +399,7 @@ export async function forward(
   ) {
     url.searchParams.set("level", route.level);
   }
-  // Findings filtered by a person are recorded in the access log (JO-12), with the level they were read at.
+  // Findings filtered by a person are recorded in the access log, with the level they were read at.
   if (route.name === "findings" && route.query.person.some((id) => id !== UNASSIGNED)) {
     url.searchParams.set("level", reader?.level ?? "team");
   }
@@ -506,8 +428,6 @@ export async function forward(
     });
     status = response.status;
     if (status === 409 && !BOARDLESS_ROUTES.has(route.name)) {
-      // A board that has never synced says so by its code, whatever the route (JO-17); any other 409 is the route's
-      // own (a rule settings conflict). The body is a line of JSON, read once and handed to whichever reads it.
       if (Number(response.headers.get("content-length")) > MAX_SETTINGS_REFUSAL_CHARS) {
         await response.body?.cancel().catch(() => undefined);
         return upstreamFailure(status, resolved);
@@ -529,8 +449,6 @@ export async function forward(
       return problem(503, "upstream_unavailable", SETTINGS_BUSY);
     }
     if (status === 403 && route.name === "people_scorecard" && route.query.person.length > 1) {
-      // Several people side by side, where the organisation has turned comparison off: said in the contract's
-      // words. Any other refusal is the credentials', as everywhere.
       if (await refusedForComparison(response)) {
         noteComparison("off");
         return problem(403, "comparison_off", SCORECARD_SENTENCES.comparisonOff);
@@ -538,22 +456,16 @@ export async function forward(
       return upstreamFailure(status, resolved);
     }
     if (status === 429 && (ask || draftBody !== null)) {
-      // A reader over the limit on questions (an AI draft counts as one, JO-20): said in the contract's words, with the
-      // wait the service asked for.
       const limited = await rateLimited(response);
       return limited ?? upstreamFailure(status, resolved);
     }
     if (status === 500) {
-      // A read of person-level figures that the access log could not record: the service served nothing (it fails
-      // closed). Said so, by its code alone; any other fault is the service's, as below.
       if ((await refusalCodes(response)).includes("access_log_unavailable")) {
         return problem(503, "access_log_unavailable", ACCESS_LOG_UNAVAILABLE);
       }
       return upstreamFailure(status, resolved);
     }
     if (status === 404) {
-      // A board the service does not serve says so by its code, whatever the route, so a route's own 404 (no such
-      // finding, a person not on the board) is never taken for it, nor it for one. Without the code, as below.
       if ((await refusalCodes(response)).includes("unknown_board")) return unknownBoard(resolved);
       return upstreamFailure(status, resolved);
     }
@@ -619,8 +531,6 @@ export async function forward(
     (route.name === "rule_settings" || route.name === "rule_settings_save" || route.name === "rule_settings_preview" || route.name === "rule_settings_draft") &&
     board !== null
   ) {
-    // The board's settings asked for and no other's: what an admin changes must be what they were shown, and a draft
-    // must be built from the names of the board it is for.
     if ((data as RuleSettings | RuleSettingsPreview | RuleDraft).project !== board) {
       return problem(502, "upstream_invalid", "The oversight service sent rule settings for another board than the one asked for.");
     }

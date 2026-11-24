@@ -22,10 +22,6 @@ export interface ExportCsvButtonProps<TRow> {
   className?: string;
 }
 
-/**
- * Export the rows on screen as CSV, built in the browser (nothing leaves the
- * page), then say what was saved and where.
- */
 export function ExportCsvButton<TRow>({
   rows,
   columns,

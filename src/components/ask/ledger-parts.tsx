@@ -20,11 +20,6 @@ export interface ShownColumn {
   companion?: Column;
 }
 
-/**
- * The ledger is narrow, so a key's description (an epic's title, an issue's
- * summary) is set under the key rather than in a column of its own, the way
- * an issue list reads. Only an uncited text column right after a key folds.
- */
 export function shownColumns(fact: FactSet, index: CitationIndex): ShownColumn[] {
   const cited = (key: string) => fact.rows.some((_, row) => index.byCell.has(cellId(fact.ref, row, key)));
   // A person's id never shows: the column beside it names them, with their picture (people-in-facts.tsx).
@@ -51,10 +46,6 @@ export function useTraceTarget(key: string) {
   return useCallback((node: HTMLElement | null) => register?.(key, node), [register, key]);
 }
 
-/**
- * Markers as runs: 2,3,4,5,9 reads "2–5,9". A cell cited twenty times (a list of
- * keys) keeps its value in view instead of being pushed out by its markers.
- */
 export function markerRuns(markers: readonly number[]): { shown: string; spoken: string } {
   const sorted = [...new Set(markers)].sort((a, b) => a - b);
   const runs: [number, number][] = [];

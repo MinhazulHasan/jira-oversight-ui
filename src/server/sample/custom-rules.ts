@@ -17,16 +17,6 @@ import {
 import { EVIDENCE_SOURCES, ORDERED_STAGES, PROCESS_STAGES, RECORDED_EVIDENCE, STATUSES, type AppliesTo, type RuleDef } from "./catalogue";
 import type { World } from "./world";
 
-/*
- * A board's own rules (JO-20) for the sample: the sample's mirror of the
- * service's custom_rules table and its registry. A rule an admin adds is a
- * record the board keeps for good: a deleted one keeps its row (deletedAt),
- * so an undo brings it back with the same id and the same findings. Its id is
- * R-CUS-nn for a breach and W-CUS-nn for a warning, the next number across
- * every board, never reused. Pure functions: the records themselves live in
- * the board's settings (settings-store.ts), revision by revision.
- */
-
 /** A custom rule as the board keeps it. */
 export interface CustomRuleRecord {
   id: string;
@@ -34,7 +24,7 @@ export interface CustomRuleRecord {
   description: string | null;
   /** From the seriousness it was added with: a breach is one of the board's rules, a warning an early warning. */
   kind: RuleKind;
-  /** As it was added; the board's rule settings may report it at another since (JO-15). */
+  /** As it was added; the board's rule settings may report it at another since. */
   severity: Severity;
   check: string;
   /** As it was added or last edited. */
@@ -61,11 +51,6 @@ export function customRuleNumber(id: string): ["R" | "W", number] | null {
   return match ? [match[1] as "R" | "W", Number(match[2])] : null;
 }
 
-/**
- * A custom rule's identity version: the revision that added it (`c3`), and the severity the board reports it at
- * when that is not the one it was added with (`c3+warning`). Only a severity change gives it new finding ids;
- * an edit of its limits or of what it looks at never does.
- */
 export function customVersion(record: CustomRuleRecord, severity: Severity): string {
   return `c${record.createdRevision}${severity === record.severity ? "" : `+${severity}`}`;
 }
@@ -126,11 +111,6 @@ function missingForCheck(name: string, options: BoardOptions): string[] {
   return [...options.evidence];
 }
 
-/**
- * The checks a custom rule may use on the board (GET /rules/settings `checks`): the registry, each param with the
- * board's own options and its default there (the registry's, or the board's first option where the board has not
- * the registry's: DEMO maps no testing stage), and whether the board can measure it at all.
- */
 export function boardChecks(options: BoardOptions): RuleCheck[] {
   return CHECK_REGISTRY.map((check) => {
     const missing = missingForCheck(check.name, options);
@@ -185,11 +165,6 @@ const namesOf = (params: Params, name: string): string[] => {
   return Array.isArray(value) ? [...value] : typeof value === "string" ? [value] : [];
 };
 
-/**
- * The limit of one of the four new checks in words, as GET /rules writes a threshold ("Over 3 days in In Progress",
- * "Open over 30 days", "No change for 7 days", "No epic"); null for a check of the catalogue's, whose words are
- * board-rules.ts's.
- */
 export function newCheckThreshold(check: string, params: Params): string | null {
   switch (check) {
     case "time_in_status_over":
@@ -248,10 +223,6 @@ export function checkNeeds(check: string, params: Params): string[] {
   }
 }
 
-/**
- * A custom rule as the engine and every view read a rule: its definition, reported at `severity`, its evidence
- * needs worked out from its params (so a board that records no code review cannot measure one that needs it).
- */
 export function customRuleDef(record: CustomRuleRecord, severity: Severity, threshold: string | null): RuleDef {
   const evidence = typeof record.params.evidence === "string" ? [record.params.evidence] : [];
   const stage = record.check === "entered_stage_without_evidence" && typeof record.params.stage === "string" ? [record.params.stage] : [];

@@ -1,12 +1,6 @@
 import { MINUTE, floorToMinute } from "./time";
 
-/**
- * "Now" for the sample project. Pinned by SAMPLE_NOW (screenshots, tests,
- * demos that must match a script), otherwise the server's own clock: the
- * minute the server started, moved forward every 30 minutes as the real
- * service syncs, so a demo left running never reads as stale and the figures
- * do not shift under a reader between syncs.
- */
+/** "Now" for the sample project. Pinned by SAMPLE_NOW (screenshots, tests, */
 
 export const RESYNC_EVERY = 30 * MINUTE;
 

@@ -30,12 +30,7 @@ import { useShell } from "./shell-context";
 import { useSignOut } from "./sign-out";
 import { THEME_CHOICES, useThemeSwitch } from "./theme-menu";
 
-/**
- * Cmd/Ctrl+K. One field that goes anywhere: a page, an issue by its key, a
- * question for Ask, or a setting. Typing something shaped like an issue key
- * puts "Open DEMO-142" first; anything else can always be asked as a question.
- * With sign-in on, Sign out is here too, wherever the top bar keeps it.
- */
+/** Cmd/Ctrl+K. */
 export function CommandPalette({ showSignOut = false }: { showSignOut?: boolean }) {
   const router = useRouter();
   const shell = useShell();

@@ -5,11 +5,6 @@ import { formatByKind } from "@/lib/format";
 
 /* ------------------------------------------------------------- values -- */
 
-/**
- * One evidence value as text: a figure formatted by its unit, a text value as
- * it came, or "None" where the rule found nothing (a missing estimate is the
- * evidence, so it is said, not dashed).
- */
 export function evidenceText(item: EvidenceItem, locale?: string): { text: string; none: boolean } {
   if (item.value === null || item.value === "") return { text: "None", none: true };
   if (typeof item.value === "number") {
@@ -26,13 +21,6 @@ const THRESHOLD_UNITS: readonly (readonly [ValueUnit, RegExp])[] = [
   ["hours", /\d\s*h\b/],
 ];
 
-/**
- * Whether the rule turned on this value, so the drawer can mark it as Ask the
- * System marks a cited field: a figure the rule found missing, or the one
- * figure measured in the threshold's unit (an effort ratio against "1.5×").
- * Two figures in that unit are a comparison, not a verdict, so neither is
- * marked.
- */
 export function turnsOn(finding: Pick<Finding, "threshold" | "evidence">, item: EvidenceItem): boolean {
   if (item.kind !== "metric") return false;
   if (item.value === null) return true;
@@ -93,12 +81,6 @@ export interface TimelineModel {
   intervals: TimelineInterval[];
 }
 
-/**
- * The finding's issue timeline as swimlanes: a lane for each stage the issue
- * actually sat in, in process order, and one per status the process does not
- * map (after the stage its Jira category is nearest). The drawer is compact,
- * so stages the issue never entered are left to the Issue page.
- */
 export function timelineModel(intervals: readonly Interval[]): TimelineModel {
   const laneId = (interval: Interval) => interval.stage ?? `${UNMAPPED}${interval.status}`;
   const lanes = new Map<string, TimelineLane>();

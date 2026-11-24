@@ -23,12 +23,6 @@ function errorDetail(error: ApiError | null): string | undefined {
   return `${error.status > 0 ? `HTTP ${error.status}` : "No response"} · ${error.code}`;
 }
 
-/**
- * The Baseline report. One request (GET baseline/latest) feeds every block:
- * while it loads each block holds its final shape; a failure is said once,
- * in place of the report; before the first report there is nothing to show
- * but the fact that none has been written.
- */
 export function BaselineView() {
   const query = useBaseline();
   const data = query.data;

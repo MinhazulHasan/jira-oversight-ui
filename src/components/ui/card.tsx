@@ -32,11 +32,7 @@ export interface CardProps extends Omit<ComponentProps<"div">, "title">, Variant
   actions?: ReactNode;
 }
 
-/**
- * A panel. The sheet variant is a page's own surface; raised sits on a sheet
- * and invites action; inset groups things inside a sheet. Use sparingly:
- * inside a page, a Section's hairline separates better than more boxes.
- */
+/** A panel. */
 export function Card({ variant, padding, title, description, actions, className, children, ...props }: CardProps) {
   return (
     <div className={cn(card({ variant, padding }), className)} {...props}>

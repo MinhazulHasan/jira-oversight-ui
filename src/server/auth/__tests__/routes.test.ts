@@ -38,11 +38,7 @@ import {
   stubAuthEnv,
 } from "./fixtures";
 
-/*
- * The three sign-in routes. Atlassian is a stub of fetch throughout: the
- * tests follow a sign-in from the button to the session, and every way it
- * can fail on the road.
- */
+/** The three sign-in routes. Atlassian is a stub of fetch throughout: the */
 
 const loginRoute = loginModule.GET;
 const logoutRoute = logoutModule.POST;
@@ -221,7 +217,7 @@ describe("GET /api/auth/callback", () => {
     const session = await openSession(cookie?.value, ADMITTED);
     expect(session).toMatchObject({ v: 2, sub: ACCOUNT, dom: "stellainternational.com", site: CLOUD_ID, boards: ["DEMO"] });
     expect(session && session.exp - session.iat).toBe(43_200);
-    // The display name (JO-12), for the access log to name this person's reads by; sealed like the rest.
+    // The display name, for the access log to name this person's reads by; sealed like the rest.
     expect(session?.name).toBe(ME.name);
     const opened = await unseal(cookie?.value, SECRET, "session", SITE);
     expect(opened).toMatchObject({ sub: ACCOUNT, name: ME.name });
@@ -544,7 +540,7 @@ describe("GET /api/auth/callback: the boards a person may read (JO-03)", () => {
     const upstream = stubAtlassian();
     const response = await signIn();
     const [search] = searched(upstream);
-    // Every board the sample serves, the one not synced yet too (JO-17); Jira opens DEMO alone for this person.
+    // Every board the sample serves, the one not synced yet too; Jira opens DEMO alone for this person.
     expect(search.searchParams.getAll("keys")).toEqual(["DEMO", "MOB", "HELP"]);
     expect(search.searchParams.get("maxResults")).toBe("50");
     expect(await boardsOf(response)).toEqual(["DEMO"]);

@@ -2,10 +2,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const ROWS = [0.62, 0.84, 0.7, 0.9, 0.66, 0.78, 0.58, 0.86, 0.72, 0.8];
 
-/**
- * The Findings page before its URL has been read: the filter row, the result
- * line and the table in their final shape, so nothing moves when they arrive.
- */
 export function FindingsSkeleton() {
   return (
     <div role="status" className="flex flex-col gap-4">

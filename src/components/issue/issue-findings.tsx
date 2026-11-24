@@ -29,7 +29,7 @@ const COLUMNS = col.columns([
     cell: (info) => {
       const finding = info.row.original;
       return (
-        // The rule and what it saw read whole: each wraps rather than being cut, at 390 px as at 1440 (JO-14).
+        // The rule and what it saw read whole: each wraps rather than being cut, at 390 px as at 1440.
         <span className="flex min-w-0 flex-col gap-0.5 py-2">
           <span className="text-pretty">
             <span className="mono text-xs text-ink-low">{finding.rule_id}</span>{" "}
@@ -53,8 +53,6 @@ const COLUMNS = col.columns([
             label={open ? "Open" : finding.resolved_why === "settings_changed" ? "Closed:" : "Resolved"}
             className="text-ink-mid"
           />
-          {/* Read whole: "superseded 12 Nov 2026" and "cleared 14. Nov. 2026" (de-DE) run past the column, so the
-              date, kept whole, takes a second line rather than being cut (the JO-14 review). */}
           <span className="text-xs text-ink-low">
             {open
               ? "since "
@@ -74,11 +72,6 @@ const COLUMNS = col.columns([
 
 const LOADING: Finding[] = [];
 
-/**
- * Every finding about the issue, open first: its severity, the rule and what
- * it saw, and since when. A row opens the finding's evidence on the Findings
- * page.
- */
 export function IssueFindings({ data }: { data: IssueData | null }) {
   const router = useRouter();
   const locale = useFigureLocale();

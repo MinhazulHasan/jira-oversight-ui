@@ -10,12 +10,6 @@ import { iso, isoDay, mondayUtc } from "./time";
 
 type Change = IssueTimeline["changes"][number];
 
-/**
- * One issue's story: its facts (who it is assigned to now among them), every
- * status it sat in, the stages it jumped, its changelog, the time logged on it
- * week by week (totals only, never who logged it) and every finding about it.
- * Sample issues link nowhere: there is no Jira site behind DEMO, so url is null.
- */
 export function issueTimeline(dataset: Dataset, key: string): IssueTimeline | null {
   const issue = dataset.world.byKey.get(key);
   if (!issue) return null;
@@ -67,7 +61,7 @@ export function issueTimeline(dataset: Dataset, key: string): IssueTimeline | nu
       estimate_set_at: issue.estimateSetAt === null ? null : iso(issue.estimateSetAt),
       started_at: issue.startedAt === null ? null : iso(issue.startedAt),
       effort_ratio: round4OrNull(issue.effortRatio),
-      // R-EFF-01's threshold on the board (JO-15), to draw the ratio against.
+      // R-EFF-01's threshold on the board, to draw the ratio against.
       effort_threshold: effortThreshold(dataset.rules),
       cycle_time_h: round4OrNull(issue.cycleTimeH),
       reopen_count: issue.reopenCount,

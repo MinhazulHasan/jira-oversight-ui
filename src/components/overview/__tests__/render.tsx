@@ -7,13 +7,6 @@ import type { Overview, People } from "@/lib/api/schemas";
 
 import { OverviewView } from "../overview-view";
 
-/*
- * Renders the Overview against a stated query result. The test file mocks
- * "@/lib/api/hooks" (useOverview and usePeople: vi.fn()), "next/link" and
- * the Recharts TrendLine; this sets what the hooks answer and returns their
- * refetches. The people (their own request) wait unless a test says otherwise.
- */
-
 type QueryResult = ReturnType<typeof useOverview>;
 type PeopleResult = ReturnType<typeof usePeople>;
 

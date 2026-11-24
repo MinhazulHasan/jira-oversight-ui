@@ -25,11 +25,6 @@ import {
   workingOnHref,
 } from "../model";
 
-/*
- * The person card in words and links (JO-13): every phrase the card says,
- * and where each of its ways on leads, without a browser.
- */
-
 const ada = cardSample as PersonCard;
 const noor = memberSample as PersonCard;
 

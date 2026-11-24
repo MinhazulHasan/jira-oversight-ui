@@ -6,15 +6,7 @@ import { memo, meta, type Dataset } from "./dataset";
 import type { SamplePicture } from "./pictures";
 import { memberPeople, personOf, pictureOfPerson } from "./team";
 
-/*
- * The board's people, as GET /people and the findings' people facet list
- * them: everyone assigned at least one ticket now, by the name Jira gives
- * them, and the tickets nobody is assigned to. A finding counts for the
- * person its issue is assigned to now; a sprint finding counts for no one.
- * GET /people counts the board's work only (JO-12, G5): an Epic is a
- * container, so someone who holds only Epics holds none of its tickets, as
- * the scorecard and every Ask ranking count them.
- */
+/** The board's people, as GET /people and the findings' people facet list */
 
 const compareText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
@@ -47,11 +39,6 @@ export function workPeople(dataset: Dataset): Person[] {
   });
 }
 
-/**
- * Everyone on the board (JO-10): the people assigned at least one of its
- * tickets now and the members of its last member fetch who hold none, each
- * once, by folded name. "On the board" for a picture and for Ask's mentions.
- */
 export function directoryPeople(dataset: Dataset): Person[] {
   return memo(dataset, "people:directory", () => {
     const people = new Map<string, Person>(boardPeople(dataset).map((person) => [person.id, person]));
@@ -60,12 +47,6 @@ export function directoryPeople(dataset: Dataset): Person[] {
   });
 }
 
-/**
- * GET /people/directory: everyone on the board with the tickets assigned to
- * them now (GET /people's `tickets` for the same person, Epics left out; 0
- * for a member who holds none, and for someone who holds only Epics). No
- * Unassigned entry. What Ask's @ list offers.
- */
 export function directoryView(dataset: Dataset): PeopleDirectory {
   return memo(dataset, "people:directory:view", () => {
     const tickets = new Map(peopleView(dataset).people.flatMap((row) => (row.person ? [[row.person.id, row.tickets] as const] : [])));
@@ -76,11 +57,7 @@ export function directoryView(dataset: Dataset): PeopleDirectory {
   });
 }
 
-/**
- * A person's picture as GET /people/{id}/avatar serves it: only for someone
- * on the board (assigned one of its tickets now, or one of its members), and
- * only when they have one.
- */
+/** A person's picture as GET /people/{id}/avatar serves it: only for someone */
 export function boardPicture(dataset: Dataset, personId: string): SamplePicture | null {
   return directoryPeople(dataset).some((person) => person.id === personId) ? pictureOfPerson(personId) : null;
 }

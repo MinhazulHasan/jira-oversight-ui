@@ -19,13 +19,6 @@ export async function generateMetadata({ params }: PageProps<"/issues/[key]">): 
   return { title: (await keyFrom(params)) ?? "Issue" };
 }
 
-/**
- * The Issue page. A malformed key is a 404; whether the snapshot holds the
- * issue is the data's to say, inside the page (a calm "not in the snapshot"
- * with the ways back). This page streams behind (app)/loading.tsx, so its
- * notFound() alone would go out with status 200: src/proxy.ts sends a
- * malformed key to the (missing) group first, for a real 404 status.
- */
 export default async function IssuePage({ params }: PageProps<"/issues/[key]">) {
   const key = issueKeyFromSegment((await params).key);
   if (key === null) notFound();

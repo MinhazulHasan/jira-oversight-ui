@@ -10,12 +10,6 @@ const page = pageByKey("findings");
 
 export const metadata: Metadata = { title: page.label };
 
-/**
- * Findings: the working list. The header is drawn on the server; the filters,
- * the table and the evidence drawer read the URL in the browser, so every
- * view (filters, sort, page, the open finding) is a link. Export CSV and Copy
- * link sit on the result line, beside the rows they act on.
- */
 export default function FindingsPage() {
   return (
     <PageSheet>

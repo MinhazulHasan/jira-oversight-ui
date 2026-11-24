@@ -5,18 +5,12 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-/**
- * Views of one subject (Radix Tabs: arrow keys move between tabs, the panel
- * is labelled by its tab). The current tab is marked in ink with a 2 px rule,
- * never in the accent: a tab is navigation, not evidence.
- */
+/** Views of one subject (Radix Tabs. */
 export const Tabs = TabsPrimitive.Root;
 
 export function TabsList({ className, ...props }: ComponentProps<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
-      // On a phone the row scrolls sideways rather than pushing the page; the
-      // hairline is an inset shadow so the current tab's rule can sit on it.
       className={cn(
         "flex items-end gap-5 overflow-x-auto overscroll-x-contain shadow-[inset_0_-1px_0_var(--rule-weak)] [scrollbar-width:none]",
         className,

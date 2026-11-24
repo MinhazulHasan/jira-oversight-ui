@@ -4,12 +4,6 @@ import { formatDate, formatDateTime, formatHours, MISSING } from "@/lib/format";
 
 import { fieldLabel, ms, type IssueData, type ProcessMap } from "./model";
 
-/*
- * The issue's life as swimlanes: a lane per stage of James's process (from
- * the process map when it is to hand), a spell for every status it sat in,
- * the stages it jumped, and the moments its estimate was set or changed.
- */
-
 export const UNMAPPED_LANE = "unmapped";
 const HOUR = 3_600_000;
 

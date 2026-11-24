@@ -2,16 +2,6 @@ import { ASK_MAX_LENGTH, type Person } from "@/lib/api/schemas";
 
 import { insertMention, mentionLabel, mentionsIn, rebaseMentions, type Mention, type MentionQuery } from "./mentions";
 
-/*
- * The question box's content as a model: the question's text exactly as it
- * is sent, each chip in it written "@Name", and the chips (who, and where
- * their "@Name" stands). The box draws its DOM from this and changes only
- * this: every keystroke, deletion, paste, drop, undo and choice becomes a
- * change of the model (question-editor.tsx), so a chip is always whole: it
- * goes in one piece or not at all, and nothing is ever typed inside it. Pure
- * functions, so every rule is tested without a browser.
- */
-
 /** The question as the box holds it. */
 export interface Draft {
   /** The question as it is sent: its text, each chip written "@Name". At most 500 characters. */
@@ -53,12 +43,6 @@ export function piecesOf(draft: Draft): Piece[] {
   return pieces;
 }
 
-/**
- * A question from elsewhere (the address, the session, ↑) with its chips
- * rebuilt: every "@Name" of each person id sent with it becomes their chip
- * again (mentionsIn), the same person twice and a chip with a letter typed
- * against it included. Text naming no one picked stays text.
- */
 export function draftOf(text: string, people: readonly Person[] | undefined, ids: readonly string[]): Draft {
   const mentions: Mention[] = [];
   for (const mention of [...mentionsIn(text, people, ids)].sort((a, b) => a.start - b.start)) {
@@ -85,10 +69,6 @@ function chipAround(draft: Draft, at: number): Mention | undefined {
   return draft.mentions.find((mention) => mention.start < at && at < mention.end);
 }
 
-/**
- * A point moved out of any chip it falls inside: to the edge `bias` points
- * to, or (without one) the nearer edge. A caret never stands inside a chip.
- */
 export function snapPoint(draft: Draft, at: number, bias: -1 | 0 | 1 = 0): number {
   const clamped = Math.max(0, Math.min(at, draft.text.length));
   const chip = chipAround(draft, clamped);
@@ -129,12 +109,6 @@ function fitted(text: string, room: number): string {
   return last >= 0xd800 && last <= 0xdbff ? cut.slice(0, -1) : cut;
 }
 
-/**
- * Plain text in place of a range (grown to whole chips): what typing,
- * deleting, pasting and dropping do. The text is cut to what the question's
- * 500 characters leave room for, as a text field's limit cuts a paste; it
- * never makes a chip. Null when nothing would change.
- */
 export function replaceRange(draft: Draft, from: number, to: number, insert: string): Edit | null {
   const [start, end] = wholeRange(draft, from, to);
   const text = fitted(plainText(insert), ASK_MAX_LENGTH - (draft.text.length - (end - start)));
@@ -151,11 +125,6 @@ export function replaceRange(draft: Draft, from: number, to: number, insert: str
   };
 }
 
-/**
- * Someone chosen from the @ list: the search (and the rest of the word it
- * was in) becomes their chip and a space, the caret just after the space.
- * Null when the question has no room for the name.
- */
 export function chooseInto(draft: Draft, search: MentionQuery, person: Person): Edit | null {
   const written = insertMention(draft.text, search, person);
   if (!written) return null;
@@ -163,11 +132,6 @@ export function chooseInto(draft: Draft, search: MentionQuery, person: Person): 
   return { draft: { text: written.text, mentions }, caret: written.caret };
 }
 
-/**
- * A selection dragged to another place in the question: moved, chips and
- * all (a drop from elsewhere is plain text, replaceRange). Null when it would
- * land inside itself.
- */
 export function moveRange(draft: Draft, from: number, to: number, at: number): Edit | null {
   const [start, end] = wholeRange(draft, from, to);
   const target = snapPoint(draft, at);
@@ -221,10 +185,6 @@ function runAround(draft: Draft, at: number): [number, number] {
   return [floor, ceiling];
 }
 
-/**
- * Where the caret goes for one press of an arrow: past one character, or
- * over a whole chip as one, as Jira and Confluence step over a mention.
- */
 export function stepFrom(draft: Draft, at: number, direction: -1 | 1): number {
   const here = snapPoint(draft, at, direction);
   if (direction < 0) {
@@ -241,12 +201,6 @@ export type DeleteUnit = "character" | "word" | "line";
 const WORD = /[\p{L}\p{M}\p{N}_'’]/u;
 const SPACE = /\s/u;
 
-/**
- * The range one press of Backspace (direction -1) or Delete (1) removes,
- * when the browser has not said: the selection when there is one; else a
- * chip right beside the caret, whole; else a character, a word or the rest
- * of the line. Null at the question's edge.
- */
 export function deletionRange(draft: Draft, selected: Selected, direction: -1 | 1, unit: DeleteUnit): [number, number] | null {
   if (selected.anchor !== selected.focus) return wholeRange(draft, selected.anchor, selected.focus);
   const text = draft.text;
@@ -303,13 +257,6 @@ function tokensOf(runs: readonly Run[]): Run[] {
   return runs.flatMap((run): Run[] => (typeof run === "string" ? plainText(run).split("") : [run]));
 }
 
-/**
- * The draft once the browser has changed the box itself: what an input
- * method composed, which is left to the browser while it composes (Japanese,
- * Chinese, the accents a Mac makes from a held key). `runs` is the DOM read
- * back, its chips the drawn draft's own; the change is cut to what the 500
- * characters leave room for, the rest of the question kept as it was.
- */
 export function settleRuns(before: Draft, runs: readonly Run[], caret: number): Edit {
   const after = draftOfRuns(runs);
   if (after.text.length <= ASK_MAX_LENGTH) return { draft: after, caret: Math.min(caret, after.text.length) };

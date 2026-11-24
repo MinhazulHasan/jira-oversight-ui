@@ -1,8 +1,4 @@
-/**
- * A seeded generator, so the sample project is the same on every machine and
- * every run. Each concern draws from its own stream (forked by label), so
- * tuning one part of the story never reshuffles the rest of it.
- */
+/** A seeded generator, so the sample project is the same on every machine and */
 
 export interface Rng {
   /** Uniform in [0, 1). */

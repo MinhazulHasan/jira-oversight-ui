@@ -18,10 +18,6 @@ const HREF: Partial<Record<CoverageKey, string>> = {
   time_logged: BASELINE_HREF,
 };
 
-/*
- * What can be counted shares one row; what Jira cannot show takes a wider
- * row under it, so "Not measurable" and its reason never crowd the label.
- */
 const GRID = "grid grid-cols-2 gap-x-8 gap-y-6 md:grid-cols-6";
 const COUNTABLE_CELL = "md:col-span-2";
 const GAP_CELL = "col-span-2 md:col-span-3";
@@ -41,11 +37,6 @@ function MeterSkeleton({ className }: { className: string }) {
   );
 }
 
-/**
- * How much of the work carries what the process needs: estimates, points and
- * logged time as shares, and the steps Jira holds no evidence for, hatched,
- * with the reason. That gap is a finding for James, so it reads calmly.
- */
 export function Coverage({ data, className }: { data?: Overview; className?: string }) {
   const locale = useFigureLocale();
   const entries = data ? COVERAGE_KEYS.map((key) => ({ key, entry: data.coverage[key] })) : [];

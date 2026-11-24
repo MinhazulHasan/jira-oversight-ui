@@ -1,11 +1,5 @@
 import { formatNumber, formatShare } from "@/lib/format";
 
-/*
- * Axis arithmetic shared by the charts. Ticks fall on clean round numbers
- * (1, 2 or 5 times a power of ten), never on the data's own extremes, so a
- * reader can read any value off the grid.
- */
-
 export interface NiceScale {
   min: number;
   max: number;
@@ -20,11 +14,6 @@ function decimalsOf(step: number): number {
   return Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
 }
 
-/**
- * The domain and ticks for values between min and max: the smallest round
- * step that needs no more than maxTicks + 1 ticks, with the domain widened
- * to whole steps. `zero` keeps zero on the axis (counts, hours on bars).
- */
 export function niceScale(
   min: number,
   max: number,
@@ -55,20 +44,11 @@ export function niceScale(
   return { min: lo, max: hi, step: hi - lo, ticks: [lo, hi] };
 }
 
-/**
- * Which week to label on a weekly axis: every nth, counted back from the
- * latest, so the week a reader cares about most is always named.
- */
 export function weekTicks<T extends { week: string }>(rows: readonly T[], maxLabels: number): string[] {
   if (rows.length === 0) return [];
   const step = Math.max(1, Math.ceil(rows.length / Math.max(1, maxLabels)));
   return rows.filter((_, index) => (rows.length - 1 - index) % step === 0).map((row) => row.week);
 }
-
-/*
- * Axis labels are round numbers, so they carry no more decimals than their
- * step needs, and every tick on one axis carries the same number.
- */
 
 /** A tick formatter: the value, the locale, and the step between ticks when the chart knows it. */
 export type AxisFormat = (value: number, options: { locale?: string; step?: number }) => string;

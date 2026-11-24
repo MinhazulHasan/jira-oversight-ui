@@ -9,10 +9,7 @@ import { useNow } from "@/lib/use-now";
 
 import { sourceLabel } from "./data-source";
 
-/**
- * Only on paper. A printout travels without the top bar, so it carries its
- * own provenance: which page, which data, how fresh, and when it was printed.
- */
+/** Only on paper. */
 export function PrintHeader() {
   const pathname = usePathname();
   const health = useHealth();

@@ -3,16 +3,7 @@ import "server-only";
 import type { AtlassianAuthConfig } from "./config";
 import { sessionName } from "./cookies";
 
-/*
- * The few calls signing in makes to Atlassian, as its OAuth 2.0 (3LO) guide
- * describes them (developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps):
- * the authorisation address, the code exchange, the User Identity API's /me,
- * the sites the account can reach, and which of the dashboard's boards its
- * Jira lets it open. Each call gives up after ten seconds
- * and follows no redirect, since one would carry the secret or the token
- * somewhere else. A failure says which step failed and the HTTP status, and
- * nothing Atlassian sent: no body, no token, no code, ever.
- */
+/** The few calls signing in makes to Atlassian, as its OAuth 2.0 (3LO) guide */
 
 /** Who the person is (read:me), and which boards they can open (read:jira-work). Nothing that writes, no offline access. */
 export const SCOPES = ["read:me", "read:jira-work"] as const;
@@ -39,10 +30,6 @@ export interface Profile {
   email: string | null;
   /** Null when Atlassian does not say. Anything but true or nothing reads as false. */
   emailVerified: boolean | null;
-  /**
-   * The account's display name, for the access log to name its reads by (JO-12); null when Atlassian gave none
-   * fit to keep (none, too long, or with an email address in it). Never shown to anyone else, never logged.
-   */
   name: string | null;
 }
 
@@ -54,11 +41,7 @@ export interface Resource {
 
 type Config = Pick<AtlassianAuthConfig, "authBase" | "apiBase" | "clientId" | "clientSecret" | "redirectUri">;
 
-/**
- * Where to send a person to sign in: the authorisation address with its
- * parameters in the order and encoding Atlassian documents (and its developer
- * console generates), scopes separated by %20.
- */
+/** Where to send a person to sign in: the authorisation address with its */
 export function authorizeUrl(config: Pick<Config, "authBase" | "clientId" | "redirectUri">, state: string): string {
   const parameters: [string, string][] = [
     ["audience", "api.atlassian.com"],
@@ -174,12 +157,7 @@ export async function fetchResources(config: Config, accessToken: string): Promi
   return { ok: true, resources };
 }
 
-/**
- * Which of `keys` the account can open on the Jira site `cloudId`. Jira's
- * project search (GET /rest/api/3/project/search, read:jira-work) lists only
- * the projects the account may browse, so a key it leaves out is a board this
- * person cannot see. Asked fifty keys at a time, Jira's limit.
- */
+/** Which of `keys` the account can open on the Jira site `cloudId`. Jira's */
 export async function fetchBoardAccess(
   config: Pick<Config, "apiBase">,
   accessToken: string,

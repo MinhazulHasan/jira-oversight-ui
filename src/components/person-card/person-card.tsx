@@ -44,27 +44,6 @@ import {
   type MeterPart,
 } from "./model";
 
-/*
- * The person card (JO-13): what an admin sees on hovering or clicking a
- * person's name, as Atlassian's profile card shows the person, but about
- * their work on this board. Top to bottom: the picture, the name and one
- * plain line; their open, in-progress and recently done tickets; their open
- * findings; how their figures stand next to the board's (the scorecard's
- * marks, in the neutral inks: none of them is good or bad); what they are
- * working on now; the other boards they hold open tickets on; and the ways
- * on (their scorecard, their findings, Ask about them).
- *
- * Every section has a fixed height, and the loading state draws the same
- * sections in the same places: nothing moves when the figures arrive. The
- * name and the picture are known before anything is fetched, so they are
- * there from the first frame, as are the actions.
- *
- * A card read on another board than the top bar's (an access log entry's)
- * is about that board throughout: its picture, its figures, and every link,
- * which picks that board before it opens, so a card never leads to a page
- * that disagrees with it.
- */
-
 /** The card's width in a popover (the brief's 340 px). */
 export const CARD_WIDTH_PX = 340;
 
@@ -77,23 +56,12 @@ const METER_FILL: Record<MeterPart, string> = {
 };
 
 const SECTION_LABEL = "micro text-ink-low";
-/**
- * A framed module of the card (its figures, the tickets it lists): the medium corner and a `--rule` hairline, a step
- * firmer than a frame on the sheet, since the card stands on the raised ground, where the weak rule all but vanishes
- * in dark. What divides the inside of a frame stays the weak rule. A frame holds what is there and nothing more:
- * the room a section keeps for more is plain card.
- */
 const FRAME = "rounded-md border border-rule";
 /** What a section says when it has nothing to show: one muted line at the top of its room, unframed. */
 const EMPTY_LINE = "text-xs leading-[17px] text-ink-low";
 
 /* ---------------------------------------------------------- the boards -- */
 
-/**
- * The board the top bar has picked, as it shows it: the one the service
- * says it served, else the pick in the cookie, else the service's default;
- * null while none of these is known.
- */
 function useTopBarBoard(): string | null {
   const health = useHealth();
   const projects = useProjects();
@@ -101,12 +69,6 @@ function useTopBarBoard(): string | null {
   return health.data?.projects[0] ?? (hydrated ? boardFromCookieHeader(document.cookie) : null) ?? projects.data?.default ?? null;
 }
 
-/**
- * The board a link on the card picks before it opens: the board the card is
- * read on where that is not the top bar's (an access log entry's board, or
- * one the top bar cannot say yet); null where the card is about the top
- * bar's board, whose links are ordinary links.
- */
 function useLinkBoard(read: string | null | undefined): string | null {
   const top = useTopBarBoard();
   return read && read !== top ? read : null;
@@ -118,23 +80,12 @@ interface CardLinkProps {
   board: string | null;
   /** The card is left for the link (it closes, and gives focus to no one). */
   onLeave?: () => void;
-  /**
-   * What a plain press does in place of following the link, where the page does it itself (the Ask page's "Ask
-   * about"); a new tab or window still opens the link.
-   */
   here?: () => void;
   className?: string;
   title?: string;
   children: ReactNode;
 }
 
-/**
- * A link on the card. On the top bar's board, an ordinary link. On another,
- * it picks that board first, as the Portfolio's links do: a press opens the
- * page there with a whole page load (nothing of the board before is kept);
- * a new tab or window (a modifier, the middle button) opens on that board,
- * this page staying as it is.
- */
 function CardLink({ href, board, onLeave, here, className, title, children }: CardLinkProps) {
   const press = (event: MouseEvent<HTMLAnchorElement>) => {
     const plain = !event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
@@ -205,8 +156,6 @@ function Tiles({ card, days }: { card: PersonCard | undefined; days: number }) {
     // The third is wider, so its period is said whole beside the two short words.
     <dl className={cn(FRAME, "grid h-[58px] shrink-0 grid-cols-[1fr_1fr_1.35fr] gap-px overflow-hidden bg-rule-weak")} data-card-tiles>
       {tiles.map((tile) => (
-        // The label's line box is tall enough for its descenders (the p and g of "In progress"), which a box as tall as
-        // the type would cut flat; the gap under it is the smaller for it, so label and figure stand as before.
         <div key={tile.key} className="flex min-w-0 flex-col justify-center gap-1 bg-raised px-2.5" data-tile={tile.key}>
           <dt className="truncate text-xs leading-4 text-ink-low">
             <span aria-hidden>{tile.label}</span>
@@ -228,11 +177,6 @@ function Tiles({ card, days }: { card: PersonCard | undefined; days: number }) {
   );
 }
 
-/**
- * Their open breaches and open warnings, each with its severity mark, as the Portfolio and the Overview show them,
- * under a label that says what they cover: every ticket they hold, done ones too, as Findings lists them, so the
- * counts can outnumber the open tickets above many times over and still be right.
- */
 function FindingsLine({ card }: { card: PersonCard | undefined }) {
   const locale = useFigureLocale();
   let line: ReactNode;
@@ -313,8 +257,6 @@ function ProcessMeter({ card, days }: { card: PersonCard | undefined; days: numb
     const sentence = processSentenceParts(process, locale);
     content = (
       <div className={cn(body, "gap-2")}>
-        {/* The scorecard's sentence on two lines, always, its figures in Plex Mono: the same shape in the card and the
-            sheet, whatever their width. */}
         <p className="h-[34px] text-xs leading-[17px] text-ink-mid" data-card-sentence>
           {sentence.lead}{" "}
           <span className="block">
@@ -390,20 +332,6 @@ function LastActivity({ card }: { card: PersonCard | undefined }) {
   );
 }
 
-/**
- * Up to three tickets in progress now, longest first, in a framed list
- * exactly as tall as its rows, then how many more (the whole list a press
- * away, in Ask); when anything last happened on their tickets stands at the
- * section's head. The section keeps the room of three, so the card is one
- * size from its first frame: a shorter list leaves plain card under it, and
- * nothing in progress is one muted line at the top of the room.
- *
- * One clock for the section: how long each ticket has been in progress is
- * measured to now, as the last activity beside it is. Once the board's last
- * sync is older than the top bar's two hours (stale), what is in progress
- * is only known as of that sync: the heading says so, and the spells are
- * measured to the sync.
- */
 function WorkingOn({ card, person, board, onLeave }: { card: PersonCard | undefined; person: Person; board: string | null; onLeave?: () => void }) {
   const locale = useFigureLocale();
   const now = useNow();
@@ -473,14 +401,6 @@ function WorkingOn({ card, person, board, onLeave }: { card: PersonCard | undefi
   );
 }
 
-/**
- * The other boards they hold open tickets on, on one line: each one the top
- * bar can open is a link to their scorecard there (picking that board first);
- * one it cannot (never synced, or not served here) is named, never offered
- * as a way in. As many as fit whole are listed, in order; the rest are
- * "+N more", whose tooltip, and a screen reader, name them: never a board cut
- * short, nor a link out of sight that a key could still reach.
- */
 function OtherBoards({ card, person, days, onLeave }: { card: PersonCard | undefined; person: Person; days: number; onLeave?: () => void }) {
   const locale = useFigureLocale();
   const projects = useProjects();
@@ -495,8 +415,6 @@ function OtherBoards({ card, person, days, onLeave }: { card: PersonCard | undef
   /** The line is on the card with its boards: measured once it is, however late the board list arrives. */
   const drawn = boards.length > 0 && otherBoardsLine(projects.data, health.data);
 
-  // How many fit, measured on an unseen copy of the whole line (the same type), again whenever the line's room or
-  // the type's width changes (a sheet turned on its side, the fonts arriving).
   useLayoutEffect(() => {
     const visible = line.current;
     const copy = ruler.current;
@@ -589,12 +507,6 @@ function OtherBoards({ card, person, days, onLeave }: { card: PersonCard | undef
   );
 }
 
-/**
- * Whether the card has a line for other boards: where the reader can open
- * more than one board (only then can anyone hold tickets on another), and in
- * the sample, which names made-up boards it does not serve. Known before the
- * card is read, so the card's height never changes when its figures arrive.
- */
 function otherBoardsLine(projects: Projects | undefined, health: Health | undefined): boolean {
   const synced = projects?.projects.filter((board) => board.last_synced_at !== null).length ?? 0;
   return synced > 1 || health?.data_mode === "sample";
@@ -648,16 +560,6 @@ interface ActionsProps {
   layout: "bar" | "sheet";
 }
 
-/**
- * The ways on, a ruled bar of three cells across the card's foot: their
- * scorecard, their findings, and Ask with them in the question. Each cell is
- * as wide as its words, the room left shared out between them; taller in the
- * bottom sheet, for a finger. Never cut short: only a long first name wraps
- * the third cell onto a second line, known from the first frame (the name
- * is), so nothing moves when the figures arrive. A way on that would lead
- * nowhere (the findings of a member who holds no tickets; every one for a
- * person not on the board) is drawn in its place, quiet, saying why.
- */
 function Actions({ card, error, person, days, board, onLeave, layout }: ActionsProps) {
   const askHere = useAskAboutHere();
   const member = card?.membership === "member_no_tickets";
@@ -740,22 +642,12 @@ export interface PersonCardContentProps {
   onClose: () => void;
 }
 
-/**
- * The card as a popover's content: the header band (the picture, the name,
- * the plain line), the body, and the actions as a ruled bar at its foot.
- * The name is the dialog's title. The band and the bar are plain blocks, not
- * a banner and a content-information landmark: the card is part of a page
- * that has its own.
- */
 export function PersonCardPopoverBody({ person, days, board, pinned, onClose }: PersonCardContentProps) {
   const query = usePersonCard(person.id, { days, board });
   const card = query.data;
   const links = useLinkBoard(board);
   return (
     <div className="flex flex-col" data-person-card={person.id} data-card-state={card ? "ready" : query.error ? "error" : "loading"}>
-      {/* The picture at 48 px, the size Jira gives it (never stretched to another: the product owner, 13 Nov 2026), and
-          the band its height and 12 px above and below: a one-line name and its plain line sit centred on it, a
-          two-line name grows the band. */}
       <div className="relative flex min-h-18 items-center gap-3 border-b border-rule-weak bg-rail px-4 py-3" data-card-head>
         <PersonAvatar person={person} size={48} board={board} className="shadow-[0_0_0_2px_var(--paper-050)]" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">

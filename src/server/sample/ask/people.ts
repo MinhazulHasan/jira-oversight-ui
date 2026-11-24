@@ -12,15 +12,7 @@ import { cite, listed, type Piece } from "./compose";
 import { asksForFewest, severityIn } from "./match";
 import type { ScriptResult } from "./scripts";
 
-/*
- * Ask at people level, in sample mode: the questions about people the
- * service's catalogue path answers, read from the analyst's views as the live
- * service reads them (the people view, and findings and issues with their
- * current assignee), with a query in the facts as the analyst writes one.
- * Facts only: who has the most open breaches or warnings, and one person's
- * open findings or work in progress. Nobody is rated or judged, and an answer
- * names a person only when its facts or the question's mentions do.
- */
+/** Ask at people level, in sample mode: the questions about people the */
 
 type Row = Record<string, FactCell>;
 type Severity = "breach" | "warning";
@@ -76,12 +68,7 @@ const RANKED_BY: Record<Ranked, string> = {
 /** The figures whose answers end saying whose findings are whose. */
 const ABOUT_FINDINGS: readonly Ranked[] = ["open_breaches", "open_warnings", "open_findings", "tickets_with_findings"];
 
-/**
- * How the people view's rows read, as the service's oversight_people notes
- * them (JO-12, G5): people only, by one figure, ties by name; the tickets
- * nobody holds as one row after them, never ranked; a person's tickets the
- * board's work, Epics left out.
- */
+/** How the people view's rows read, as the service's oversight_people notes */
 function peopleNote(rankBy: Ranked, { fewest = false, mentioned = false, unassigned = false } = {}): string {
   const whose = mentioned
     ? "one row for each person asked about, by person id, who is assigned a ticket on this board now"
@@ -115,12 +102,6 @@ function unassignedRow(dataset: Dataset): PersonSummary | null {
   return peopleView(dataset).people.find((row) => row.person === null) ?? null;
 }
 
-/**
- * A "who" ranking, as the service's oversight_people ranks (JO-12, G5): the
- * people only, by one figure, most first (fewest first when asked), ties by
- * name folded for case and accents, then id; then the tickets nobody holds,
- * as one row of their own, never ranked.
- */
 function peopleRanking(dataset: Dataset, ref: string, rankBy: Ranked, n: number, fewest: boolean, only: readonly string[] | null = null): FactSet {
   const sign = fewest ? -1 : 1;
   // Findings are breaches and warnings together: their sum is the figure ranked by, a column of its own.
@@ -154,11 +135,6 @@ export function rankingFacts(dataset: Dataset, ref: string, severity: Severity, 
 /** How many of a ranking's rows are people: the tickets nobody holds come after them, never among them. */
 const peopleIn = (facts: FactSet) => facts.rows.filter((row) => row.person_id !== null).length;
 
-/**
- * The tickets nobody holds, after a ranking and never in it (JO-12, G5), in
- * the service's words: "Unassigned: 148 open tickets."; nothing when they hold
- * none of the figure.
- */
 function unassignedPieces(facts: FactSet, column: Ranked): Piece[] {
   const index = facts.rows.findIndex((row) => row.person_id === null && row.name === UNASSIGNED_LABEL);
   if (index < 0) return [];
@@ -168,10 +144,6 @@ function unassignedPieces(facts: FactSet, column: Ranked): Piece[] {
   return [" ", `${UNASSIGNED_LABEL}: `, cite.count(facts, index, column), ` ${amount === 1 ? one : several}.`];
 }
 
-/**
- * Who has the fewest of one figure, as the service says it (oversight/llm/scripted.py, _render_fewest): whoever has
- * the fewest, everyone level with them (three by name, the rest as others), then who comes next.
- */
 function fewestPieces(facts: FactSet, column: string, words: string): Piece[] {
   const low = countAt(facts, 0, column);
   const people = facts.rows.slice(0, peopleIn(facts));
@@ -199,18 +171,13 @@ const BOARD_PEOPLE_COLUMNS: Column[] = [
   { key: "tickets", label: "Tickets", kind: "count" },
 ];
 
-/**
- * oversight_board_people(project, holding): everyone on the board as the @
- * list shows them (the people assigned its tickets now, then its members who
- * hold none, each by name), or only those members: the service's tool and
- * note, word for word.
- */
+/** oversight_board_people(project, holding): everyone on the board as the @ */
 export function boardPeopleFacts(dataset: Dataset, ref: string, holding: "any" | "none"): FactSet {
   const holders = rowsOfPeople(dataset)
     .map((row) => ({ person: row.person, tickets: row.tickets }))
     .sort((a, b) => compareByFoldedName(a.person, b.person));
   const held = new Set(holders.map((row) => row.person.id));
-  // A member who holds none of its tickets, or someone who holds only Epics (no work: JO-12, G5).
+  // A member who holds none of its tickets, or someone who holds only Epics (no work: G5).
   const members = directoryPeople(dataset)
     .filter((person) => !held.has(person.id))
     .sort(compareByFoldedName)
@@ -245,11 +212,7 @@ export function boardPeopleAnswer(dataset: Dataset, holding: "any" | "none"): Sc
   return { outcome: "answered", facts: [facts], pieces: boardPeoplePieces(facts) };
 }
 
-/**
- * The words for a board-people fact set: the service's _render_board_people,
- * word for word. Each name once (JO-12, G8): the people who hold its tickets,
- * then how many members hold none, and who.
- */
+/** The words for a board-people fact set: the service's _render_board_people, */
 export function boardPeoplePieces(facts: FactSet): Piece[] {
   const names = facts.rows.map((_, index) => nameAt(facts, index));
   const none = facts.rows.flatMap((row, index) => (row.tickets === 0 ? [nameAt(facts, index)] : []));
@@ -363,11 +326,7 @@ export function inProgressFacts(dataset: Dataset, ref: string, personId: string,
 const nameAt = (fact: FactSet, index: number) => String(fact.rows[index]?.name ?? "");
 const countAt = (fact: FactSet, index: number, column: string) => Number(fact.rows[index]?.[column] ?? 0);
 
-/**
- * "Who has the most open breaches?" (or warnings): the ranking, its leader's
- * figures, the two who follow. "Who has the fewest?": fewest first, in the
- * service's words.
- */
+/** "Who has the most open breaches?" (or warnings): the ranking, its leader's */
 export function rankingAnswer(dataset: Dataset, question: string): ScriptResult {
   const severity = severityIn(question) ?? "breach";
   const fewest = asksForFewest(question);
@@ -412,15 +371,6 @@ export function rankingAnswer(dataset: Dataset, question: string): ScriptResult 
   return { outcome: "answered", facts: [facts], pieces };
 }
 
-/**
- * "Who holds the most open tickets?" (JO-09's ranking by the people view's
- * open tickets): most first, in the service's words ("<Name> has the most open
- * tickets: 11, then <Name> with 9."), or fewest first when the question asks
- * who has the least; then the tickets nobody holds, never ranked
- * ("Unassigned: 148 open tickets."). The open tickets are the board's work,
- * Epics left out, as the scorecard and "who has the biggest backlog?" count
- * them, so both give one figure and one order (JO-12, G5).
- */
 export function ticketsRankingAnswer(dataset: Dataset, column: Ranked, fewest = false, only: readonly string[] | null = null): ScriptResult {
   const facts = peopleRanking(dataset, "F1", column, 50, fewest, only);
   if (facts.rows.length === 0) {
@@ -433,8 +383,6 @@ export function ticketsRankingAnswer(dataset: Dataset, column: Ranked, fewest = 
   if (people === 0) return { outcome: "answered", facts: [facts], pieces: ["No one on this board holds a ticket now.", ...unassigned] };
   const words = FIGURE_WORDS[column][1];
   if (fewest) return { outcome: "answered", facts: [facts], pieces: [...fewestPieces(facts, column, words), ...unassigned, ...follows] };
-  // The service's _render_people: whoever has the most (up to three level with them, "13 each"), then the next
-  // figure below theirs; no one at all when the most is none.
   const top = countAt(facts, 0, column);
   if (top === 0) {
     return { outcome: "answered", facts: [facts], pieces: [`No one on this board has ${/^[aeiou]/.test(words) ? "an" : "a"} ${FIGURE_WORDS[column][0]}.`, ...unassigned, ...follows] };
@@ -535,11 +483,7 @@ export function namedPeople(text: string, people: readonly Person[]): Person[] {
   return named;
 }
 
-/**
- * The people an answer names, if every one of them is in its facts (a cell
- * holding the name) or among the question's mentions; null when one is not,
- * and the answer may not be shown. The service checks every answer so.
- */
+/** The people an answer names, if every one of them is in its facts (a cell */
 export function verifiedPeople(answer: string, facts: readonly FactSet[], mentioned: readonly Person[], people: readonly Person[]): Person[] | null {
   const named = namedPeople(answer, people);
   const inFacts = (name: string) => facts.some((fact) => fact.rows.some((row) => Object.values(row).some((value) => value === name)));
@@ -570,13 +514,6 @@ function firstNameAt(text: string, first: string): number {
   return -1;
 }
 
-/**
- * The people a question names in its own words (JO-11): each full display
- * name on the board, folded for case and accents as the @ list folds a search,
- * standing as whole words. A name only one person on the board has (a ticket
- * holder or a member) is that person, as if picked with @; a name two or more
- * share is ambiguous, and the admin is asked to pick with @.
- */
 export function typedPeople(question: string, board: readonly Person[]): Typed {
   const byName = new Map<string, Person[]>();
   for (const person of board) {
@@ -593,10 +530,6 @@ export function typedPeople(question: string, board: readonly Person[]): Typed {
       ambiguous.push(holders[0].name);
     }
   }
-  // A first name typed on its own (the JO-11 review: "Is Ada doing well?"), as the service reads one
-  // (oversight/ask/people.py, first_named_in): the first word of a name of two words or more, as the data writes it
-  // and not where a sentence starts, after every full name is taken out. One person's is that person; a first name
-  // two people share asks for @, naming them.
   let rest = question;
   for (const person of board) rest = rest.replace(asWords(person.name.trim(), "giu"), (match) => " ".repeat(match.length));
   const whole = new Set(board.map((person) => person.name.trim()));
@@ -622,17 +555,7 @@ export function typedPeople(question: string, board: readonly Person[]): Typed {
 /** Where a name typed in lower case stands as a person's: after a word that asks about someone, or before a possessive. */
 const SLOT_BEFORE = String.raw`\b(?:is|was|has|does|did|how['’]?s|what['’]?s|for|of|about|by|from|with|to|show|me)\s+`;
 
-/**
- * The people a question names by a first name or a surname (the first or the
- * last word of a name of two words or more; a surname that is also a common
- * word, never), or a one-word name, typed in another case than the board
- * writes it, where a person's name stands ("how is ada doing?", "how is
- * Brooks doing?", "ada's backlog"), as the service reads them
- * (oversight/ask/people.py, loosely_named_in): the name as the board writes
- * it and everyone who goes by it, in order of first appearance. Read only
- * when no name was found otherwise and the question asks something of one
- * person: "will" in "when will the sprint end?" is no one.
- */
+/** The people a question names by a first name or a surname (the first or the */
 export function looselyNamed(question: string, board: readonly Person[]): { first: string; people: Person[] }[] {
   const groups = new Map<string, { first: string; people: Person[] }>();
   for (const person of board) {
@@ -664,30 +587,18 @@ export function noOneCalledMessage(name: string): string {
   return `No one called ${name} is on this board.`;
 }
 
-/**
- * The last resort for a question about people that nothing here places
- * (JO-12, G3/G4: never turn an admin away): the figures it is answered with,
- * said first (prompts.py LAST_RESORT_OVERALL and LAST_RESORT_SCORECARD).
- */
+/** The last resort for a question about people that nothing here places */
 export const LAST_RESORT = {
   overall: "This answer uses the overall comparison: the number of measures on which each person is closer to the process than the whole board.",
   scorecard: "This answer uses the scorecard: each measure next to the whole board's.",
 } as const;
 
-/**
- * Where a typed name stands, as the service reads one (oversight/ask/people.py, _NAME_SLOT): after a word that asks
- * about someone, but not "to" (a verb follows it: "to finish"), or before a possessive.
- */
 const NAME_SLOT = String.raw`\b(?:is|was|has|does|did|how['’]?s|what['’]?s|for|of|about|by|from|with|show|me)\s+`;
 const LETTERS = String.raw`\p{L}+`;
 const WORDY = String.raw`[\p{L}\p{N}_'’-]`;
 const TYPED_NAME = new RegExp(`${NAME_SLOT}(${LETTERS})(?!${WORDY})|(?<!${WORDY})(${LETTERS})['’]s?(?!${WORDY})`, "gu");
 
-/**
- * Words that stand in those places but are never anyone's name: pronouns and
- * determiners, the words of a question, of time, of the board's work and of
- * its process. Compared folded. The service's NOT_NAMES, word for word.
- */
+/** Words that stand in those places but are never anyone's name: pronouns and */
 const NOT_NAMES = new Set(
   `a about after all also always an and another any anybody anyone anything are as at back bad badly be been before
   being best better both but by can could do does doing done down each either else enough ever every everybody
@@ -735,17 +646,7 @@ const startsASentence = (text: string, at: number) => {
   return before === "" || /[.!?]$/.test(before);
 };
 
-/**
- * A name typed where a person's name stands ("how is zara doing?", "zara's
- * backlog", "Who is Zara?") that no one on the board goes by, as the question
- * writes it with a capital ("Zara"); null when there is none. The service's
- * unknown_name, read alike: a word counts as a name only when the question
- * asks something of one person (`asks`), or when it is typed with a capital
- * and not where a sentence starts; never a word of NOT_NAMES, a word of
- * anyone's name on the board (a surname typed alone is someone's), a word in
- * capitals (a key or an abbreviation), or one with a digit. Read only when
- * nothing else made sense of a question at people level.
- */
+/** A name typed where a person's name stands ("how is zara doing?", "zara's */
 export function unknownName(question: string, board: readonly Person[], asks: boolean): string | null {
   const taken = new Set(board.flatMap((person) => person.name.split(/\s+/).filter(Boolean).map(foldText)));
   const { folded, places } = foldedWithPlaces(question);
@@ -778,11 +679,7 @@ export function ambiguousNameMessage(names: readonly string[]): string {
   return `More than one person on this board is called ${[...new Set(names)].join(" or ")}. Type @ and pick the one you mean.`;
 }
 
-/**
- * Whether a question names someone on the board, as typed (any case, any
- * accents), or carries an @. Anyone on the board counts: a ticket holder, or a
- * member who holds none (the directory), whose name is a person's all the same.
- */
+/** Whether a question names someone on the board, as typed (any case, any */
 export function namesSomeone(question: string, dataset: Dataset): boolean {
   if (/(^|[\s([{"'“‘])@\S/u.test(question)) return true;
   return findNames(foldText(question), directoryPeople(dataset).map((person) => foldText(person.name))).length > 0;

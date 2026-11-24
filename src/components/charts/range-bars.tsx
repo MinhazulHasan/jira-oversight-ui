@@ -122,27 +122,11 @@ function Track({
   );
 }
 
-/*
- * Below a 42rem frame (a phone, a tablet's column) the bars have no room
- * beside the status and its three figures, and the scale's ticks would draw
- * over each other. There each status reads as BarList's stacked rows do: its
- * name and figures on one line, then what it maps to and its bar across the
- * full width, under the scale drawn once above them. The narrow lines are
- * pictures only (hidden from assistive technology, which reads each figure
- * once in its row); the row header keeps the whole status.
- */
 const WIDE_ONLY = "@max-[42rem]:hidden";
 const NARROW_ONLY = "hidden @max-[42rem]:table-row";
 /** A narrow frame's name line: the status and its figures on one baseline, its stage and bar close under it. */
 const NAME_LINE = "@max-[42rem]:pt-2.5 @max-[42rem]:pb-0.5 @max-[42rem]:align-baseline";
 
-/**
- * How long work sits in each status: for every row a bar in three steps of
- * one hue (the deepest to the median, then to the 75th and the 90th
- * percentile) against one shared scale, and the three figures in columns.
- * It is a table with a picture in it, so the figures are read as figures.
- * Nothing in it is cut short: a long status or stage wraps.
- */
 export function RangeBars({ rows, title, format = formatHours, axisFormat = axisHours, max, className }: RangeBarsProps) {
   const locale = useFigureLocale();
   const read = (value: number) => format(value, { locale });

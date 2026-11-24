@@ -14,17 +14,6 @@ import { cn } from "@/lib/utils";
 import { KIND_LABELS, findingsTarget, needsRuleHint, type FindingsTarget } from "./model";
 import { focusRow } from "./use-trace";
 
-/*
- * The links that make a briefing traceable: a sentence's citation of the
- * candidate it came from, the findings behind a candidate, and its issues.
- * Teal throughout, because each one leads to evidence.
- */
-
-/**
- * Where a candidate's findings are. For kinds the link cannot be read off
- * (sprint coverage), the first finding names the rule they were raised
- * under; until it answers, the link opens that first finding.
- */
 export function useFindingsTarget(candidate: Candidate | undefined): FindingsTarget | null {
   const hint = useFinding(candidate && needsRuleHint(candidate) ? candidate.finding_ids[0] : null);
   return candidate ? findingsTarget(candidate, hint.data?.finding.rule_id) : null;

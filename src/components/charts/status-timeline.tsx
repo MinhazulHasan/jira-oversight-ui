@@ -159,14 +159,6 @@ export function timelineTable(
   };
 }
 
-/**
- * One issue's life as a swimlane: a lane per stage in process order, a bar
- * for every spell in a status (coloured by its stage, one hue that
- * strengthens as the work moves on), a hollow stop on every stage it went
- * straight past, hatched lanes where Jira records nothing, and a line at
- * now. Hover or focus a bar for its exact times and hours; the arrow keys
- * walk the bars and skips in time order.
- */
 export function StatusTimeline({
   lanes,
   intervals,

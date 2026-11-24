@@ -19,16 +19,6 @@ import {
 } from "../hooks";
 import { ruleDraftSchema, ruleSettingsSchema, type RuleSettings } from "../schemas";
 
-/*
- * Rule settings (JO-15) from the browser: the reads and the two changes as
- * the client sends them (JSON, from this dashboard's own pages), the settings
- * read every two seconds while the service re-checks the board and not
- * otherwise, a save that marks every figure the rules decide as stale, and the
- * re-check followed to its end once the page is gone, when they are read
- * afresh again. An AI draft of a rule (JO-20) is sent the same way, and marks
- * nothing stale: it saves nothing.
- */
-
 const settings = ruleSettingsSchema.parse(settingsJson);
 
 /** The settings after a save, the service re-checking the board. */

@@ -3,13 +3,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { readableClipboard } from "./clipboard";
 
-/*
- * The shell's smoke test: every route renders its header inside the shell,
- * logs nothing to the console (a CSP violation counts), and has no serious or
- * critical axe violation in either theme. Page builds extend their own specs;
- * keep this one about the frame every page shares.
- */
-
 const ROUTES = [
   { path: "/", heading: "Overview", title: "Overview" },
   { path: "/findings", heading: "Findings", title: "Findings" },
@@ -138,10 +131,6 @@ test("the search button opens the palette, and a question goes to Ask", async ({
 test("g then a letter navigates, and never while typing", async ({ page }) => {
   await page.goto("/");
   await shellReady(page);
-  // The chord must arrive as one: g and f within 1.2 s. Playwright sends f only
-  // once the page has handled g, so while a busy WebKit is still drawing the
-  // Overview's figures the two can land further apart than a person's quick
-  // g-f ever would (their keys carry the time they were typed).
   await expect(page.getByRole("region", { name: "Headline figures" }).getByRole("link").first()).toBeVisible();
 
   await page.keyboard.press("g");

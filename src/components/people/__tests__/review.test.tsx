@@ -19,18 +19,6 @@ import { PeopleView } from "../people-view";
 import { PersonPicker } from "../person-picker";
 import { Scorecard } from "../scorecard";
 
-/*
- * The JO-11 review's findings on the People page, each with the test that
- * would have caught it (12 Nov 2026): the caveat and the marks' key on the
- * default view; marks told apart by shape; someone compared on nothing said
- * so on a phone; the board's line a sentence; the copy right at every width;
- * skeletons in their final shape, sections and all; an error that does not
- * leave a loading bar; a stale scorecard marked; a choice acknowledged; a
- * link landing on the scorecard; a measure's definition a press away; the
- * picker's states outside its listbox and free of axe violations; and
- * "View scorecard" never naming someone wrongly while the findings load.
- */
-
 vi.mock("@/lib/notify", () => ({ notify: { info: vi.fn(), ok: vi.fn(), warn: vi.fn(), cite: vi.fn(), error: vi.fn() } }));
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (

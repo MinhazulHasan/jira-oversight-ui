@@ -13,12 +13,6 @@ import {
   type FactSet,
 } from "@/lib/api/schemas";
 
-/*
- * The Ask page in words: catalogue calls and their parameters as a reader
- * would say them, where a fact row leads, and how each outcome is named.
- * Pure functions, so every phrase is tested without a browser.
- */
-
 /* ------------------------------------------------------------- the calls -- */
 
 const TOOL_LABELS: Record<string, string> = {
@@ -70,8 +64,6 @@ export interface ParamPhrase {
 const RANKED = new Set(["oversight_hot_spots", "oversight_top_issues"]);
 const STATES: Record<string, string> = { all: "open and resolved", open: "open", resolved: "resolved" };
 const ORDER_WORDS: Record<string, string> = { most: "highest first", fewest: "lowest first", closer: "closer to the process first" };
-// A count (and JO-09's ranking by one, and the overall number of measures closer) is in the answer's own words, "most
-// first" or "fewest first", as its first sentence and its table's caption say it (the JO-14 review).
 const COUNT_ORDER_WORDS: Record<string, string> = { most: "most first", fewest: "fewest first", closer: "most first" };
 const COUNTS = new Set(["open_tickets", "in_progress", "done_in_period"]);
 
@@ -150,8 +142,6 @@ function phrase(tool: string, key: string, value: string, measure?: string): Par
     case "rank_by":
       return { key, text: `by ${humanize(value)}` };
     case "order":
-      // The order a comparison or a ranking was asked for (JO-14): the figure highest or lowest first, or closer to
-      // the process first; a count most or fewest first. Never "best" or "worst": it reports the order.
       return { key, text: orderPhrase(tool, value, measure) };
     case "holding":
       // Everyone on the board, or its members who hold no ticket.
@@ -188,11 +178,6 @@ export interface RowLink {
 
 const isEpicColumn = (column: FactSet["columns"][number]) => /epic/i.test(column.key) || /epic/i.test(column.label);
 
-/**
- * Where a fact row leads: a finding opens its evidence, an issue its page, an
- * epic or a rule its findings. A row with nothing to open (a week of a trend)
- * returns null and is not offered as a link.
- */
 export function rowLink(fact: FactSet, row: Record<string, FactCell>): RowLink | null {
   const findingId = row.finding_id;
   if (typeof findingId === "string" && FINDING_ID_PATTERN.test(findingId)) {
@@ -210,7 +195,7 @@ export function rowLink(fact: FactSet, row: Record<string, FactCell>): RowLink |
     }
     if (key === "(no epic)") return { href: "/findings?epic=none", label: "Open the findings outside every epic" };
   }
-  // A scorecard row, or a person in a comparison: that person's scorecard on the People page (JO-11).
+  // A scorecard row, or a person in a comparison: that person's scorecard on the People page.
   if ((fact.tool === "oversight_person_scorecard" || fact.tool === "oversight_people_compare") && typeof row.person_id === "string" && PERSON_ID_PATTERN.test(row.person_id)) {
     const name = typeof row.name === "string" ? row.name : "this person";
     // Over the answer's own period, so the page shows the figures the row holds.
@@ -273,15 +258,6 @@ export const OUTCOME_LABEL: Record<AskOutcome, string> = {
   not_verified: "Facts only",
 };
 
-/**
- * Why Ask turned a question about people down, when it did: at team level
- * (the reader is not an admin), for a mention of someone with no tickets on
- * the board, or for comparing people where an organisation has turned that
- * off. (A judgement, JO-09's decline, is no longer one: since JO-11 the
- * service answers it with figures; an older service's words still read as
- * what they are.) Told apart by the contract's exact words; any other
- * `not_understood` is null.
- */
 export type Decline = "team_level" | "judgement" | "unknown_mention" | "comparison_off";
 
 export function declineOf(response: Pick<AskResponse, "outcome" | "message">): Decline | null {
@@ -308,11 +284,6 @@ export const DECLINE_LABEL: Record<Decline, string> = {
   comparison_off: "Comparison turned off",
 };
 
-/**
- * How each decline is named in the answer's foot, beside how it was made: the
- * question was understood and turned down, never "not understood" (worded
- * apart from the label above it, so each is found once).
- */
 export const DECLINE_FOOTER: Record<Decline, string> = {
   team_level: "Turned down at team level",
   judgement: "Turned down",

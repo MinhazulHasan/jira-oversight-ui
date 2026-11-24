@@ -8,18 +8,6 @@ import { overview } from "./overview";
 import { trendPoints } from "./series";
 import { DAY, iso } from "./time";
 
-/*
- * GET /portfolio (JO-12) for the sample: its synced boards (DEMO and MOB, and
- * HELP once its first sync has run), each with its Overview's own figures (the
- * very aggregates the Overview is built from, so the two can never disagree),
- * the oldest open breaches across them, and how many boards have not synced
- * yet (JO-17), which have no row. The service lists every synced board the
- * same way, each from its own Overview, and the sample keeps to its
- * definitions: the trend in the weeks GET /trends counts, "Needs attention"
- * one row for each ticket and rule (with how many open findings it holds), its
- * ties taking turns by board, then by issue number, then rule.
- */
-
 /** The sprint rules the row reads: unestimated work in the active sprint, and the sprint at risk. */
 const UNESTIMATED_RULE = "W-EST-01";
 const SPRINT_RULE = "W-SPR-01";
@@ -33,8 +21,6 @@ function boardRow(dataset: Dataset): PortfolioBoard {
   const active = dataset.world.activeSprint;
   const open = dataset.engine.findings.filter((finding) => finding.resolvedAt === null);
 
-  // As the service counts it: open breaches and warnings at the end of each of the 7 weeks before this one (Monday
-  // 00:00 UTC, GET /trends's weeks), then the open findings now.
   const breaches = trendPoints(dataset, "open_breaches", PORTFOLIO_TREND_POINTS).map((point) => point.value ?? 0);
   const warnings = trendPoints(dataset, "open_warnings", PORTFOLIO_TREND_POINTS).map((point) => point.value ?? 0);
   const trend = [
@@ -44,7 +30,7 @@ function boardRow(dataset: Dataset): PortfolioBoard {
 
   // The rule with the most open findings, the catalogue's order breaking a tie (by_rule is in that order).
   const top = rules.reduce<(typeof rules)[number] | null>((best, rule) => (rule.open > (best?.open ?? 0) ? rule : best), null);
-  // A rule the board turned off (JO-15) is not measured there: null, as for one that cannot run.
+  // A rule the board turned off is not measured there: null, as for one that cannot run.
   const runs = (id: string) => dataset.rules.some((rule) => rule.def.id === id && rule.enabled);
   const unestimated = rules.find((rule) => rule.rule_id === UNESTIMATED_RULE && runs(rule.rule_id));
   const risk = rules.find((rule) => rule.rule_id === SPRINT_RULE && runs(rule.rule_id));
@@ -91,27 +77,7 @@ function oldestOf(dataset: Dataset): TicketAndRule[] {
   );
 }
 
-/**
- * The Portfolio over the synced boards' datasets, in the service's order;
- * `boards`, the reader's boards when they read only some (the service lists
- * those alone), leaves the others out, and `notSynced` (the served boards that
- * have not synced yet) is counted for those boards alone too.
- *
- * "Needs attention" is the ten oldest across the boards listed: oldest first;
- * breaches first seen at the same moment (one rules run stamps every board
- * alike) take turns by board, each board's first, then each board's second, so
- * one board never fills the list on a tie; then board, issue number, issue key
- * and rule.
- *
- * One clock and one rule (JO-14), the service's: `now` is when the Portfolio
- * is read, by the server's own clock (`wallClock`), never earlier than the
- * sample's; a board is stale by the top bar's rule (src/lib/sync.ts, two
- * hours), and each breach in "Needs attention" is aged to that now while its
- * board is fresh, else as at its last sync, to the last rules run that saw it
- * (as Findings' "Open for" reads "at last sync"). So a sample pinned to
- * SAMPLE_NOW and read days later is stale, its breaches aged as at the sync,
- * as everywhere else. The page reads the same rule on the reader's clock.
- */
+/** The Portfolio over the synced boards' datasets, in the service's order; */
 export function portfolioView(
   datasets: readonly Dataset[],
   boards?: readonly string[],
@@ -177,11 +143,6 @@ interface TicketAndRule {
   findings: number;
 }
 
-/**
- * The open breaches on tickets, one entry for each ticket and rule, as the service lists them: a rule can hold more
- * than one open finding on a ticket (R-FLOW-02 opens one for each transition that skipped a stage), and listing the
- * same ticket and rule twice reads as a duplicate, so they are one, first seen at the oldest, last seen at the latest.
- */
 function ticketsAndRules(findings: readonly FindingRecord[]): Map<string, TicketAndRule> {
   const pairs = new Map<string, TicketAndRule>();
   for (const finding of findings) {

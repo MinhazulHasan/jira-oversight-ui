@@ -1,12 +1,5 @@
 import { useSyncExternalStore } from "react";
 
-/**
- * The current time, shared by every relative label on the page and advanced
- * on one timer. It is null on the server and during hydration: "4 min ago"
- * depends on the viewer's clock, so it is rendered only once that clock is
- * known, never guessed on the server and corrected after.
- */
-
 const TICK_MS = 15_000;
 
 let now = 0;

@@ -54,19 +54,15 @@ export function missingEvidenceText(rule: Rule, stages: readonly ProcessStage[] 
   return joinWords(rule.missing_evidence.map((key) => inSentence(stageLabel(key, stages))));
 }
 
-/**
- * Open findings only mean something for a rule that runs: a rule Jira cannot
- * feed, or one turned off on the board (JO-15), has none open because it never
- * looked, not because all is well.
- */
+/** Open findings only mean something for a rule that runs. */
 export function openFindings(rule: Rule): number | undefined {
   return rule.measurable && rule.enabled ? rule.open : undefined;
 }
 
-/** The words for a rule an admin turned off on this board (JO-15). */
+/** The words for a rule an admin turned off on this board. */
 export const OFF_ON_BOARD = "Off on this board";
 
-/** Where an admin changes the board's rule settings (JO-15). */
+/** Where an admin changes the board's rule settings. */
 export const RULE_SETTINGS_HREF = "/governance/rules";
 
 export function findingsHref(ruleId: string): string {

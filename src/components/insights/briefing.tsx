@@ -14,11 +14,6 @@ import { candidatesOf } from "./model";
 import { Narrative } from "./narrative";
 import { focusRow, useRowNavigation, useTrace } from "./use-trace";
 
-/**
- * The weekly briefing as an editorial sheet: the masthead, the narrative
- * sentence by sentence, and the ranked problems it was written from. Every
- * sentence leads to its problems and findings.
- */
 export function Briefing({ insights }: { insights: Insights }) {
   const root = useRef<HTMLDivElement>(null);
   const trace = useTrace(root);

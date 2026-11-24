@@ -19,11 +19,7 @@ export interface SelectOption<T extends string> {
 export interface SelectProps<T extends string> {
   /** The field's name. Always the accessible name; where it shows depends on labelPlacement. */
   label: string;
-  /**
-   * above: over the trigger, for a form. inline: muted inside the trigger
-   * ("Severity Breach"), for a filter row, matching Combobox and DateRange.
-   * hidden: for assistive technology only.
-   */
+  /** above. */
   labelPlacement?: "above" | "inline" | "hidden";
   options: readonly SelectOption<T>[];
   value: T | undefined;
@@ -42,14 +38,7 @@ export interface SelectProps<T extends string> {
   describedBy?: string;
 }
 
-/**
- * Pick one value from a list (Radix Select: typeahead, arrow keys, Home and
- * End, Escape). The list opens under its trigger and is at least as wide: the
- * trigger is measured as the list opens, so the list's first layout is its
- * last. (Sized from Radix's --radix-select-trigger-width, the list widened
- * after its first layout, and WebKit reported a ResizeObserver loop the first
- * time a long list opened: 23 Nov 2026.)
- */
+/** Pick one value from a list (Radix Select. */
 export function Select<T extends string>({
   label,
   labelPlacement = "above",

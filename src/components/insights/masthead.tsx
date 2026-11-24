@@ -9,11 +9,6 @@ import { useNow } from "@/lib/use-now";
 
 import { EARLIER_WEEK, fromEarlierWeek } from "./model";
 
-/*
- * The top of the sheet, read like a dateline: which week, when it was
- * written, and, once that week is over, that its figures may have moved on.
- */
-
 export function Masthead({ insights }: { insights: Insights }) {
   const locale = useFigureLocale();
   const now = useNow();

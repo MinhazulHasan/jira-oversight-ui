@@ -30,46 +30,12 @@ import { cn } from "@/lib/utils";
 import { edgeCrossing, insidePolygon, laneArea, wayArea, type Point } from "./grace";
 import { CARD_WIDTH_PX, PersonCardPopoverBody, usePersonCardSheetParts } from "./person-card";
 
-/*
- * Where a person card opens (JO-13), for people level only: an admin, or
- * anyone with sign-in off. Everyone else gets the name exactly as before.
- *
- * On a desktop (a pointer that hovers, a window at least 40rem wide): resting
- * on the name (or the picture) for 350 ms opens the card beside it, as a
- * hover card; it stays while the pointer is on the name or the card, or on
- * its way between them, curves and all (grace.ts), and closes 150 ms after it
- * has left all three. A press on the name (Enter or Space too) pins it: a
- * non-modal dialog, focus inside; Escape or a press outside closes it, and
- * focus goes back to the name; Tab and Shift+Tab lead through it and out of
- * it, as if it stood right after the name. On a touch screen, or a phone, a
- * tap opens the same card as a bottom sheet. One card is open at a time.
- *
- * Four kinds of name: a name on its own (`PersonCardTrigger`, a button); a
- * mention chip in the question box (`PersonCardChip`: a press opens and pins
- * the card, as Jira does for a mention in its editor, and focus goes back to
- * the box beside the chip); a pill whose press is its own, with its picture a
- * button for the card (`PersonCardPill`: the access log's people, who filter
- * the log); and a name inside a control that presses for something of its
- * own (`PersonCardHover`: the Person filter, the ticket page's assignee, where
- * the card is the pointer's alone, the same card a key or a tap away
- * elsewhere on the page).
- *
- * The card's figures are fetched when it opens (the hover's intent, a press),
- * never on a mere pass of the pointer: each read is one the service records.
- * What is typed in the question box never opens a card.
- */
-
 /** How long the pointer rests on a name before its card opens. */
 export const HOVER_INTENT_MS = 350;
 /** How long after the pointer has left both the name and the card (and the way between them) before the card closes. */
 export const HOVER_CLOSE_MS = 150;
 /** How long the pointer may stand still on the way from a name to its card before it is taken to have gone elsewhere. */
 export const GRACE_REST_MS = 500;
-/**
- * How long after a key is pressed in the question box a pointer that seems to
- * arrive on a name is taken for a chip drawn under a resting pointer, not a
- * pointer brought there: it opens no card until it moves.
- */
 export const TYPING_QUIET_MS = 300;
 
 /** A pointer that hovers, on a window wide enough for a card beside a name. Anywhere else a tap opens a bottom sheet. */
@@ -87,11 +53,6 @@ const TAB_STOPS =
 
 type Mode = "hover" | "pinned" | "sheet";
 
-/**
- * How a name that opens a card looks: as it always has, with the name alone
- * underlined while the pointer rests on it or its card is open (never the
- * picture, whose initials an underline would run through).
- */
 export const NAME_TRIGGER =
   "inline-flex max-w-full min-w-0 items-center align-middle [&_[data-person-name]]:decoration-rule-strong [&_[data-person-name]]:underline-offset-[3px] hover:[&_[data-person-name]]:underline data-[state=open]:[&_[data-person-name]]:underline";
 
@@ -131,12 +92,6 @@ let typedAt = Number.NEGATIVE_INFINITY;
 /** The waits for a hover card now running, each cancelled by a key. */
 const intents = new Set<() => void>();
 
-/**
- * A key pressed in the question box (JO-13): what is typed never opens a
- * card. A card about to open on hover does not, and for a moment a pointer
- * that seems to arrive on a name (a chip drawn under a resting pointer)
- * opens nothing until it moves.
- */
 export function noteTyping(): void {
   typedAt = performance.now();
   for (const cancel of intents) cancel();
@@ -145,11 +100,6 @@ export function noteTyping(): void {
 
 /* ------------------------------------------------------------ the way --- */
 
-/**
- * The way the pointer is travelling, from a name to its hover card or back
- * (grace.ts): one at a time, as there is one card. `inLane`: the pointer is on
- * the straight ways there, where no other name's card is armed.
- */
 let travel: { id: string; end: () => void; inLane: boolean } | null = null;
 /** Names the pointer came onto in the lane: their wait starts once it is out of the lane, if it is still there. */
 const afterTravel = new Set<() => void>();
@@ -200,13 +150,6 @@ export function useDesktopCards(): boolean {
 
 type Side = "bottom" | "top" | "right";
 
-/**
- * Below the name, or above it, where the whole card fits; else beside it,
- * its top level with the name's, so its header (the name again, the plain
- * line) stands right beside the name, moved up only as far as it must to
- * stay in the window. Always aligned at its start: the card's near corner
- * is where the pointer leaving the name meets it.
- */
 function sideFor(anchor: Element | null): Side {
   if (!anchor) return "bottom";
   const rect = anchor.getBoundingClientRect();
@@ -237,11 +180,6 @@ function nextTabStop(origin: Element, card: Element): HTMLElement | null {
   );
 }
 
-/**
- * A caret left in an editable field outside the card (the question box keeps its caret on a press on a chip) is let
- * go as the card takes focus: Safari types at the selection wherever focus is, so a key pressed in the card would
- * otherwise change the question unseen. The field remembers its caret and puts it back when focus returns to it.
- */
 function letGoOfOutsideCaret(card: Element | null): void {
   const selection = document.getSelection();
   const at = selection && selection.rangeCount > 0 ? selection.anchorNode : null;
@@ -356,11 +294,6 @@ function useCard({ pressable, disabled = false }: CardOptions) {
   const arm = useCallback(() => {
     if (openTimer.current || openCard?.id === id || openCard?.mode === "pinned" || blocked.current) return;
     if (performance.now() - typedAt < TYPING_QUIET_MS) return;
-    // Another card's pointer is on its way to that card across this name: this one waits while it is on the straight
-    // way there, and anywhere on the way until the pointer has been reported at a second place on this name. A
-    // browser that reports a hand only every 150 to 450 ms (WebKit here, JO-14) puts a pointer passing over a name on
-    // it for that long, as if it rested there; a hand that moves onto a name is reported on it again and again. One
-    // that stops at its first report there gets its card once its journey ends, half a second still.
     if (travel !== null && travel.id !== id && (travel.inLane || onName.current.count < 2)) {
       afterTravel.add(armAgain);
       return;
@@ -384,16 +317,6 @@ function useCard({ pressable, disabled = false }: CardOptions) {
     if (mode === null && travel?.id === id) endTravel();
   }, [id, mode]);
 
-  /**
-   * The pointer has left the name for the card, or the card for the name: on
-   * the way between them (the whole of both and the room a hand's curve
-   * takes, grace.ts) the card stays, and in its lane (the straight ways from
-   * where it left to the whole of the other) no other name's card is armed.
-   * Leaving the way, or standing still on it for a while, starts the 150 ms.
-   * A card just opened can still be off the page, where Radix measures it
-   * before placing it: the way to it is drawn once it stands beside the name,
-   * and until then the pointer is taken to be on its way there.
-   */
   const travelFrom = useCallback(
     (exit: Point, now: Point, from: Element, to: Element | null) => {
       if (to === null) {
@@ -537,11 +460,6 @@ function useCard({ pressable, disabled = false }: CardOptions) {
     else show("pinned");
   }, [close, desktop, id, pressable, show]);
 
-  /**
-   * A press on the control a name sits in is the control's (a filter's menu opens, the access log filters): its
-   * card steps aside, and one about to open does not, so nothing covers what the press opened. The pointer has to
-   * leave the name and come back for a card again.
-   */
   const stepAside = useCallback(() => {
     wanting.current = false;
     if (openCard?.id === id) close();
@@ -576,15 +494,6 @@ interface CardPopoverProps {
   onReturnFocus?: () => void;
 }
 
-/**
- * The card as a popover: placed where it fits whole, never past the window's
- * edge. Only a pinned card takes focus, and gives it back when it closes
- * (Escape, its close button, a press on the name again, or a press on the
- * page that takes no focus of its own); a hover card leaves focus where it
- * was. React's events from inside it stop at its edge, so the row, the field
- * or the tooltip the name sits in never hears a press or a key made in it.
- * It scrolls on its own only while it has more than the window can show.
- */
 function CardPopover({ person, days, board, mode, side, contentRef, getAnchor, getOpener, onHold, onTrack, onLeave, onClose, onReturnFocus }: CardPopoverProps) {
   const pinned = mode === "pinned";
   const [overflowing, setOverflowing] = useState(false);
@@ -614,8 +523,6 @@ function CardPopover({ person, days, board, mode, side, contentRef, getAnchor, g
     [contentRef],
   );
 
-  // Its own scroll, and the wheel kept to it, only while it holds more than it shows (a short window): otherwise a
-  // wheel over the card moves the page under it, as over anything else on the page.
   useEffect(() => {
     if (!element) return;
     const measure = () => setOverflowing(element.scrollHeight > element.clientHeight + 1);
@@ -631,19 +538,7 @@ function CardPopover({ person, days, board, mode, side, contentRef, getAnchor, g
     onClose();
   }, [onClose]);
 
-  /**
-   * Tab and Shift+Tab in a pinned card, the same in every browser (Safari's
-   * Tab passes over links unless told otherwise, so the card leads the way
-   * itself): through its controls in order; Shift+Tab from the first, or
-   * from the card itself where a press put focus, closes it and gives focus
-   * back to the name; Tab past the last closes it and moves on to what
-   * follows the name on the page, as if the card stood right after the name.
-   * Read before anything inside hears the key, and kept from it.
-   */
   const tab = (event: KeyboardEvent<HTMLDivElement>) => {
-    // Backspace means nothing in a card, which holds no field: kept from the browser, which in WebKit would leave the
-    // page for the one before it (a reader who meant to edit the question would lose the answer and the draft). The
-    // bottom sheet keeps it the same way.
     if (pinned) keepBackspaceFromBrowser(event);
     if (!pinned || event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return;
     const card = contentRef.current;
@@ -693,8 +588,6 @@ function CardPopover({ person, days, board, mode, side, contentRef, getAnchor, g
           const name = getOpener?.() ?? getAnchor();
           // Another card has opened in its place, or the card was left for one of its links: focus is theirs.
           if (!wasPinned || openCard !== null || tabbedAway || followed || !name?.isConnected) return;
-          // A press on a field, a link or a button elsewhere keeps the focus it gave; anywhere else, and a press on the
-          // name itself, gives it back.
           if (!onAnchor && outside?.closest(FOCUSABLE)) return;
           if (onReturnFocus) onReturnFocus();
           else name.focus({ preventScroll: true });
@@ -735,17 +628,9 @@ interface CardSheetProps {
   board?: string | null;
   open: boolean;
   onClose: () => void;
-  /**
-   * Where focus goes when the sheet closes: the name that opened it, or a chip's field. Given, never left to what
-   * held focus when it opened: Safari focuses nothing on a tap, which would leave focus nowhere on the page.
-   */
   onReturnFocus: () => void;
 }
 
-/**
- * The same card as a bottom sheet (a touch screen, a phone): the picture and the name head it, the actions at its
- * foot. Backspace stays in it, as in a pinned card: it holds no field, and WebKit would take the key for Back.
- */
 function CardSheet({ person, days, board, open, onClose, onReturnFocus }: CardSheetProps) {
   /** Left for one of its links: the page is moving on, so focus goes nowhere. */
   const followed = useRef(false);
@@ -754,8 +639,6 @@ function CardSheet({ person, days, board, open, onClose, onReturnFocus }: CardSh
     followed.current = false;
     // Focus goes into the sheet: a caret left in the question box is let go, as for a pinned card.
     letGoOfOutsideCaret(null);
-    // The sheet rises where a toast stands: what a toast says is said elsewhere too (it is never the only place), so
-    // it steps aside rather than cover the sheet's ways on.
     notify.dismiss();
   }, [open]);
   const follow = useCallback(() => {
@@ -794,10 +677,6 @@ export interface PersonCardTriggerProps extends Omit<ButtonHTMLAttributes<HTMLBu
   days?: ScorecardDays;
   /** The board to read the card on, where the page names one (an access log entry's); else the top bar's. */
   board?: string | null;
-  /**
-   * The name sits in a row with its own press and keys (a table row): the
-   * trigger keeps its press, Enter and Space, and its focus to itself.
-   */
   inRow?: boolean;
   /** Out of the Tab order, in a table whose rows have one tab stop between them (the card is a key away elsewhere). */
   tabbable?: boolean;
@@ -805,12 +684,6 @@ export interface PersonCardTriggerProps extends Omit<ButtonHTMLAttributes<HTMLBu
   children: ReactNode;
 }
 
-/**
- * A person's name that opens their card: a button at people level (rest on
- * it for the card, press it to pin the card); the name exactly as it was for
- * anyone else, who gets no card. Inside it a name has no tooltip of its own:
- * the card says the whole name.
- */
 export function PersonCardTrigger(props: PersonCardTriggerProps) {
   const peopleLevel = usePeopleLevel();
   if (!peopleLevel) return <>{props.children}</>;
@@ -908,27 +781,11 @@ export interface PersonCardChipProps {
   /** Whose card: the person the chip stands for. */
   person: Person;
   days?: ScorecardDays;
-  /**
-   * The card has closed and focus is to go back (Escape, its close button, a
-   * press on the chip again): the field the chip stands in takes it, its
-   * caret just after the chip.
-   */
   onReturnFocus: () => void;
   /** The chip: an element that takes a ref and the pointer's handlers, and is never focused itself. */
   children: ReactElement;
 }
 
-/**
- * A mention chip in a field (Ask's question box), as Jira's editor treats a
- * mention: resting on it opens the card; a press (a click, a tap) opens and
- * pins it, the field's text and caret left exactly as they were (the field
- * keeps the press from moving its caret); Escape, the close button or a
- * press on the chip again closes it and gives focus back to the field with
- * the caret just after the chip, and a press in the text closes it and puts
- * the caret where the press was. On a touch screen or a phone a tap opens the
- * bottom sheet. Keys typed in the field never open a card. At team level the
- * chip is left exactly as it is.
- */
 export function PersonCardChip({ person, days = SCORECARD_DEFAULT_DAYS, onReturnFocus, children }: PersonCardChipProps) {
   const peopleLevel = usePeopleLevel();
   if (!peopleLevel) return children;
@@ -1000,15 +857,6 @@ export interface PersonCardPillProps {
   className?: string;
 }
 
-/**
- * A pill whose press is its own (the access log's people, a press shows only
- * the reads of their figures), with their card a key or a tap away: resting
- * on any of the pill opens the card, as a name does; the picture at its
- * start is the card's own button, so a click, Enter or Space on it pins the
- * card, and a tap on a touch screen or a phone opens the bottom sheet. A
- * press on the rest of the pill is the pill's, and puts the card aside. At
- * team level, the pill as it is, with no card.
- */
 export function PersonCardPill({ person, days = SCORECARD_DEFAULT_DAYS, board, picture, children, className }: PersonCardPillProps) {
   const peopleLevel = usePeopleLevel();
   if (!peopleLevel) {
@@ -1112,13 +960,6 @@ export interface PersonCardHoverProps {
   disabled?: boolean;
 }
 
-/**
- * A card on hover alone, where the name lives inside a control that presses
- * for something of its own: the press stays that control's (and puts aside a
- * card, open or about to open), and on a touch screen there is no card here
- * (on Findings, the same card is a key or a tap away in the Assignee column
- * and the drawer). At team level the element is left exactly as it is.
- */
 export function PersonCardHover({ person, days = SCORECARD_DEFAULT_DAYS, board, disabled = false, children }: PersonCardHoverProps) {
   const peopleLevel = usePeopleLevel();
   if (!peopleLevel) return children;

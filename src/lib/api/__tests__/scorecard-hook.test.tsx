@@ -8,12 +8,6 @@ import everyoneSample from "../../../../docs/sample-responses/people-scorecard.j
 import { oversightKeys, usePeopleScorecard } from "../hooks";
 import { normalizeScorecardQuery } from "../params";
 
-/*
- * usePeopleScorecard: one request per period and set of people (in any
- * order), held back for anyone not at people level, and the figures on screen
- * kept while another period loads, never another person's.
- */
-
 const HANA = personSample.people[0].person.id;
 const ADA = "pbc7fe62842ca";
 

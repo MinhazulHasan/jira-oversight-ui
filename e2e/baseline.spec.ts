@@ -4,12 +4,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { readableClipboard } from "./clipboard";
 import { cutText } from "./cut-text";
 
-/*
- * The Baseline page against the sample server (SAMPLE_NOW 2026-11-04T14:30Z):
- * the report and its blocks, the page actions, print, "No baseline yet", the
- * error state and a phone's width.
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const NOW = new Date("2026-11-04T14:30:00Z");
 
@@ -160,8 +154,6 @@ test("a failed load is said once, inline, with a way to try again", async ({ pag
 });
 
 test("every tile's label reads whole on a MacBook, the figures under them level, and each link type on a phone (JO-14)", async ({ page }) => {
-  // Regression: at 1440 px a tile's label read "Logged by the time-t…", with no title; at 390 px "is duplicated by"
-  // read "is duplicate…".
   await page.goto("/baseline");
   await shellReady(page);
   const flow = page.getByRole("region", { name: "Cycle time and reopens" });
@@ -185,8 +177,6 @@ test("every tile's label reads whole on a MacBook, the figures under them level,
 
 for (const width of [1280, 1320, 1440]) {
   test(`the snapshot's figures stand level at ${width} px, whichever label takes a second line (the JO-14 review)`, async ({ page }) => {
-    // Regression: "Created before the window closed" took a second line from about 1280 to 1337 px and pushed its
-    // figure below the one beside it, "Issues".
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/baseline");
     await shellReady(page);
@@ -234,8 +224,6 @@ async function statusPicture(page: Page) {
 }
 
 test("on a phone nothing is cut short: each status's bar runs across the table under a scale that reads", async ({ page }) => {
-  // Regression: at 390 px the bars' column was squeezed to nothing; its five ticks drew over each other ("600450 h")
-  // and no bar showed, while the statuses' stages and the worklog facts were cut short.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/baseline");
   await shellReady(page);

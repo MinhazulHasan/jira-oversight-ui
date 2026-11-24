@@ -22,16 +22,6 @@ import {
 } from "@/lib/api/params";
 import { FINDING_ID_PATTERN, ISSUE_KEY_PATTERN, PERSON_ID_PATTERN, RULE_ID_PATTERN, UNASSIGNED } from "@/lib/api/schemas";
 
-/*
- * The Findings page keeps everything in the URL: the filters, the sort, the
- * page and the open finding. The names are the API's own (rule, severity,
- * state, epic, person, q, first_seen, sort, order, page), so a link built
- * elsewhere (`/findings?state=open&epic=DEMO-704`, an Overview hot spot,
- * `/findings?state=open&person=unassigned`) means exactly what the API means
- * by it. Values the API would refuse are dropped as the URL is read, so a
- * hand-edited link narrows nothing rather than failing.
- */
-
 export const SEVERITY_FILTERS = ["breach", "warning"] as const;
 export type SeverityFilter = (typeof SEVERITY_FILTERS)[number];
 export type StateFilter = (typeof FINDING_STATES)[number];
@@ -77,13 +67,6 @@ const personParser = createParser({
   serialize: (value: string) => value,
 });
 
-/**
- * `menu=person` opens the Person menu on arrival (`/findings?state=open&menu=person`):
- * the Overview's "All people" lands on everyone's counts. It is not a filter,
- * so it never reaches the API, and it leaves the address once the menu closes.
- * (A query value rather than a #hash: the page's URL state reads it with the
- * first render, and it leaves the address through the same history as the filters.)
- */
 export const FILTER_MENUS = ["person"] as const;
 
 export function useFilterMenu() {
@@ -170,11 +153,6 @@ export function toFindingsQuery(filters: FindingsFilters, search: string = filte
   };
 }
 
-/**
- * The open finding (?finding=<id>). Opening pushes a history entry, so the
- * browser's Back closes the drawer; moving to the previous or next finding
- * replaces it, so Back still closes it in one step.
- */
 export function useOpenFinding() {
   return useQueryState("finding", parseAsString.withOptions({ history: "push" }));
 }

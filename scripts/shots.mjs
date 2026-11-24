@@ -1,24 +1,3 @@
-/**
- * Screenshots of every page in light and dark, plus the shell's own states,
- * for review. A page is not done until someone has looked at these.
- *
- *   npm run build      once; this script builds nothing itself
- *   npm run shots      -> shots/*.png
- *
- * Uses a server already listening on :3400 if there is one; otherwise it
- * starts `next start` with the sample-data settings and stops it afterwards.
- * The browser clock is frozen at 2026-11-04T14:32:00Z, motion is reduced and
- * the viewport is 1440x900 at 2x, so every run produces the same pictures.
- *
- * Page builds add their own states by appending to ROUTES or EXTRAS.
- *
- * Options: SHOTS_URL (default http://localhost:3400), SHOTS_DIR (default shots),
- * SHOTS_ONLY=<name substring> to capture a subset, SHOTS_BROWSER=webkit to take
- * them in WebKit (Safari's engine) instead of Chromium, as *-webkit.png.
- * The People page and Ask's scorecards show the sample's comparison as the
- * server has it (SAMPLE_PEOPLE_COMPARISON): for the "off" pictures, start a
- * second server with it off and point SHOTS_URL and a SHOTS_DIR at it.
- */
 import { spawn, spawnSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -56,10 +35,6 @@ const HEALTH = {
   report_timezone: "Europe/London",
 };
 
-/**
- * Shell states worth a look, each in the themes listed. `before` runs ahead of
- * navigation (to stub a response), `act` after the page has settled.
- */
 const EXTRAS = [
   {
     name: "stale",
@@ -172,7 +147,7 @@ const EXTRAS = [
       await page.getByRole("dialog", { name: "Navigation" }).waitFor();
     },
   },
-  /* The person view (JO-07): every name here is one of the sample's fictional people. */
+  /* The person view: every name here is one of the sample's fictional people. */
   {
     name: "overview-person",
     themes: ["light", "dark"],
@@ -238,7 +213,7 @@ const EXTRAS = [
     path: "/issues/DEMO-1",
     viewport: { width: 390, height: 844 },
   },
-  /* Pictures beside names (11 Nov 2026): a ticket whose assignee, Grace Lindqvist, has a picture in the sample. */
+  /* Pictures beside names: a ticket whose assignee, Grace Lindqvist, has a picture in the sample. */
   {
     name: "issue-picture",
     themes: ["light", "dark"],
@@ -247,7 +222,7 @@ const EXTRAS = [
       await page.locator("[data-assignee] [data-avatar='picture'] img").waitFor();
     },
   },
-  /* Asking about people with @ (11 Nov 2026): sign-in is off for the sample, so Ask answers at people level. */
+  /* Asking about people with @: sign-in is off for the sample, so Ask answers at people level. */
   {
     name: "ask-mention",
     themes: ["light", "dark"],
@@ -261,8 +236,6 @@ const EXTRAS = [
     act: (page) => openMentions(page, "What are @gr"),
   },
   {
-    // The @ list's two groups (JO-10): the keyboard runs on to the last member with no tickets, scrolled to,
-    // so both headings and the fade at the top edge are in the picture.
     name: "ask-mention-groups",
     themes: ["light", "dark"],
     path: "/ask",
@@ -336,11 +309,6 @@ const EXTRAS = [
     path: `/ask?q=${encodeURIComponent("Who has the most open breaches?")}`,
     act: (page) => page.locator("[data-answer-prose] [data-person-mention]").first().waitFor(),
   },
-  /*
-   * Person scorecards (JO-11), with the sample's comparison as the server has it: on, the People page's
-   * everyone table and Ask's compact scorecards; off (a second run against a server started with
-   * SAMPLE_PEOPLE_COMPARISON=off, SHOTS_ONLY=people or scorecard), the person picker and the refusal.
-   */
   {
     name: "people",
     themes: ["light", "dark"],

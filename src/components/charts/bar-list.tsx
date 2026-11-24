@@ -40,23 +40,10 @@ export interface BarListProps {
   total?: number;
   /** One colour for every bar: the bars are one series, ranked. */
   colour?: string;
-  /**
-   * auto: one line per row when the list is wide, the name over its bar when
-   * it is narrow (a container query), so a name is never cut short to make
-   * room for a bar. inline or stacked forces one, e.g. to match a neighbour;
-   * in either, a name longer than its room wraps onto a second line (in
-   * balanced lines) rather than being cut, as on a phone (JO-14).
-   */
   layout?: BarLayout;
   className?: string;
 }
 
-/**
- * A category as a table cell: its key in Plex Mono, then its name, after the
- * row's decorative mark if it has one (a person's picture). The name is
- * running text, so it keeps proportional figures in the table, where tabular
- * ones would space a hyphen ("Anne - Marie"; globals.css).
- */
 export function categoryCell(item: { label: string; meta?: string; leading?: ReactNode }): ReactNode {
   const name = <span className="normal-nums">{item.label}</span>;
   const cell = item.meta ? (
@@ -98,12 +85,6 @@ export function barListTable(
   };
 }
 
-/**
- * A ranked list with bars: the label, a thin bar from a shared baseline, the
- * figure in a right-aligned column. Every row clicks through to what it
- * counts, shows where it leads on hover and focus, and its tooltip gives the
- * share of the whole.
- */
 export function BarList({
   items,
   title,
@@ -171,16 +152,6 @@ export function BarList({
 
 export type BarLayout = "auto" | "inline" | "stacked";
 
-/*
- * Row grids, written out in full because Tailwind reads class names from the
- * source. Inline: name, bar, figure and arrow on one line 32 px high, the bar
- * on a baseline shared by every row; a name too long for its column takes a
- * second line and its row grows to hold it. Stacked: name and figure on the
- * first line, the bar under them at full width. Auto switches at a 36rem
- * container, and from a 64rem container (a list across a whole page) the name
- * column stops at 16rem, so a name stays beside its bar rather than far to
- * its left.
- */
 const STACKED =
   "gap-y-1.5 py-2 grid-cols-[minmax(0,1fr)_auto_0.875rem] [grid-template-areas:'label_value_go'_'bar_bar_bar']";
 const ROW_LAYOUT: Record<BarLayout, Record<"single" | "stacked", string>> = {
@@ -196,13 +167,6 @@ const ROW_LAYOUT: Record<BarLayout, Record<"single" | "stacked", string>> = {
 };
 const ROW = "jo-bar-row grid items-center gap-x-3 rounded-[6px] px-2";
 
-/**
- * A row that leads somewhere (link or button), or a plain row; the tooltip goes on whichever it is.
- *
- * `behind`: the row holds a control of its own (a person's name that opens their card, JO-13), which a link may
- * not hold. The row is then a box with the link stretched behind its content, named by `behind.label`, and the
- * control stands above it: a press on the name is the name's, a press anywhere else follows the row.
- */
 export function BarRow({
   item,
   tooltip,

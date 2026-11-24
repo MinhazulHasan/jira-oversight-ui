@@ -30,15 +30,6 @@ import { NOT_MEASURABLE_REASONS, scorecardView } from "../sample/scorecard";
 import { boardSettings, resetSampleRuleSettings, revisionOf } from "../sample/settings-store";
 import type { Issue } from "../sample/world";
 
-/*
- * The sample's rule settings (JO-15), held to the service's semantics (the
- * spec, section 2): a finding is the condition on its ticket, not the
- * threshold, so a ticket over both the old and the new threshold stays the
- * same finding; what a change no longer raises closes as settings_changed,
- * never as cleared; only a severity change gives a rule new ids; and turning
- * a rule back on, or a threshold back, reopens the same findings.
- */
-
 const NOW = Date.parse("2026-11-04T14:30:00Z");
 const READER = { hash: "b".repeat(32), name: "Morgan Ellis" };
 

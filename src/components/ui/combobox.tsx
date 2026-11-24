@@ -41,10 +41,7 @@ export function summarise(options: readonly ComboboxOption[], value: readonly st
   return value.length === 1 ? name : `${name} +${value.length - 1}`;
 }
 
-/**
- * Tick or untick one value. The result keeps the caller's option order, so
- * the same choice always reads (and sits in the URL) the same way.
- */
+/** Tick or untick one value. */
 export function toggleValue(options: readonly ComboboxOption[], value: readonly string[], changed: string): string[] {
   const selected = new Set(value);
   if (selected.has(changed)) return value.filter((item) => item !== changed);
@@ -71,14 +68,7 @@ export interface ComboboxPanelProps {
   className?: string;
 }
 
-/**
- * The searchable, multi-select list itself: a search field that keeps focus,
- * the options as a listbox reached through aria-activedescendant (arrow keys
- * move, Enter ticks or unticks, Page Up and Down jump), and a footer that
- * counts the choice. Options keep their order as they are ticked, so nothing
- * jumps under the pointer. Combobox puts it in a popover; it can also stand
- * inline.
- */
+/** The searchable, multi-select list itself. */
 export function ComboboxPanel({
   label,
   options,
@@ -178,9 +168,6 @@ export function ComboboxPanel({
           visible.map((option, index) => {
             const checked = selected.has(option.value);
             return (
-              // Options are reached through the field's aria-activedescendant (the
-              // listbox pattern), so they take pointer events but never focus;
-              // the keyboard path is the field's own onKeyDown.
               // eslint-disable-next-line jsx-a11y/click-events-have-key-events
               <div
                 key={option.value}
@@ -261,10 +248,7 @@ export interface ComboboxProps {
   /** How the trigger shows the choice, given what it says ("Ada Brooks"): a person's name that opens their card. */
   renderValue?: (text: string) => ReactNode;
   className?: string;
-  /**
-   * inline: muted inside the trigger ("Rule R-EST-01 +2"), for a filter row. above: over the trigger, for a form, the
-   * trigger saying only what is chosen. hidden: for assistive technology only, where the form draws its own label.
-   */
+  /** inline. */
   labelPlacement?: "inline" | "above" | "hidden";
   /** The trigger's id, for a form that focuses a field to show what is wrong with it. */
   id?: string;
@@ -274,12 +258,7 @@ export interface ComboboxProps {
   describedBy?: string;
 }
 
-/**
- * Choose several values from a long list by typing (rules, epics): a filter
- * trigger that says what is chosen ("Rule R-EST-01 +2") and opens the
- * ComboboxPanel in a popover. The pattern is ARIA's combobox with a
- * multi-select listbox. Escape clears the search before it closes the list.
- */
+/** Choose several values from a long list by typing (rules, epics). */
 export function Combobox({
   label,
   options,

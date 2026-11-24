@@ -11,12 +11,7 @@ export type LoginState =
   /** Sign-in is on but cannot work. `problem` names the variable to fix, never its value. */
   | { kind: "not_set_up"; problem: string };
 
-/**
- * /login: the mark, what signing in does, and "Sign in with Atlassian". A
- * failed attempt or a sign-out is said calmly just above the button, which
- * is also the way on. When sign-in is not set up there is no button, since
- * it could only come back here, and the page says what to fix.
- */
+/** /login. */
 export function LoginView({ state }: { state: LoginState }) {
   if (state.kind === "not_set_up") {
     return (

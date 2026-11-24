@@ -8,16 +8,6 @@ import { NameText } from "@/components/ui/person-name";
 import { PERSON_ID_PATTERN, UNASSIGNED_LABEL, type AskResponse, type DirectoryEntry, type FactSet, type Person } from "@/lib/api/schemas";
 import { cn } from "@/lib/utils";
 
-/*
- * People in Ask's facts and plan, by name and picture, never by id (JO-09's
- * polish item, done in JO-11). The service's facts carry a person as an id
- * column beside a name column (person_id and name, assignee_id and assignee),
- * and its calls take ids as parameters (person, person_ids, or inside a
- * query). The page shows the name, with the 20 px picture where it shows one
- * elsewhere, from the board's people (the @ list's directory), the people the
- * answer names, and the names in the rows themselves.
- */
-
 /** A person id as it stands in text: a query's WHERE clause, a list of ids. */
 const ID_IN_TEXT = /\bp[0-9a-f]{12}\b/g;
 
@@ -36,11 +26,6 @@ export function useResolvePerson(): ResolvePerson {
 /** The id columns facts carry, each beside the column that names the same person. */
 export const PERSON_ID_COLUMNS: Readonly<Record<string, string>> = { person_id: "name", assignee_id: "assignee" };
 
-/**
- * Everyone an answer's facts can name, by id: the board's people first (the
- * directory holds their pictures), then the answer's own people, then any id
- * a row pairs with a name. The first source of a person wins.
- */
 export function peopleIndex(response: Pick<AskResponse, "facts" | "people"> | null, directory: readonly DirectoryEntry[] | undefined): Map<string, Person> {
   const index = new Map<string, Person>();
   for (const entry of directory ?? []) index.set(entry.person.id, entry.person);
@@ -99,13 +84,6 @@ export function WithPeople({ text }: { text: string }) {
   );
 }
 
-/**
- * A cell that names a person: the person by their id when the row has one,
- * else the name as written. At people level the name opens their card (JO-13);
- * the row keeps its own press and keys (its tickets, or where the answer
- * quotes it), so the name is a pointer's way in, the answer's pills the
- * keyboard's.
- */
 export function PersonCell({ id, name }: { id: unknown; name: unknown }) {
   const resolve = useResolvePerson();
   if (typeof id === "string" && PERSON_ID_PATTERN.test(id)) {

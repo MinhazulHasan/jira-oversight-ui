@@ -52,21 +52,11 @@ export function openSentence(mix: readonly StatusCount[], locale: string | undef
   return `${read(open)} of ${read(total)} ${total === 1 ? "issue is" : "issues are"} open: ${parts.join(", ")}.`;
 }
 
-/*
- * A status, its stage, its count and its share on one line where the list has room (from 28rem); in a narrower list
- * (a phone) the stage goes under the status, so neither is cut short, and a long status wraps (JO-14).
- */
 const LIST_ROW = cn(
   "grid items-center gap-x-3 gap-y-0.5 grid-cols-[0.625rem_minmax(0,1fr)_4.5rem_3rem] [grid-template-areas:'key_status_count_share'_'._stage_._.']",
   "@min-[28rem]:min-h-6 @min-[28rem]:gap-y-0 @min-[28rem]:grid-cols-[0.625rem_minmax(0,1fr)_minmax(0,1fr)_4.5rem_3rem] @min-[28rem]:[grid-template-areas:'key_status_stage_count_share']",
 );
 
-/**
- * Where the work is right now: one thin bar of the issues by current status,
- * coloured by the stage of James's process each status maps to, and the same
- * counts listed under it. The bar is a picture of the list; the list is what
- * assistive technology reads.
- */
 export function StatusMix({ data, className }: { data?: Overview; className?: string }) {
   const locale = useFigureLocale();
   const statuses = data ? orderStatuses(data.status_mix).filter((status) => status.count > 0) : [];

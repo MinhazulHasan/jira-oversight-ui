@@ -11,15 +11,6 @@ import { holdNavigation } from "@/lib/leave-guard";
 /** The page load the page itself asks for (the board changed in another tab); replaceable in tests, since jsdom cannot reload. */
 export const pageReload = { now: () => window.location.reload() };
 
-/**
- * While the page holds unsaved changes, leaving asks first: the browser's own
- * question for a reload, a closed tab, a typed address or a board picked in
- * the top bar (beforeunload); this page's for a link pressed anywhere on it
- * (the rail, a figure) and the app's shortcuts and palette
- * (lib/leave-guard.ts). A link that opens a new tab leaves nothing behind and
- * is let through. `reload` is the page's own way out, once the reader has
- * chosen it: it asks nothing more.
- */
 export function useLeaveGuard(active: boolean): { asking: boolean; stay: () => void; leave: () => void; reload: () => void } {
   const router = useRouter();
   const [pending, setPending] = useState<(() => void) | null>(null);
@@ -87,11 +78,6 @@ export interface LeaveConfirmProps {
   fallbackFocus?: () => HTMLElement | null | undefined;
 }
 
-/**
- * Leaving with unsaved changes: "Keep editing" has the focus, so only a
- * deliberate press discards them. Staying gives the focus back to the link or
- * control that asked to leave, or to `fallbackFocus` once that is gone.
- */
 export function LeaveConfirm({ open, what, onStay, onLeave, fallbackFocus }: LeaveConfirmProps) {
   const returnFocus = useReturnFocus(fallbackFocus);
   return (

@@ -56,7 +56,7 @@ function RowAction({ onClick, icon, children, label, ...data }: { onClick: () =>
   );
 }
 
-/** What a custom rule's row offers (JO-20): edit it in the sheet, mark it for deletion, or take either back. */
+/** What a custom rule's row offers: edit it in the sheet, mark it for deletion, or take either back. */
 export interface CustomRowActions {
   onEdit: (from: HTMLElement) => void;
   onDelete: () => void;
@@ -75,10 +75,10 @@ export interface RuleRowProps {
   problems: ReadonlyMap<string, string>;
   onChange: (next: DraftRule) => void;
   onParamBlur: (name: string) => void;
-  /** A custom rule's check as the board offers it, and its row's actions (JO-20). */
+  /** A custom rule's check as the board offers it, and its row's actions. */
   check?: RuleCheck;
   custom?: CustomRowActions;
-  /** Marked for deletion in the draft (JO-20): read only until the deletion is taken back. */
+  /** Marked for deletion in the draft: read only until the deletion is taken back. */
   deleted?: boolean;
 }
 
@@ -109,15 +109,6 @@ function RuleMarks({ rule, edited, deleted }: { rule: RuleSettingsRule; edited: 
   );
 }
 
-/**
- * One rule: its id and title (what it checks, on demand), on or off on this
- * board, the severity its findings are reported as, its thresholds as a
- * sentence with their fields, and its open findings; "Reset to default" while
- * it differs from the catalogue. A rule Jira cannot feed on this board says so
- * and stays editable: its settings apply the day it can run. A custom rule
- * (JO-20) has the same controls, its check's label, and Edit and Delete; one
- * marked for deletion reads struck through, its controls held, with Keep.
- */
 export function RuleRow({ rule, draft, edited, problems, onChange, onParamBlur, check, custom, deleted = false }: RuleRowProps) {
   const locale = useFigureLocale();
   const [open, setOpen] = useState(false);
@@ -126,8 +117,6 @@ export function RuleRow({ rule, draft, edited, problems, onChange, onParamBlur, 
   const descriptionId = `${titleId}-description`;
   // The switch stands for the rule: what a refusal of the rule as a whole puts right, and where Reset leaves the focus.
   const switchId = fieldId(fieldPath(rule.rule_id, "enabled"));
-  // What is wrong with the rule as a whole, its switch or its severity: everything said of it but its thresholds,
-  // which their own fields say.
   const thresholds = new Set(rule.params.map((param) => fieldPath(rule.rule_id, `params.${param.name}`)));
   const ruleProblems = [
     ...new Set(
@@ -294,11 +283,6 @@ export interface NewRuleRowProps {
   onDiscard: () => void;
 }
 
-/**
- * A rule added in the draft and not saved yet (JO-20), marked "New": it reads
- * as it will be added (its settings, what it looks at, how serious it is, on),
- * with Edit (the sheet) and Discard; it has no id or findings until the save.
- */
 export function NewRuleRow({ item, check, onEdit, onDiscard }: NewRuleRowProps) {
   const locale = useFigureLocale();
   const { custom } = item.rule;

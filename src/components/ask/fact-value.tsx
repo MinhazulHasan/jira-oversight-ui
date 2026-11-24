@@ -13,11 +13,6 @@ export function isNumericKind(kind: FactColumnKind): boolean {
   return NUMERIC.has(kind);
 }
 
-/**
- * One fact cell as text, written the way the rest of the product writes that
- * kind. A calendar day ("2026-08-17", a week's Monday) is a date, not an
- * instant, so it is never shifted into the reader's zone.
- */
 export function factText(value: FactCell, kind: FactColumnKind, locale?: string): string {
   if (value === null || value === "") return MISSING;
   if (typeof value === "boolean") return value ? "Yes" : "No";

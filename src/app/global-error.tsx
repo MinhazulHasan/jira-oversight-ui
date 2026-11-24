@@ -7,12 +7,6 @@ import { BrandMark } from "@/components/shell/brand-mark";
 import "./globals.css";
 import { fontVariables } from "./typefaces";
 
-/*
- * The last resort, when the root layout itself fails. It renders its own
- * document, so it brings its own styles and fonts; the theme follows the
- * device, because the stored choice is applied by a provider that did not
- * get to run.
- */
 export default function GlobalError({ error, retry }: { error: unknown; retry: () => void }) {
   useEffect(() => {
     console.error(error);

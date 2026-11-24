@@ -13,30 +13,7 @@ import { cn } from "@/lib/utils";
 import { useCurrentBoard } from "./current-board";
 import { useSyncPress } from "./sync-follower";
 
-/**
- * "Last synced" is always visible, so nobody mistakes stale data for live
- * data. It shows the absolute time (in the viewer's zone) and the relative
- * age; after two hours it turns amber and says "Stale". Where the top bar is
- * short of room it says less: "Synced" below 1440px, the relative age alone
- * below 1280px (the absolute time is in the tooltip), and below 1024px not
- * even the word, which screen readers still hear.
- *
- * It is also Sync (JO-18), for the board on screen and no other: its name and
- * tooltip say which ("Sync Demo project"). A press syncs that board (Jira is
- * only read); while it waits behind another board's sync it says "Queued",
- * while it runs "Syncing", and when it ends every figure on screen is read
- * again (SyncFollower). A sync that failed, or a press that never reached the
- * service, says so until one succeeds. A board that has never synced says "Not
- * synced yet", and a press starts its first sync, as the page itself offers.
- *
- * Its accessible name is the action alone ("Sync Demo project"); what it shows
- * (stale, the sync time, its age) is its description, so a screen reader hears
- * a short name and then the state (SQA). So the button holds no words: it is
- * the pill's icon, stretched over the whole pill (it presses, and its focus
- * ring rings, the pill), and the words beside it are the state drawn, which
- * the description says in full. A name that left out words drawn on the
- * button itself would fail WCAG 2.5.3 (label in name).
- */
+/** "Last synced" is always visible, so nobody mistakes stale data for live data. */
 
 const PILL = "pressable inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs whitespace-nowrap hover:bg-hover";
 
@@ -71,7 +48,7 @@ export function LastSynced({ className }: { className?: string }) {
   const { state, press, underWay, failedToStart } = useSyncPress(key, name);
   const statusId = useId();
 
-  // A board that has never synced (JO-17): the board list says so, or the service answers so for this board.
+  // A board that has never synced: the board list says so, or the service answers so for this board.
   const notSynced =
     board?.synced === false || health.error?.code === "board_not_synced" || (health.data !== undefined && health.data.last_synced_at === null);
   const label = `Sync ${name ?? "this board"}`;
@@ -224,10 +201,7 @@ interface SyncPillProps {
   children: ReactNode;
 }
 
-/**
- * The pill: the button (the mark, stretched over the whole pill by .jo-stretch) and the state drawn beside it, with
- * the tooltip on the whole pill and the description, in words, beside it.
- */
+/** The pill. */
 function SyncPill({ label, statusId, state, busy = false, onPress, icon, status, tip, className, children }: SyncPillProps) {
   return (
     <Tooltip.Root>

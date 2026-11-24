@@ -26,8 +26,6 @@ describe("Select", () => {
 
     await user.click(screen.getByRole("combobox", { name: "What to check" }));
     const list = await screen.findByRole("listbox");
-    // Its width is the measured one from its first layout on: a width Radix sets after that layout (its
-    // --radix-select-trigger-width) widened the list late, and WebKit reported a ResizeObserver loop.
     expect(list.style.minWidth).toBe("552px");
     expect(list.className).not.toContain("--radix-select-trigger-width");
     await user.click(screen.getByRole("option", { name: "Open too long" }));

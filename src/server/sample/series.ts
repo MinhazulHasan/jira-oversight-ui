@@ -7,21 +7,12 @@ import { median, round4OrNull, share } from "./stats";
 import { WEEK, isoDay, iso, mondayUtc } from "./time";
 import { workItems, type Issue } from "./world";
 
-/**
- * Effort can be compared with an estimate only when both exist. Estimated work
- * with nothing logged has an effort ratio of 0 in the metrics, but that is
- * missing data, not work done in no time, so medians leave it out.
- */
+/** Effort can be compared with an estimate only when both exist. Estimated work */
 export function hasMeasuredEffort(issue: Issue): boolean {
   return issue.effortRatio !== null && issue.timeSpentS > 0;
 }
 
-/**
- * Weekly series and headline totals. Weeks start on Monday (UTC) and end with
- * the current week to date, as oversight_trend's do; "work finished in the
- * week" is every issue whose done_at falls in it, Epics included, as the
- * backend counts it.
- */
+/** Weekly series and headline totals. Weeks start on Monday (UTC) and end with */
 
 export const SERIES_WEEKS = 12;
 

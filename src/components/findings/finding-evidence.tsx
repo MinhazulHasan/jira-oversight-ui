@@ -92,10 +92,6 @@ export interface FindingEvidenceProps {
   lastSyncedAt?: string | null;
 }
 
-/**
- * How long it has been open, on the table's clock, so a row and its drawer give one figure: to now while the
- * board's data is fresh; on a stale board an open finding's age is as at the last sync, and says so.
- */
 function AgeValue({ finding, lastSyncedAt }: { finding: Finding; lastSyncedAt: string | null | undefined }) {
   const locale = useFigureLocale();
   const clock = useFindingClock(lastSyncedAt);
@@ -150,8 +146,6 @@ export function FindingEvidence({ finding, detail, onOpenFinding, lastSyncedAt }
     { id: "last", label: "Last seen", value: <Timestamp value={finding.last_seen_at} mode="datetime" /> },
     { id: "age", label: "Open for", value: <AgeValue finding={finding} lastSyncedAt={lastSyncedAt ?? detail.data?.meta.last_synced_at} /> },
     { id: "resolved", label: "Resolved", value: resolvedValue(finding) },
-    // Who has the issue now (not who had it when the rule fired). A sprint finding belongs to no one, and so
-    // does one whose ticket has left the synced data. At people level the name opens their card (JO-13).
     {
       id: "assignee",
       label: "Assignee",
@@ -253,4 +247,3 @@ function IssueTimeline({ finding, detail }: { finding: Finding; detail: UseQuery
     </Section>
   );
 }
-

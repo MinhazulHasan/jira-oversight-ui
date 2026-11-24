@@ -34,14 +34,6 @@ import { Figure, MarkLabel } from "./scorecard";
 /** A measure's column: the ratio's wider, so its counts ("9 findings on 10 open tickets") stay whole on two lines. */
 const columnWidth = (measure: ScorecardMeasure) => (measure.kind === "ratio" ? 10 : 7.75);
 
-/*
- * The everyone table (comparison on): each person who holds a ticket on the
- * board, a column per measure the board can show, sortable by any column. A
- * rate sorts closer to the process first; anyone with too few tickets for a
- * column is always last in it. Choosing a row shows that person's scorecard
- * below. Below 42rem of width the table becomes a list with the sort above it.
- */
-
 export interface ComparisonProps {
   data: PeopleScorecard;
   selectedId: string | null;
@@ -180,8 +172,6 @@ function ComparisonTable({ data, selectedId, onSelect, sort, order, onSort, stal
               >
                 <td data-sticky>
                   <span className="flex min-w-0 items-center gap-2">
-                    {/* The picture and the name open the person's card (JO-13); the rest of the row opens their
-                        scorecard below. The row keeps its one tab stop: the scorecard's heading is the keyboard's way in. */}
                     <PersonCardTrigger person={row.person} days={data.period.days} inRow tabbable={false} className={cn(NAME_TRIGGER, "gap-2")}>
                       <PersonAvatar person={row.person} />
                       <span className="flex min-w-0 flex-col">
@@ -344,13 +334,6 @@ export function Comparison(props: ComparisonProps) {
   );
 }
 
-/**
- * Everyone's figures while they load, in the shape they arrive in at this
- * width: where the table fits, its frame, its head (as tall as the measures'
- * names make it, four lines at most: 5.3125rem), eight rows and the whole
- * board's; where it does not, the list, with the sort above it and eight rows.
- * Each in its final height, so nothing below moves when the figures arrive.
- */
 export function ComparisonSkeleton() {
   return (
     <SkeletonGroup label="Loading everyone's figures" className="@container min-w-0">

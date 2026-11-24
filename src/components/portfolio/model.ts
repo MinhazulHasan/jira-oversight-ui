@@ -3,12 +3,6 @@ import type { CsvColumn } from "@/components/ui/csv";
 import type { AttentionItem, PortfolioBoard } from "@/lib/api/schemas";
 import { isStale } from "@/lib/sync";
 
-/*
- * The Portfolio's arithmetic, kept apart from the page so the table, the
- * cards that stand for it on a phone, the export and the tests all read the
- * same order and the same totals.
- */
-
 /** What the boards can be sorted by; each a column of the table. */
 export const PORTFOLIO_SORTS = ["board", "breaches", "warnings", "week", "sprint", "top_rule"] as const;
 export type PortfolioSort = (typeof PORTFOLIO_SORTS)[number];
@@ -30,60 +24,32 @@ export function hasFigures(board: PortfolioBoard): boolean {
   return board.last_sync_at !== null;
 }
 
-/**
- * The boards as the reader's clock reads them (JO-14): stale by the one rule
- * the top bar, Findings and the person card use (src/lib/sync.ts), on the
- * clock the top bar reads, so the Portfolio never says "Stale" beside a top
- * bar that does not, or the other way round. The service's own `stale` is
- * the same rule on its clock: it stands while the reader's clock is not yet
- * known, and for a board that has never synced (stale, having no sync).
- */
+/** The boards as the reader's clock reads them. */
 export function onReadersClock(boards: readonly PortfolioBoard[], readerNow: number | null): PortfolioBoard[] {
   if (readerNow === null) return [...boards];
   return boards.map((board) => (hasFigures(board) ? { ...board, stale: isStale(board.last_sync_at, readerNow) } : board));
 }
 
-/**
- * How long a breach in "Needs attention" has been seen, on the one clock
- * Findings reads its "Open for" on (JO-14): to the reader's now while its
- * board's last sync is fresh, else as at that sync, to the last rules run
- * that saw it, which the page says ("at last sync"). The same breach reads
- * the same age on both pages.
- */
 export function attentionAge(item: AttentionItem, syncedAt: string | null, readerNow: number | null): { ms: number; atLastSync: boolean } {
   const clock = findingClock(syncedAt, readerNow);
   const ms = findingAgeMs({ first_seen_at: item.opened_at, last_seen_at: item.last_seen_at, resolved_at: null }, clock.now);
   return { ms, atLastSync: clock.stale };
 }
 
-/**
- * The board's first tracked week, as the Overview's tiles read it: the rules
- * first saw it within the 7 days to `now` (the response's generated_at), so
- * every finding is new only because tracking began and there is no change
- * or trend to show yet.
- */
+/** The board's first tracked week, as the Overview's tiles read it. */
 export function firstTrackedWeek(board: PortfolioBoard, now: number): boolean {
   if (!hasFigures(board) || board.tracking_since === null) return false;
   const since = Date.parse(board.tracking_since);
   return !Number.isNaN(since) && since > now - WEEK_MS;
 }
 
-/**
- * The Sprint column's order: a sprint at risk above one on track, then by its
- * unestimated work. None where the board has no active sprint, or nothing
- * about it is measured.
- */
+/** The Sprint column's order. */
 function sprintRank(board: PortfolioBoard): number | undefined {
   if (!hasFigures(board) || !board.active_sprint) return undefined;
   if (board.sprint_at_risk === null && board.unestimated_in_active_sprint === null) return undefined;
   return (board.sprint_at_risk ? 1_000_000_000 : 0) + (board.unestimated_in_active_sprint ?? 0);
 }
 
-/**
- * Each sort's value for a board at `now`; undefined where the board has none
- * (no figures yet, its first tracked week, no active sprint, nothing open),
- * which sorts last whichever way. The board's name always sorts.
- */
 export function sortValues(now: number): Record<PortfolioSort, (board: PortfolioBoard) => string | number | undefined> {
   return {
     board: (board) => folded(board.project.name),
@@ -100,10 +66,7 @@ export function firstOrder(sort: PortfolioSort): SortOrder {
   return sort === "board" ? "asc" : "desc";
 }
 
-/**
- * The boards in the order asked for, at `now` (the response's generated_at): a board with no value for it last,
- * ties in the service's own order.
- */
+/** The boards in the order asked for, at `now` (the response's generated_at). */
 export function sortBoards(boards: readonly PortfolioBoard[], sort: PortfolioSort, order: SortOrder, now: number): PortfolioBoard[] {
   const value = sortValues(now)[sort];
   const sign = order === "asc" ? 1 : -1;
@@ -183,11 +146,7 @@ export function portfolioTotals(boards: readonly PortfolioBoard[], now: number):
   );
 }
 
-/**
- * The word for an active sprint with no open sprint-risk finding (W-SPR-01). Not "On track": the rule looks only at
- * the days left and the work not started, so it cannot vouch for a sprint (SQA: a sprint past its end date with work
- * not done read "On track").
- */
+/** The word for an active sprint with no open sprint-risk finding (W-SPR-01). */
 export const NO_RISK_FLAGGED = "No risk flagged";
 
 /** What the sprint column says: the risk in words. */

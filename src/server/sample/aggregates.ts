@@ -8,12 +8,7 @@ import { median, percentile, round4, round4OrNull, share } from "./stats";
 import { DAY, HOUR, spelledDay } from "./time";
 import { workItems, type Issue } from "./world";
 
-/**
- * The figures several views share, each computed one way only: the overview,
- * the rule catalogue, the weekly insights and the Ask facts all read them from
- * here, so they cannot drift apart. Definitions follow the backend's query
- * catalogue (oversight/ask/catalog.py).
- */
+/** The figures several views share, each computed one way only: the overview, */
 
 const NO_EPIC_LABEL = "(no epic)";
 
@@ -21,7 +16,7 @@ export type Period = "7d" | "30d" | "90d" | "sprint" | "all";
 
 export interface Window {
   since: number | null;
-  /** "the last 90 days", "the active sprint (Sprint 26, since 23 Oct 2026)". */
+  /** "the last 90 days", "the active sprint (Sprint 26, since )". */
   phrase: string;
 }
 
@@ -59,13 +54,7 @@ export interface HotSpot {
   issues: number;
 }
 
-/**
- * Open findings by epic, ranked by open breaches, then open warnings (as
- * oversight_hot_spots ranks them). Findings with no epic, work outside every
- * epic and sprint findings alike, are grouped under "(no epic)": the same set
- * the findings filter epic=none returns, so a hot spot clicks through to
- * exactly its findings.
- */
+/** Open findings by epic, ranked by open breaches, then open warnings (as */
 export function hotSpots(dataset: Dataset): HotSpot[] {
   return memo(dataset, "hot-spots", () => {
     const groups = new Map<string | null, { breaches: number; warnings: number; issues: Set<string> }>();
@@ -207,7 +196,7 @@ export interface EffortGroup {
 export function effortByEpic(dataset: Dataset, period: Period): EffortGroup[] {
   return memo(dataset, `effort-by-epic:${period}`, () => {
     const { since } = periodWindow(dataset, period);
-    // R-EFF-01's threshold on the board (JO-15).
+    // R-EFF-01's threshold on the board.
     const threshold = effortThreshold(dataset.rules);
     const ratios = new Map<string, number[]>();
     for (const issue of dataset.world.issues) {

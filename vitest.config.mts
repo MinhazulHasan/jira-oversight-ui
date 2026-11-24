@@ -15,8 +15,6 @@ export default defineConfig({
     css: false,
     restoreMocks: true,
     unstubGlobals: true,
-    // Sign-in is off unless a test turns it on: the data route's tests predate it, and
-    // src/server/auth/__tests__ test the gate with every mode set explicitly.
     env: { AUTH_MODE: "off" },
   },
 });

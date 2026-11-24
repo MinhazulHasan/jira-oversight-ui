@@ -14,12 +14,6 @@ import { EVIDENCE_LABEL, fieldName } from "./labels";
 
 type Process = Rules["process"];
 
-/*
- * All nine stages on one line at full width, their segments joined into one
- * track by a 2 px gap of the sheet; three to a line in a narrower column and
- * two on a phone. Container queries, so the rail being open or closed decides
- * the layout rather than the window.
- */
 const TRACK = "grid grid-cols-2 gap-x-4 gap-y-6 @lg:grid-cols-3 @5xl:grid-cols-9 @5xl:gap-x-0.5";
 const TEXT = "flex min-w-0 flex-col gap-1.5 @5xl:pr-3";
 
@@ -103,11 +97,7 @@ function StageCell({ stage, estimate }: { stage: ProcessStage; estimate: Process
   );
 }
 
-/**
- * The rules the gap in the evidence stops, each opening its drawer. The steps themselves are marked "Not measurable"
- * in the strip above, so they are not listed again (SQA: the same five steps were said twice). Nothing when every
- * rule can run.
- */
+/** The rules the gap in the evidence stops, each opening its drawer. */
 function BlockedRules({ rules, onOpenRule }: { rules: readonly Rule[]; onOpenRule: (ruleId: string) => void }) {
   const blocked = rules.filter((rule) => !rule.measurable);
   if (blocked.length === 0) return null;

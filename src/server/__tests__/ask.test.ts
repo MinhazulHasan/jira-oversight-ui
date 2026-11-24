@@ -26,11 +26,7 @@ import { scorecards } from "../sample/scorecard";
 import { personIdFor } from "../sample/team";
 import { displayForms, KEY, verify } from "../sample/verify";
 
-/*
- * Planning.md principle 3: numbers come from code. Every number, issue key and
- * date in a sample answer must be in the facts it was written from, every one
- * must be cited, and every citation must point at a cell that holds it.
- */
+/** Planning.md principle 3: numbers come from code. Every number, issue key and */
 
 const NOW = Date.parse("2026-11-04T14:30:00Z");
 
@@ -293,7 +289,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
     expectPrincipleThree(response);
     const [lead, second, third] = rows;
     const nobody = peopleView(dataset).people.find((row) => row.person === null)!;
-    // The work nobody holds after the ranking, never in it (JO-12, G5).
+    // The work nobody holds after the ranking, never in it.
     expect(response.answer).toBe(
       `${lead.person!.name} has the most open breaches, ${lead.open_breaches}, with ${lead.open_warnings} open warnings on ${lead.tickets_with_findings} tickets with findings. ` +
         `Next come ${second.person!.name} with ${second.open_breaches} and ${third.person!.name} with ${third.open_breaches}. ` +
@@ -367,7 +363,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
   /** Insults and character labels: an answer about people never holds one (the brief's list, checked on the answer). */
   const LABELS = /\b(lazy|laziest|lazier|useless|incompetent|careless|dishonest|insincere|stupid|idiot\w*|hopeless|worthless|pathetic|best|worst)\b/i;
   const paragraphs = (response: AskResponse) => response.answer!.split("\n\n");
-  /** What DEMO cannot show: no code review in Jira. Skipped stages are measured, as the rules engine measures them (JO-12, G11). */
+  /** What DEMO cannot show: no code review in Jira. Skipped stages are measured, as the rules engine measures them. */
   const NOT_MEASURABLE = "Not measurable on this board: Code review recorded.";
   /** The code-built summary of one person's scorecard, as the contract writes it, from the sample's own figures. */
   const summaryOf = (id: string, days: ScorecardDays = 90, unmeasured = true): string => {
@@ -459,11 +455,9 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
     // One person's scorecard is always there, comparison or not.
     const one = askSample(dataset, "Is @Ada Brooks doing well?", 0, { level: "people", mentions: [ADA], comparison: "off" });
     expect(one.outcome).toBe("answered");
-    // Raw counts side by side stay as they were (JO-09), comparison or not.
+    // Raw counts side by side stay as they were, comparison or not.
     const counts = askSample(dataset, "Open breaches for @Ada Brooks and @Carmen Ruiz", 0, { level: "people", mentions: [ADA, CARMEN], comparison: "off" });
     expect(counts.plan[0].tool).toBe("oversight_query");
-    // "Compare", "versus", "side by side" set their scorecards side by side (the JO-11 review: they gave raw counts),
-    // and a count named keeps the raw counts, as the service reads them.
     for (const question of ["How do @Ada Brooks and @Carmen Ruiz compare?", "@Ada Brooks vs @Carmen Ruiz", "Compare @Ada Brooks and @Carmen Ruiz side by side"]) {
       expect(at(question, [ADA, CARMEN]).plan[0].tool, question).toBe("oversight_person_scorecard");
       const refused = askSample(dataset, question, 0, { level: "people", mentions: [ADA, CARMEN], comparison: "off" });
@@ -474,15 +468,11 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
 
   it("orders everyone by how closely they follow the process when no one is named, never calling anyone best", () => {
     const set = scorecards(dataset, 90);
-    // The slowest and the worst ask about the other side of the process: further from it first, the fewest measures
-    // closer (the JO-14 review), and the answer still never says worst.
     const further = new Set(["Who is the slowest developer?", "Which user is the worst?"]);
     for (const question of ["Who is best on the board? Rank the others", "Who is the slowest developer?", "Who follows the process most closely?", "Rank everyone", "Which user is the worst?"]) {
       const response = at(question);
       const order = further.has(question) ? "fewest" : "closer";
       expect(response.outcome, question).toBe("answered");
-      // n only for a question's "top N", as the service plans it (the JO-11 check: "up to 50" in the sample alone).
-      // The plan carries the order (JO-14): with no direction word, closer to the process first.
       expect(response.plan, question).toEqual([{ tool: "oversight_people_compare", params: { project: "DEMO", measure: "overall", days: 90, order } }]);
       const [facts] = response.facts;
       const people = facts.rows.filter((row) => row.person_id !== null);
@@ -499,8 +489,6 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
       const off = askSample(dataset, question, 0, { level: "people", mentions: [], comparison: "off" });
       expect([off.outcome, off.message]).toEqual(["not_understood", SCORECARD_SENTENCES.comparisonOff]);
     }
-    // A measure the question names is the order: closer first, too few tickets last and said so. A ranking by the
-    // raw count ("rank everyone by open findings") is the people view's (JO-09), as the service has it.
     expect(at("Rank everyone by open findings").plan[0].tool).toBe("oversight_query");
     const findings = at("Who is best on open findings?");
     expect(findings.plan[0].params.measure).toBe("open_findings_per_10");
@@ -508,11 +496,11 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
     const enough = ordered.filter((row) => row.enough === true).map((row) => Number(row.value));
     expect(enough).toEqual([...enough].sort((a, b) => a - b));
     expect(ordered.findIndex((row) => row.enough !== true)).toBeGreaterThanOrEqual(enough.length);
-    // A figure of now: no period beside it (the JO-12 review), as the service says it.
+    // A figure of now: no period beside it (the review), as the service says it.
     expect(findings.answer).toMatch(/^Open findings per 10 open tickets, closest to the process first: .+\. The whole board: \d+\.\d\. Too few tickets to compare: .+\.\n\n/);
     expect(findings.facts[0].rows.at(-1)).toMatchObject({ person_id: null, name: "Whole board" });
     expectPrincipleThree(findings);
-    // Who holds the most of a raw count is still the people view's ranking (JO-09).
+    // Who holds the most of a raw count is still the people view's ranking.
     expect(at("Who has the most open breaches?").plan[0].tool).toBe("oversight_query");
   });
 
@@ -564,7 +552,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
 
   it("answers a question about people no figure answers per person with the overall comparison, or points to what it can where comparing is off", () => {
     for (const question of ["Show cycle time per person", "Who writes the most comments?"]) {
-      // Never turned away (JO-12, G3/G4): the overall comparison, said so first.
+      // Never turned away: the overall comparison, said so first.
       const answered = at(question);
       expect([answered.outcome, answered.plan[0].params.measure], question).toEqual(["answered", "overall"]);
       expect(paragraphs(answered)[0]).toBe("This answer uses the overall comparison: the number of measures on which each person is closer to the process than the whole board.");
@@ -574,7 +562,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
       expect(response.message, question).toBe(PEOPLE_HELP_MESSAGE);
       expect(response.suggestions).toContain("Who has the most open breaches?");
     }
-    // It never says the Jira data cannot answer (the JO-11 review).
+    // It never says the Jira data cannot answer (the review).
     expect(PEOPLE_HELP_MESSAGE).not.toMatch(/Jira data/);
   });
 

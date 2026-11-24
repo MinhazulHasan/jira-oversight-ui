@@ -11,14 +11,6 @@ import previewJson from "../../../docs/sample-responses/rule-settings-preview.js
 import settingsJson from "../../../docs/sample-responses/rule-settings.json";
 import { RULE_SETTINGS_MISSING, SETTINGS_BUSY, SETTINGS_REFUSED } from "../live";
 
-/*
- * Rule settings (JO-15) forwarded to the live service: the board picked in the
- * top bar, the level this interface decided, the reader, and for a change the
- * body this interface checked and rebuilt, as JSON; every answer parsed
- * against the contract, and the service's refusals said in this interface's
- * words (its own words passed on only when they are plain and short).
- */
-
 const LIVE = { OVERSIGHT_DATA: "live", OVERSIGHT_API_URL: "http://oversight.internal:3300", OVERSIGHT_SERVICE_KEY: "svc-key", AUTH_MODE: "off" };
 const ORIGIN = "http://localhost:3400";
 const BOARD = "jo-board=DEMO";
@@ -157,7 +149,7 @@ describe("forwarding rule settings to the service", () => {
     ];
     service(() => Response.json({ detail: errors.map((error) => error.message).join(" "), code: "rule_settings_invalid", errors }, { status: 422 }));
     const refused = await expectProblem(await change("rules/settings", { revision: 0, changes: [{ rule_id: "R-EFF-01", enabled: false }] }), 422, "rule_settings_invalid");
-    // A title is a field a change may set since JO-20 (a custom rule's edit): said at it, beside the rule all the same.
+    // A title is a field a change may set since (a custom rule's edit): said at it, beside the rule all the same.
     expect(refused.issues?.map((issue) => issue.path)).toEqual(["(settings)", "R-EFF-01.params", "R-EFF-01.title", "(settings)"]);
     expect(refused.issues?.map((issue) => issue.message)).toEqual(errors.map((error) => error.message));
   });

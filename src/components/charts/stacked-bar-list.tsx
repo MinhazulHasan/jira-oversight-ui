@@ -38,10 +38,6 @@ export interface StackedBarItem {
   leading?: ReactNode;
   /** A row that stands for no one (the unassigned tickets): its name in the secondary ink. */
   muted?: boolean;
-  /**
-   * Wraps the row's name (its picture and its label) in a control of its own: a person's name that opens their
-   * card (JO-13). The row's link then stands behind the row, and the control above it.
-   */
   wrapLabel?: (label: ReactNode) => ReactNode;
   /** A value per segment key; a missing key counts as zero. */
   values: Readonly<Record<string, number>>;
@@ -103,12 +99,6 @@ export function stackedBarTable(
   };
 }
 
-/**
- * Ranked bars split into parts: breaches and warnings per epic. The parts sit
- * end to end from one baseline with a 2 px gap of the surface between them,
- * the last part has the rounded end, and each part's count is printed with
- * its mark, so the split never depends on telling clay from amber.
- */
 export function StackedBarList({
   items,
   title,
@@ -135,9 +125,6 @@ export function StackedBarList({
           <>
             {item.leading ? <span className="flex shrink-0 self-center">{item.leading}</span> : null}
             {item.meta ? <span className="mono shrink-0 text-xs text-ink-low">{item.meta}</span> : null}
-            {/* A person's name, beside their picture, keeps one line as DESIGN.md sets names (their card, or the
-                tooltip and the row's accessible name, give it in full); any other label, an epic's title, wraps
-                rather than being cut, as BarList's do: a phone has no hover for the tooltip (the JO-14 review). */}
             <span
               className={cn(
                 item.wrapLabel || item.leading ? "truncate" : "min-w-0 text-balance [overflow-wrap:break-word]",

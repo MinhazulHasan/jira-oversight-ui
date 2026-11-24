@@ -11,10 +11,6 @@ import { Timestamp } from "@/components/ui/timestamp";
 import type { ApiError } from "@/lib/api/client";
 import { useHealth } from "@/lib/api/hooks";
 
-/**
- * An issue key the snapshot does not hold. Said calmly, with what was looked
- * at (the last sync and the projects in it) and the ways back.
- */
 export function IssueNotFound({ issueKey }: { issueKey: string }) {
   const { setPaletteOpen } = useShell();
   const health = useHealth().data;

@@ -27,23 +27,8 @@ import {
   type FactScorecards,
 } from "./scorecard-facts";
 
-/*
- * The figures behind a scorecard or comparison answer (JO-11), drawn under
- * the answer's words: the compact scorecard (one person, or several side by
- * side, beside the whole board) with each person's one-line summary, or
- * everyone in the order the answer gives. The order is the facts'; nobody is
- * numbered, so no rank is read into people who are level, and someone with
- * too few tickets is labelled so, never shown as "0 of 0". The facts
- * themselves stay in the ledger, cited as ever; this reads the same rows.
- */
-
 const RATIO = { kind: "ratio", measurable: true } as const;
 
-/**
- * The heading of an overall comparison's column of marks: its word, or in a narrow column (a phone) the mark's icon,
- * which the key under the comparisons names, so the five columns fit inside the frame rather than scroll (as a rate's
- * marks do).
- */
 function MarkHeading({ mark, word }: { mark: Mark; word: string }) {
   return (
     <>
@@ -77,9 +62,6 @@ function Compared({ comparison }: { comparison: FactComparison }) {
             </th>
             {measure ? (
               <>
-                {/* In a narrow column (a phone) the headers wrap and each mark is its icon, named by the key below
-                    it, so a rate's figures and marks fit inside the frame rather than scroll (as the scorecard's
-                    cards do, G6). */}
                 <th scope="col" className="text-right @max-[29rem]:whitespace-normal">
                   {measure.label}
                 </th>
@@ -115,8 +97,6 @@ function Compared({ comparison }: { comparison: FactComparison }) {
             return (
               <tr key={row.person.id} data-person={row.person.id}>
                 <th scope="row" className="text-left font-normal">
-                  {/* The name opens the person's card over the comparison's period (JO-13), as on the People page. In
-                      a narrow column a long name is cut short to leave the figures room; the card says it whole. */}
                   <PersonCardTrigger person={row.person} days={cardDays(days)} className={cn(NAME_TRIGGER, "max-w-[14rem] @max-[29rem]:max-w-[7.5rem]")}>
                     <span className="inline-flex max-w-[14rem] min-w-0 items-center gap-2 @max-[29rem]:max-w-[7.5rem]">
                       <PersonAvatar person={row.person} />
@@ -177,8 +157,6 @@ function Compared({ comparison }: { comparison: FactComparison }) {
             );
           })}
           {comparison.unassigned && measure ? (
-            // The work nobody holds, after the people and never ranked among them (JO-12, G5): the rows add up to
-            // the board's below.
             <tr data-unassigned>
               <th scope="row" className="text-left font-normal text-ink-low">
                 <span className="pl-7">Unassigned</span>

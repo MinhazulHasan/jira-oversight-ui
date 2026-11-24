@@ -1,8 +1,4 @@
-/**
- * The product mark (see src/app/icon.svg for the reasoning). In the app it is
- * drawn with the theme tokens, so in dark it becomes the dark theme's teal
- * with an ink glyph, exactly as Ask the System's mark does.
- */
+/** The product mark (see src/app/icon.svg for the reasoning). */
 export function BrandMark({ size = 26, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden className={className}>

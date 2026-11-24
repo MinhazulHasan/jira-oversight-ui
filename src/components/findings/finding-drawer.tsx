@@ -44,11 +44,6 @@ function isTextField(target: EventTarget | null): boolean {
   );
 }
 
-/**
- * The evidence drawer, open while the URL names a finding. A finding on this
- * page draws at once from the list (the list carries everything but the
- * issue's timeline); one reached by a link waits for its own request.
- */
 export function FindingDrawer({ urlId, onOpen, onClose, items, dataMode, lastSyncedAt }: FindingDrawerProps) {
   const locale = useFigureLocale();
   const open = urlId !== null;

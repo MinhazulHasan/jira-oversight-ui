@@ -13,11 +13,6 @@ import {
   signInPath,
 } from "../sign-in";
 
-/*
- * Where someone may be sent after signing in: a path on this dashboard, and
- * nothing that a browser could read as another site, whatever the encoding.
- */
-
 describe("safeNextPath", () => {
   it("keeps a path on this dashboard, with its query", () => {
     for (const path of [
@@ -215,8 +210,6 @@ describe("sendToSignIn", () => {
     expect(sendToSignIn()).toBe(true);
     expect(first).toHaveBeenCalledTimes(1);
 
-    // The sign-in page sent the browser straight back and the new page met the same refusal. A fresh page
-    // load (a fresh module) still knows, through the tab's session storage, and stays to show its error.
     vi.resetModules();
     const fresh = await import("@/lib/sign-in");
     vi.advanceTimersByTime(2_000);

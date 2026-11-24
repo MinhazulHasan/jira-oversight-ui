@@ -10,13 +10,6 @@ export const metadata: Metadata = { title: "Sign in" };
 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-/**
- * Sign in with Atlassian. The proxy sends every visitor without a session
- * here, with ?next= saying where they were going. With sign-in off (the
- * sample project) or a session already open there is nothing to do here, so
- * the page sends the reader straight on. ?error= and ?signed_out=1 only pick
- * a message.
- */
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const query = await searchParams;
   const next = safeNextPath(one(query.next));

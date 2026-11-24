@@ -1,13 +1,6 @@
 import "server-only";
 
-/**
- * The interface's server-side configuration. Read on every request rather
- * than once at start-up, so a misconfiguration is reported where it bites (in
- * the response that needed the value) and tests can switch modes freely.
- *
- * None of these variables may carry a NEXT_PUBLIC_ prefix: that would inline
- * them into the browser bundle. Errors name a variable, never its value.
- */
+/** The interface's server-side configuration. Read on every request rather */
 
 export type DataMode = "sample" | "live";
 
@@ -24,12 +17,7 @@ export interface SampleConfig {
   now: number | null;
   /** Simulated response delays, in milliseconds. */
   latency: { read: number; ask: number };
-  /**
-   * Whether people may be compared side by side (the everyone table, several
-   * people's scorecards), as the service's PEOPLE_COMPARISON decides it there:
-   * on unless an organisation turns it off. SAMPLE_PEOPLE_COMPARISON, read on
-   * every request like the rest.
-   */
+  /** Whether people may be compared side by side (the everyone table, several */
   peopleComparison: PeopleComparison;
 }
 

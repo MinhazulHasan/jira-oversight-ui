@@ -14,13 +14,6 @@ import { resolveShortcut } from "@/lib/shortcuts";
 
 import findingsSample from "../../../../docs/sample-responses/findings.json";
 
-/*
- * The ways into the People page (JO-11), at people level only: the rail, the
- * palette and `g` then `e`; "View scorecard" beside the Findings Person
- * filter when one person is chosen; "View scorecards" on the Overview's open
- * findings by person. A team-level reader is offered none of them.
- */
-
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
     <a href={href} {...rest}>

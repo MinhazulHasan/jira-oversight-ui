@@ -19,10 +19,6 @@ import { formatCount, MISSING } from "@/lib/format";
 
 import { findingsHref, KIND_LABEL, missingEvidenceText, OFF_ON_BOARD, openFindings, RULE_SETTINGS_HREF } from "./labels";
 
-/**
- * The open rule lives in the URL (?rule=R-EST-01), so the drawer survives a
- * reload, a shared link and the back button, as the evidence drawer does.
- */
 export function useOpenRule() {
   return useQueryState("rule", parseAsString.withOptions({ history: "push" }));
 }
@@ -58,9 +54,9 @@ function ruleFacts(rule: Rule, rules: readonly Rule[], onOpen: (ruleId: string) 
   const foreshadowedBy = rules.filter((candidate) => candidate.escalates_to === rule.rule_id);
   const items: KeyValueItem[] = [
     { id: "kind", label: "Kind", value: KIND_LABEL[rule.kind] },
-    // A rule an admin added to the board (JO-20), by the check it runs.
+    // A rule an admin added to the board, by the check it runs.
     ...(rule.custom ? [{ id: "custom", label: "Custom rule", value: rule.check_label ?? "Yes" }] : []),
-    // How this board runs it (JO-15): on or off, and whether an admin changed its settings from the catalogue's.
+    // How this board runs it: on or off, and whether an admin changed its settings from the catalogue's.
     {
       id: "board",
       label: "On this board",

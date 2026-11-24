@@ -1,12 +1,6 @@
 import { STAGE_LABELS } from "@/components/charts/palette";
 import type { Finding, IssueTimeline, Rules, Severity, Stage } from "@/lib/api/schemas";
 
-/*
- * The Issue page's reading of one issue-timeline response: pure functions, so
- * every figure the page derives (an estimate in hours, how late it was set,
- * which changelog entry a finding cites) is tested and traceable.
- */
-
 export type IssueData = IssueTimeline;
 export type Issue = IssueTimeline["issue"];
 export type Change = IssueTimeline["changes"][number];
@@ -77,11 +71,6 @@ export function citationsByChange(findings: readonly Finding[]): Map<string, Fin
 
 /* ------------------------------------------------------------ estimate -- */
 
-/**
- * The estimate in hours. Points are converted at the process's hours a point;
- * otherwise (an original estimate, or no process map to hand) it is what the
- * effort ratio was measured against: logged hours over the ratio.
- */
 export function estimateHours(issue: Issue, hoursPerPoint: number | null | undefined): number | null {
   if (issue.estimate_basis === "none") return null;
   if (issue.estimate_basis === "points" && issue.story_points !== null && hoursPerPoint) {
@@ -180,11 +169,6 @@ export interface WeekTotal {
   hours: number;
 }
 
-/**
- * Logged hours a week, oldest first. The weeks between the first and last
- * with time logged are filled with zero, so the bars keep the calendar's
- * rhythm; a span longer than `maxSpan` weeks keeps only the weeks with time.
- */
 export function weeklyTotals(worklogs: readonly WeekTotal[], maxSpan = 16): WeekTotal[] {
   const sorted = [...worklogs].sort((a, b) => a.week.localeCompare(b.week));
   if (sorted.length < 2) return sorted;

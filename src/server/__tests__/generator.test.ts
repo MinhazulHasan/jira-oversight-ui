@@ -160,8 +160,6 @@ describe("the sample story", () => {
   });
 
   it("words a stuck or unassigned ticket's finding as the service does: the status quoted, its durations in its units", () => {
-    // oversight/rules/checks.py: "In 'In Progress' for 15.0 days; the project's p90 for 'In Progress' is 14.0 days",
-    // and "In 'In Progress' with nobody assigned for 26.4 h": days with one decimal from 48 hours, else hours.
     const span = String.raw`(\d+\.\d) (days|h)`;
     const stuck = new RegExp(String.raw`^In '(To Do|In Progress)' for ${span}; the project's p90 for '\1' is ${span}$`);
     const unassigned = new RegExp(String.raw`^In 'In Progress' with nobody assigned for ${span}$`);

@@ -3,17 +3,6 @@ import { createHash } from "node:crypto";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 
-/*
- * People with their Jira pictures (the product owner's decision of 11 Nov
- * 2026): wherever the dashboard names a person, their picture beside the name
- * when the service holds one, their initials when it holds none or the
- * picture fails to load, and a generic figure for the unassigned tickets.
- * Sample mode, pinned to SAMPLE_NOW (playwright.config.ts): two of the eight
- * fictional people have a picture, an abstract pattern drawn in code and
- * served by the dashboard's own route, so both kinds are always on screen.
- * What each place should show is read from the API, never copied here.
- */
-
 const NOW = new Date("2026-11-04T14:30:00Z");
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const PICTURES = "**/api/oversight/people/*/avatar*";
@@ -131,7 +120,7 @@ async function assigneeCells(page: Page) {
   return table(page).locator("tbody tr").locator(`> :nth-child(${at + 1})`);
 }
 
-/** Each row of the Overview's open findings by person, as a whole: a person's name and picture open their card (JO-13). */
+/** Each row of the Overview's open findings by person, as a whole: a person's name and picture open their card. */
 const peopleRows = (page: Page) => page.getByRole("list", { name: "Open findings by person" }).getByRole("listitem");
 /** The drawer's facts: the value beside a label. */
 const fact = (scope: Locator, label: string) => scope.locator("dt", { hasText: new RegExp(`^${label}$`) }).locator("xpath=following-sibling::dd[1]");
@@ -181,8 +170,6 @@ test.describe("pictures beside names", () => {
     });
 
     test(`Findings: each row's assignee and every entry of the Person menu; axe clean (${colorScheme})`, async ({ page, request }) => {
-      // Every row's picture and every Person entry checked, and two axe passes: about 28 s in WebKit alone, past
-      // 30 s in a busy full run.
       test.slow();
       await page.emulateMedia({ colorScheme });
       const problems = watchConsole(page);
@@ -316,8 +303,6 @@ test.describe("pictures beside names", () => {
       return results;
     });
     for (const { size, letters, width, chord } of fits) {
-      // The letters' advance (never narrower than their ink) half a pixel clear of the edge on each side: the
-      // round's hairline on a Retina screen.
       expect(width, `${letters} in the ${size} px round`).toBeLessThanOrEqual(chord - 1);
     }
   });

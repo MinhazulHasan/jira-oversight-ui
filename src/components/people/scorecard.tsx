@@ -37,17 +37,6 @@ import {
   type Mark,
 } from "./model";
 
-/*
- * A person's scorecard: one row per measure, their figure beside the whole
- * board's, the mark where the two were compared, and where the tickets are.
- * The page shows it in full; Ask shows it compact. Measures the board cannot
- * show come last, muted, with the reason, and never as a zero. The marks are
- * drawn in the neutral inks with a shape and words: they are not good or bad.
- * Each shape has its own outline, told apart at a glance at 13 px (a ring
- * with a dot, an empty ring, two bars, one bar), and the key says which is
- * which wherever the shapes stand without their words.
- */
-
 const MARK_ICON: Record<Mark, LucideIcon> = {
   closer: CircleDot,
   further: Circle,
@@ -145,11 +134,6 @@ function NotMeasurable({ reason }: { reason: string | null }) {
   );
 }
 
-/**
- * A measure's name, with its definition a press away: a disclosure that opens
- * the definition beside it (and closes with Esc or a second press), as a
- * glossary term does, on a touch screen too. Hovering shows the same words.
- */
 function MeasureName({ measure, muted = false }: { measure: ScorecardMeasure; muted?: boolean }) {
   const direction = directionText(measure);
   const definition = `${MEASURE_DEFINITIONS[measure.key]}${direction ? ` ${direction}` : ""}`;
@@ -194,13 +178,6 @@ export interface ScorecardProps {
   className?: string;
 }
 
-/**
- * The full scorecard, as the People page shows it: the person, a one-line
- * summary of where they stand, then a row per measure. Wide, the person's
- * figure, the board's, the mark and the link stand in columns; narrow, the
- * mark and the link go under the measure's name, so the figures keep their
- * width. The caveat closes it.
- */
 export function Scorecard({ person, tickets, values, board, measures, days, headingLevel = 2, className }: ScorecardProps) {
   const headingId = useId();
   const locale = useFigureLocale();
@@ -214,7 +191,7 @@ export function Scorecard({ person, tickets, values, board, measures, days, head
       <header className="flex min-w-0 flex-col gap-1.5">
         {/* Wide, the count sits at the right of the name; narrow, under it, so the name keeps the whole width. */}
         <div className="flex min-w-0 flex-col gap-1 @min-[40rem]:flex-row @min-[40rem]:items-center @min-[40rem]:gap-2.5" data-scorecard-head>
-          {/* The picture and the name open the person's card (JO-13), as their name does everywhere at people level. */}
+          {/* The picture and the name open the person's card, as their name does everywhere at people level. */}
           <Heading id={headingId} className="flex min-w-0 items-center text-lg font-semibold tracking-[-0.01em] text-ink">
             <PersonCardTrigger person={person} days={cardDays(days)} className={cn(NAME_TRIGGER, "gap-2.5")}>
               <PersonAvatar person={person} size={24} />
@@ -307,10 +284,6 @@ export function Scorecard({ person, tickets, values, board, measures, days, head
   );
 }
 
-/**
- * A row's way to the tickets behind it. A longer label ("Open findings on all their tickets") wraps within its
- * column rather than widening the row past a phone's edge; its last word keeps the arrow beside it.
- */
 function MeasureLinkView({ link }: { link: NonNullable<ReturnType<typeof measureLink>> }) {
   const words = link.label.split(" ");
   const last = words.pop();
@@ -329,11 +302,6 @@ function MeasureLinkView({ link }: { link: NonNullable<ReturnType<typeof measure
   );
 }
 
-/**
- * A loading row's height where the scorecard is narrow, as the rows it stands for come out on a phone: a count's name
- * and its link (3.45rem); a rate's or the ratio's name, often on two lines, its mark and its link, or a measure the
- * board cannot show with its reason, which the figures alone tell apart (6.05rem, their height on average).
- */
 const NARROW_ROW: Record<ScorecardMeasure["kind"], string> = {
   count: "h-[3.45rem]",
   rate: "h-[6.05rem]",
@@ -391,11 +359,6 @@ export function ScorecardSkeleton({ className, label = "Loading the scorecard" }
   );
 }
 
-/**
- * The caveat's lines while the figures load, each as tall as a line of it
- * (text-xs, relaxed): two where the page is wide, four on a phone, where it
- * wraps so.
- */
 export function CaveatSkeleton() {
   return (
     <div aria-hidden className="border-t border-rule-weak pt-3">
@@ -422,20 +385,6 @@ export interface CompactScorecardPerson {
   values: Partial<Record<ScorecardMeasure["key"], ScorecardValue>>;
 }
 
-/**
- * Scorecards in an Ask answer: one or several people side by side, each
- * figure with its mark's shape (its words for assistive technology and in a
- * tooltip), the whole board last. Rows are compact; the ratio's counts wrap
- * rather than widen their column; the measures the board cannot show close
- * the table, muted, with the reason, kept within the frame's width. Wider
- * than its column (several people), it scrolls sideways with the measure's
- * name held at the left and the whole board's figures held at the right, so
- * the figure every mark is set against is always in view. Where the column
- * is narrow (a phone), several people stack instead, one compact card each,
- * their figures beside the board's, and what the board cannot show said once
- * under them (the JO-11 check, G6: two people side by side were cut inside
- * the frame at 390 px).
- */
 export function CompactScorecard({
   people,
   board,
@@ -523,8 +472,6 @@ function CompactTable({
               <th key={row.person.id} scope="col" className="text-right">
                 <span className="inline-flex max-w-[11rem] min-w-0 items-center justify-end gap-1.5">
                   <PersonAvatar person={row.person} />
-                  {/* One person's name wraps rather than being cut where the frame is narrow; several, side by side,
-                      keep one line each, the full name a hover away. */}
                   <span className={cn("text-ink", people.length === 1 ? "min-w-0 text-left whitespace-normal" : "truncate")} title={row.person.name}>
                     {row.person.name}
                   </span>

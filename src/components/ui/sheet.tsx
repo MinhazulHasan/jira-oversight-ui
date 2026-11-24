@@ -11,10 +11,7 @@ import { CONTAINED_EVENTS, keepBackspaceFromBrowser } from "./contained-events";
 import { ScrollArea } from "./scroll-area";
 
 export interface SheetProps {
-  /**
-   * Open or closed. The caller owns this, usually from the URL (nuqs), so an
-   * open drawer survives a reload, a shared link and the back button.
-   */
+  /** Open or closed. */
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: ReactNode;
@@ -29,22 +26,12 @@ export interface SheetProps {
   children: ReactNode;
   /** The panel's width; 560 px, or the viewport on a phone. A bottom sheet is as wide as the screen, up to 40rem. */
   width?: number;
-  /**
-   * Where the panel comes from: the right edge (the evidence drawer), or the
-   * bottom (a bottom sheet, for a touch screen or a phone: the person card).
-   */
+  /** Where the panel comes from. */
   side?: "right" | "bottom";
   /** Before the title, in the header: a person card's picture. */
   leading?: ReactNode;
-  /**
-   * React's events from inside stop at the sheet's edge (`CONTAINED_EVENTS`): for a sheet opened from inside a row
-   * or a field (a person card), whose presses and keys are not the row's or the field's.
-   */
+  /** React's events from inside stop at the sheet's edge (`CONTAINED_EVENTS`). */
   contained?: boolean;
-  /**
-   * Backspace stays in the sheet (`keepBackspaceFromBrowser`), for a sheet that holds no field of its own (a person
-   * card): WebKit takes it for Back, which would leave the page, and a question being written on it, behind the sheet.
-   */
   keepBackspace?: boolean;
   /** Where focus goes when it closes, in place of what held it when it opened: a mention chip's field, say. */
   onCloseFocus?: () => void;
@@ -62,12 +49,7 @@ const TITLE = "text-lg font-semibold tracking-[-0.01em] text-balance text-ink";
 const DESCRIPTION = "text-sm text-ink-mid";
 const HEADER_TOOLS = "-mt-0.5 -mr-2 flex shrink-0 items-center gap-1";
 const BOTTOM_TOOLS = "-mr-1 flex shrink-0 items-center gap-1 self-start";
-/**
- * A bottom sheet's body: it fills what the header and the footer leave, and scrolls there. The panel is only as tall
- * as its content (up to most of the screen), a height a percentage cannot be taken of, so the frame is a column the
- * body flexes in, never `h-full`: on a short screen (a phone held sideways, Safari's toolbars showing) the body would
- * otherwise grow past its frame, over the footer's ways on and off the screen's edge.
- */
+/** A bottom sheet's body. */
 const BOTTOM_FRAME = "flex min-h-0 flex-1 flex-col";
 const BOTTOM_BODY = "min-h-0 flex-1 px-4 py-4";
 /** A bottom sheet's footer: a ruled bar edge to edge, its cells the footer's own (a person card's ways on). */
@@ -78,16 +60,7 @@ const ESC_HINT = "mr-0.5 hidden sm:inline-flex";
 const BODY = "h-full px-6 py-5";
 const FOOTER = "flex shrink-0 items-center gap-2 border-t border-rule-weak bg-rail px-6 py-3";
 
-/**
- * The evidence drawer: a panel from the right edge, 560 px wide, over a dim
- * page. Focus is held inside while it is open and returns to the row that
- * opened it; Escape or the close button shuts it. Its body scrolls on its own
- * and fades at the edge while there is more to read.
- *
- * `side="bottom"` makes it a bottom sheet (a touch screen, a phone): the
- * same panel rising from the bottom edge, the screen's width up to 40rem,
- * with a grab handle, as tall as its content up to most of the screen.
- */
+/** The evidence drawer. */
 export function Sheet({
   open,
   onOpenChange,
@@ -106,9 +79,6 @@ export function Sheet({
   className,
 }: SheetProps) {
   const bottom = side === "bottom";
-  // The URL opens the drawer, not a Dialog.Trigger, so Radix has nothing to
-  // give focus back to on close. Remember what held focus when it opened (the
-  // row or the button that opened it) and return there.
   const returnFocus = useRef<HTMLElement | null>(null);
   const events = contained ? CONTAINED_EVENTS : undefined;
 
@@ -125,8 +95,6 @@ export function Sheet({
           // The panel's own look first, then the side's: a bottom sheet's width cap (40rem) outranks the panel's max-w-full.
           className={cn(PANEL, bottom ? BOTTOM_PANEL : "jo-sheet-panel fixed inset-y-0 right-0 z-[var(--z-overlay)]", className)}
           style={bottom ? undefined : { width: `min(${width}px, 100vw)` }}
-          // Evidence to read, not a form: focus the panel itself, so no control
-          // opens wearing a focus ring and a tooltip. Tab still reaches them all.
           onOpenAutoFocus={(event) => {
             event.preventDefault();
             const opener = document.activeElement;
@@ -159,8 +127,7 @@ export function Sheet({
             </div>
             <div className={bottom ? BOTTOM_TOOLS : HEADER_TOOLS}>
               {actions}
-              {/* The key cap sits beside the button, not in it, so the button's name is just "Close". A bottom sheet is a
-                  touch screen's (or a window too narrow to show the cap): no key to name there. */}
+              {/* The key cap sits beside the button, not in it, so the button's name is just "Close". */}
               {bottom ? null : <Keys keys={["Esc"]} className={ESC_HINT} />}
               <Dialog.Close aria-label="Close" aria-keyshortcuts="Escape" className={CLOSE}>
                 <X aria-hidden size={16} strokeWidth={1.75} />
@@ -181,11 +148,7 @@ export function Sheet({
 
 export type SheetPreviewProps = Omit<SheetProps, "open" | "onOpenChange">;
 
-/**
- * The drawer drawn still, in the page, for the style guide and for
- * documentation pictures: the same layout as Sheet, but inert, so nothing in
- * it takes focus or is read twice. Never use it to show live content.
- */
+/** The drawer drawn still, in the page, for the style guide and for documentation pictures. */
 export function SheetPreview({
   title,
   eyebrow,

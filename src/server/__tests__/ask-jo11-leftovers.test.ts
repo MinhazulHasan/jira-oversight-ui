@@ -11,22 +11,6 @@ import { portfolioView } from "../sample/portfolio";
 import { scorecards, scorecardView } from "../sample/scorecard";
 import { verify } from "../sample/verify";
 
-/*
- * What the JO-11 run left open (its final check, 12 Nov 2026), in sample
- * mode, as the service answers it (tests/test_jo11_leftovers.py):
- *
- * - G3/G4: never turn an admin away. The synonym table (the busiest, doing
- *   the most, the least, capacity, could take more work, idle), the overall
- *   comparison as the last resort with a sentence first saying so, and "No one
- *   called <Name> is on this board." for a typed name no one has; proved over
- *   the service's own 67 paraphrases, plan for plan.
- * - G5: one meaning of "open tickets": Epics left out everywhere, a "who"
- *   ranking ranks people only, and the work nobody holds is one sentence after.
- * - G8: "Who is on this board?" says each name once.
- * - G9: the comparison's notes name each column in lower-case words, never "X is X".
- * - G11: skipped stages are measured where the engine measures R-FLOW-02.
- */
-
 const dataset = buildDataset(Date.parse("2026-11-04T14:30:00Z"));
 const NOT_UNDERSTOOD = "That question can't be answered from the Jira data; try one of the suggestions.";
 
@@ -79,8 +63,6 @@ const PARAPHRASES: [string, Plan][] = [
   ["Who is underutilised?", LEAST],
   // Idle: nothing in progress now, fewest first.
   ["Who is idle?", IDLE], ["Who has nothing in progress?", IDLE], ["Who is not working on anything?", IDLE],
-  // The qualifier or the negation decides the order (the JO-12 review, the G4 class): no room left is the busiest; not
-  // overloaded, the least loaded or light on work has room; not idle has work in progress.
   ["Who is at full capacity?", MOST], ["Who has reached capacity?", MOST], ["Who is near capacity?", MOST],
   ["Who has the least capacity?", MOST], ["Who has the least bandwidth?", MOST], ["Who has no bandwidth left?", MOST],
   ["Who isn't available?", MOST], ["Who is not available?", MOST], ["Who could not take more work?", MOST],
@@ -116,8 +98,6 @@ describe("G3/G4: no admin is turned away", () => {
     } else {
       expect(response.answer!.startsWith("This answer uses"), question).toBe(false);
     }
-    // Each ranking in its order: the facts sorted by the count (most or fewest first), the answer naming the people in
-    // that order, and the tickets nobody holds after them, never among them.
     for (const fact of response.facts) {
       if (fact.tool !== "oversight_people_compare" || fact.params.measure === "overall") continue;
       const people = fact.rows.filter((row) => row.person_id !== null);
@@ -190,16 +170,12 @@ describe("the JO-12 review: each question answered with the figure it names, as 
     "Who isn't booking their hours?",
     "Who logs the fewest hours?",
     "Who never logs time?",
-    // Regression: "logged the most hours" got the overall comparison, while "has the most hours logged" got time
-    // logged: one question, two answers by word order.
     "Who logged the most hours?",
     "Which developer logged the most hours?",
     "Who has the most hours logged?",
     "Who has logged the fewest hours?",
     "Who records the most hours?",
     "Who books the most hours?",
-    // Regression (the JO-12 check): time tracked, recorded or booked, and hours worked, got the last resort or open
-    // tickets (tests/test_jo11_leftovers.py asks the service the same).
     "Who tracks time?",
     "Who records their time?",
     "Who books time on their tickets?",
@@ -220,9 +196,6 @@ describe("the JO-12 review: each question answered with the figure it names, as 
     expect(logged.answer!.startsWith(LAST_RESORT.overall)).toBe(false);
   });
 
-  // The scorecard measures named about people a question mentions (the JO-12 check: two named people asked about time
-  // logged, skipped stages or estimates got their open breaches; reopened or stuck, their open tickets; the time they
-  // log on done work, their tickets done), as the service answers them (tests/test_jo11_leftovers.py).
   const NAMED_MEASURES = [
     ["Time logged by @Ada Brooks and @Carmen Ruiz", "time_logged"],
     ["Do @Ada Brooks and @Carmen Ruiz skip stages?", "skipped_stage"],
@@ -452,7 +425,7 @@ describe("G11: one truth per board", () => {
     const one = ask("How is @Ada Brooks doing?", [set.holders.find((row) => row.person.name === "Ada Brooks")!.person.id]);
     expect(one.answer).toContain("Not measurable on this board: Code review recorded.");
     expect(one.answer).not.toContain("Not measurable on this board: Skipped a stage");
-    // As asked (JO-14): the most skipped, highest first.
+    // As asked: the most skipped, highest first.
     expect(ask("Who skips stages the most?").answer).toMatch(/^Skipped a stage, last 90 days, highest first: /);
   });
 });

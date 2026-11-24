@@ -68,10 +68,6 @@ function concentration(data: Overview, locale: string | undefined): string | nul
   return `${lead} ${formatShare(held / open, { locale })} of the ${formatCount(open, { locale })} open findings.`;
 }
 
-/**
- * Where the open findings gather: the epics with the most open breaches, then
- * warnings, as stacked bars. Each row opens exactly that epic's open findings.
- */
 export function HotSpots({ data, className }: { data?: Overview; className?: string }) {
   const locale = useFigureLocale();
   const spots = data?.hot_spots ?? [];

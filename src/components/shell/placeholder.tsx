@@ -2,12 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-/*
- * Building blocks for a page that has its layout but not yet its data: real
- * section headings over still, quiet shapes in the final proportions. Still
- * rather than shimmering, because nothing is loading; the shimmer is kept for
- * loading.tsx, where something is.
- */
+/* Building blocks for a page that has its layout but not yet its data. */
 
 export function Bone({ className }: { className?: string }) {
   return <div aria-hidden className={cn("skeleton-still rounded-xs", className)} />;

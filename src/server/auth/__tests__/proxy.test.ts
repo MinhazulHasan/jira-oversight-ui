@@ -14,12 +14,7 @@ import { seal } from "../seal";
 
 import { SECRET, SESSION_KEYS, SITE, stubAuthEnv } from "./fixtures";
 
-/*
- * src/proxy.ts: the sign-in gate in front of every page and API call, and the
- * Content Security Policy on every page, as before. The gate reads the path
- * and the session cookie only, so no header, prefix or encoding gets a
- * request past it.
- */
+/** src/proxy.ts: the sign-in gate in front of every page and API call, and the */
 
 const ORIGIN = "http://localhost:3400";
 const IDENTITY = { sub: "557058:account", dom: "stellainternational.com", site: "cloud-id", eh: "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", boards: ["DEMO"] };
@@ -98,10 +93,6 @@ describe("with sign-in off", () => {
   });
 
   it("does no policy work for the API or for the browser's own prefetch (Purpose: prefetch)", async () => {
-    // Router prefetches are not among these. Next.js strips Next-Router-Prefetch (and its other router headers)
-    // before the proxy sees a request, so in a real server a router prefetch looks like a navigation: it goes
-    // through the gate, as it must, and gets a nonce and a policy of its own like any page request. Neither
-    // does anything there, since a prefetch's answer is not HTML. (The old matcher skipped them altogether.)
     for (const response of [
       await proxy(request("/api/oversight/health")),
       await proxy(request("/api/auth/login")),

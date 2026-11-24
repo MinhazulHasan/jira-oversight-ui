@@ -3,12 +3,7 @@ import type { ReactNode } from "react";
 
 import { BrandMark } from "@/components/shell/brand-mark";
 
-/*
- * The pieces both sign-in pages share: one sheet on the desk under the
- * product's mark (the shape of the root 404 and the error page), a heading,
- * and the single primary action. Server components; the action is a plain
- * link, so nothing here needs the browser.
- */
+/* The pieces both sign-in pages share. */
 
 export function SignInSheet({ children }: { children: ReactNode }) {
   return (
@@ -35,12 +30,7 @@ export function SignInHeading({ eyebrow, title, purpose }: { eyebrow?: string; t
   );
 }
 
-/**
- * The page's one primary action, as a plain link (a GET). Signing in must not
- * be a form: Chrome holds a form's whole redirect chain to the policy's
- * form-action 'self', and this chain ends at Atlassian. Nor a next/link
- * Link, whose prefetch would start a sign-in on its own.
- */
+/** The page's one primary action, as a plain link (a GET). */
 export function PrimaryLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a
@@ -53,10 +43,7 @@ export function PrimaryLink({ href, children }: { href: string; children: ReactN
   );
 }
 
-/**
- * A link out of the dashboard, in running text: a new tab, said so, and no
- * referrer. Short, and kept on one line, so its arrow never wraps alone.
- */
+/** A link out of the dashboard, in running text. */
 export function ExternalTextLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a

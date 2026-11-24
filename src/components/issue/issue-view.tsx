@@ -11,13 +11,6 @@ import { IssueError, IssueNotFound } from "./issue-states";
 import { IssueTimeline } from "./issue-timeline";
 import { IssueWorklogs } from "./issue-worklogs";
 
-/**
- * One issue's story, as evidence: the header and its facts, the status
- * timeline, the findings beside the time logged, and the changelog they cite.
- * Everything comes from one response (issues/{key}/timeline); the process map
- * (rules) only shapes the timeline's lanes and the estimate in hours, so the
- * page reads without it.
- */
 export function IssueView({ issueKey }: { issueKey: string }) {
   const timeline = useIssueTimeline(issueKey);
   const rules = useRules();

@@ -10,13 +10,6 @@ import { cn } from "@/lib/utils";
 
 const CONTROL = iconButtonVariants({ variant: "ghost", size: "sm" });
 
-/**
- * "Open in Jira" for a finding's issue. The finding itself carries no link:
- * the interface fills an issue's Jira address on the Issue endpoint, so in
- * live mode that is asked for (and shared with the Issue page's cache). In
- * sample mode there is no Jira to open, and the control says so on hover and
- * focus rather than disappearing.
- */
 export function OpenInJira({ issueKey, dataMode }: { issueKey: string; dataMode: DataMode | undefined }) {
   const live = dataMode === "live";
   const issue = useIssueTimeline(live ? issueKey : null);

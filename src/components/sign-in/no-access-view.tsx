@@ -3,13 +3,7 @@ import { signInPath, type NoAccessReason } from "@/lib/sign-in";
 import { ATLASSIAN_LOGOUT_URL, NO_ACCESS_FALLBACK, NO_ACCESS_REFUSALS } from "./copy";
 import { ExternalTextLink, PrimaryLink, SignInHeading, SignInSheet } from "./sign-in-sheet";
 
-/**
- * /no-access: the account signed in at Atlassian, but this dashboard may not
- * admit it. The reason only picks one of a few fixed messages; nothing from
- * the address is shown. Atlassian keeps the account it last signed in, so
- * trying another one starts with signing out there: the page says so, in
- * order, above the button that starts again.
- */
+/** /no-access. */
 export function NoAccessView({ reason }: { reason: NoAccessReason | null }) {
   const refusal = reason ? NO_ACCESS_REFUSALS[reason] : NO_ACCESS_FALLBACK;
 

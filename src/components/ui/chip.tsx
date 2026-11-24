@@ -19,11 +19,7 @@ export interface ChipProps {
   className?: string;
 }
 
-/**
- * An applied filter, shown as "Severity Breach ×". Removing it is one click or
- * one key press on its × button, which names exactly what it removes. The page
- * that owns the filter acknowledges the change.
- */
+/** An applied filter, shown as "Severity Breach ×". */
 export function Chip({ label, value, valueText, onRemove, mono = false, className }: ChipProps) {
   const spoken = valueText ?? (typeof value === "string" ? value : "");
   return (

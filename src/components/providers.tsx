@@ -8,11 +8,6 @@ import type { ReactNode } from "react";
 import { Toaster } from "sonner";
 import { z } from "zod";
 
-/*
- * Zod compiles object parsers with `new Function` when it can. The Content
- * Security Policy forbids eval, so the attempt would be blocked and logged as
- * a violation on every page. The interpreted parser is plenty fast here.
- */
 z.config({ jitless: true });
 
 const MINUTE = 60_000;
@@ -54,12 +49,6 @@ function getQueryClient() {
   return browserQueryClient;
 }
 
-/*
- * React warns when a component renders a <script>, because client-rendered
- * scripts never run. next-themes' script only needs to run from the server
- * HTML, so it is typed as JavaScript there and as inert text in the browser
- * (the mismatch is suppressed by next-themes itself).
- */
 const themeScriptProps = {
   type: typeof window === "undefined" ? "text/javascript" : "text/plain",
 };

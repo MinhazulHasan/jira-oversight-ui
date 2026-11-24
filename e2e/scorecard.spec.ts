@@ -1,16 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
-/*
- * The People page (JO-11): how tickets are handled, person by person, next to
- * the whole board, for people level (the sample runs with sign-in off, as an
- * admin would see it). Run against a server with SAMPLE_PEOPLE_COMPARISON on
- * (the default: the everyone table above the scorecard) and one with it off
- * (a person picker and one scorecard): each test reads which from the API and
- * checks that mode, so the same spec covers both. Expected figures are read
- * from the API, never copied.
- */
-
 const NOW = new Date("2026-11-04T14:30:00Z");
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
@@ -65,18 +55,13 @@ async function expectActiveRow(page: Page) {
   await expect(page.getByRole("option").and(page.locator("[data-active]"))).toHaveCount(1);
 }
 
-/** The scorecard's heading shows the person's whole name, never cut short beside the count (the JO-11 check). */
+/** The scorecard's heading shows the person's whole name, never cut short beside the count. */
 async function expectWholeName(page: Page, name: string) {
   const heading = page.locator("[data-scorecard]").getByRole("heading", { name });
   await expect(heading).toBeVisible();
   expect(await heading.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(0);
 }
 
-/**
- * The Scorecard section's heading, where it stands on the page while the figures load (every scorecard call held)
- * and once they are in: it must not move (the JO-11 check found it 91 px lower once loaded with comparison on, and
- * about 690 px higher with it off, G2). Comparison on waits for everyone's table; off, for the one scorecard.
- */
 async function scorecardHeadingMoves(page: Page, path: string, mode: "on" | "off" = "on"): Promise<number> {
   let release!: () => void;
   const held = new Promise<void>((resolve) => (release = resolve));
@@ -109,9 +94,6 @@ test("the People page is in the rail and the palette at people level, and g then
   await page.goto("/");
   const rail = page.getByRole("navigation", { name: "Primary" });
   await expect(rail.getByRole("link", { name: "People" })).toBeVisible();
-  // The shortcut is bound once the page is live: the sync time, which reads the viewer's clock, is drawn then. And the
-  // chord must arrive as one (e within 1.2 s of g), so the Overview's figures are drawn first, as smoke.spec.ts waits:
-  // under load, a g sent while WebKit still draws them can land too long before the e.
   await expect(page.getByRole("banner").locator("[data-sync-now]").filter({ hasText: / ago/ })).toBeVisible();
   await expect(page.getByRole("region", { name: "Headline figures" }).getByRole("link").first()).toBeVisible();
   await page.keyboard.press("g");
@@ -307,8 +289,6 @@ test.describe("with comparison off", () => {
       const listbox = page.getByRole("listbox", { name: "People on this board" });
       await expect(listbox.getByRole("group")).toHaveCount(2);
       await expect(listbox.getByRole("group").first()).toContainText("With tickets");
-      // Open, the first row is the highlighted one, and the field names it (the JO-11 check: aria-activedescendant
-      // named a row that was not there once the list's height was fitted, and axe failed as soon as it opened).
       await expectActiveRow(page);
       expect(await axeBlocking(page)).toEqual([]);
       await page.keyboard.press("ArrowDown");

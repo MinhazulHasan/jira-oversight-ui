@@ -3,13 +3,6 @@ import { issueTimelineSchema, rulesSchema, type IssueTimeline, type Rules } from
 import demo1 from "../../../../docs/sample-responses/issue-DEMO-1.json";
 import rules from "../../../../docs/sample-responses/rules.json";
 
-/*
- * The contract's own sample responses (docs/sample-responses), parsed with
- * the contract's schemas, so a fixture that drifts from the contract fails
- * here first. DEMO-1 is the showcase: an estimate set late, a reopen and an
- * overrun.
- */
-
 export const DEMO_1: IssueTimeline = issueTimelineSchema.parse(demo1);
 export const RULES: Rules = rulesSchema.parse(rules);
 export const PROCESS = RULES.process;

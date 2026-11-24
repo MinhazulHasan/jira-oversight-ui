@@ -14,13 +14,6 @@ import accessLogJson from "../../../../docs/sample-responses/access-log.json";
 import portfolioJson from "../../../../docs/sample-responses/portfolio.json";
 import usageJson from "../../../../docs/sample-responses/usage.json";
 
-/*
- * The governance contract (JO-12, sections 4.16 to 4.18) as this interface
- * reads it: the access log's filters, canonical and checked; an entry's
- * detail read for what the page shows and nothing else; the Portfolio's and
- * usage's own consistency checks.
- */
-
 describe("the access log's filters", () => {
   it("are canonical: actions in the catalogue's order, each once, and the limit always written", () => {
     const query = normalizeAccessLogQuery({ action: ["person_ask", "scorecard_view", "person_ask"], person: "pbc7fe62842ca" });

@@ -29,16 +29,6 @@ import { LOCAL_READER, readerHeaders, viewerHash, viewerOf } from "../viewer";
 
 import { SECRET, SESSION_KEYS, stubAuthEnv } from "./fixtures";
 
-/*
- * Governance (JO-12) at the oversight route: the Portfolio (every board, held
- * to the reader's), the access log and Ask's usage (people level only,
- * refused to anyone else before anything is asked), the reader named to the
- * service on every request (a keyed hash and a display name, never an account
- * id or an email address), and the service's refusals said in this
- * interface's words: a question over the limit, an access log that could not
- * be written.
- */
-
 const NOW = "2026-11-04T14:30:00Z";
 const ADA = personIdFor("acc-01");
 const IDENTITY = { sub: "557058:account", dom: "stellainternational.com", site: "cloud-id", eh: "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", boards: ["DEMO"] };
@@ -91,7 +81,7 @@ describe("governance in sample mode, sign-in off (people level)", () => {
   it("the Portfolio holds the Overview's own figures for each synced board, and its oldest open breaches, oldest first", async () => {
     const portfolio = await read(await call("portfolio"), portfolioSchema);
     const overview = await read(await call("overview"), overviewSchema);
-    // The sample's synced boards, DEMO and MOB; HELP, which has never synced, is counted, not listed (JO-17).
+    // The sample's synced boards, DEMO and MOB; HELP, which has never synced, is counted, not listed.
     expect(portfolio.boards.map((each) => each.project.key)).toEqual(["DEMO", "MOB"]);
     expect(portfolio.boards_not_synced).toBe(1);
     const [board] = portfolio.boards;

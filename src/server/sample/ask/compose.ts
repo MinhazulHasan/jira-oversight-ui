@@ -2,13 +2,7 @@ import type { Citation, FactCell } from "@/lib/api/schemas";
 
 import { fixed } from "../verify";
 
-/**
- * Sample answers are written from the facts by code, standing in for the
- * model. Each figure, key and date is a cited piece bound to the cell it came
- * from, so the tick-and-tie lines point at the right row even when two cells
- * hold the same value; the validator then checks the finished text the same
- * way it checks a live answer.
- */
+/** Sample answers are written from the facts by code, standing in for the */
 
 /** Anything with rows to cite from: an Ask fact set, or a weekly-insight candidate read as one. */
 export interface Citable {
@@ -46,7 +40,7 @@ function textAt(fact: Citable, row: number, column: string): string {
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/** "2026-10-26" or a full timestamp, as "26 Oct 2026". */
+/** "2026-10-26" or a full timestamp, as "". */
 function spelled(isoText: string): string {
   const [year, month, day] = isoText.slice(0, 10).split("-").map(Number);
   return `${day} ${MONTHS[month - 1]} ${year}`;
@@ -86,7 +80,7 @@ export const cite = {
     row,
     column,
   }),
-  /** A date cell, spelled: "26 Oct 2026". */
+  /** A date cell, spelled: "". */
   day: (fact: Citable, row: number, column: string): Cited => ({
     text: spelled(textAt(fact, row, column)),
     fact,

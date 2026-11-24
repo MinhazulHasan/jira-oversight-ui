@@ -12,18 +12,7 @@ import { scorecards } from "../sample/scorecard";
 import { personIdFor } from "../sample/team";
 import { verify } from "../sample/verify";
 
-/*
- * Ask honours "most" and "fewest" in people comparisons, in sample mode, as
- * the service answers them (JO-14, the product owner's decision of 13 Nov
- * 2026: answer exactly what was asked; tests/test_most_fewest.py): most,
- * highest, largest, biggest, top N, the figure highest first; fewest, least,
- * lowest, smallest, bottom N, lowest first; no direction word, closer to the
- * process first (a count, most first); for rates, the ratio and counts alike,
- * people on too few tickets last whatever the order, and the first sentence
- * saying the order in plain words, never "best" or "worst". QUESTIONS is the
- * service's table, question for question: the measure, the order and the
- * first sentence.
- */
+/** Ask honours "most" and "fewest" in people comparisons, in sample mode, as */
 
 const dataset = buildDataset(Date.parse("2026-11-04T14:30:00Z"));
 const ADA = personIdFor("acc-01");
@@ -31,7 +20,7 @@ const CARMEN = personIdFor("acc-03");
 const WHOM: Record<"" | "one" | "two", string[]> = { "": [], one: [ADA], two: [ADA, CARMEN] };
 const COMPARE = "oversight_people_compare";
 const SCORECARD = "oversight_person_scorecard";
-/** The people view's raw-count ranking (JO-09), which the sample reads with a query, as the analyst would. */
+/** The people view's raw-count ranking, which the sample reads with a query, as the analyst would. */
 const RANKING = "oversight_query";
 const COUNTS = ["open_tickets", "in_progress", "done_in_period"];
 
@@ -50,7 +39,7 @@ type Row = [question: string, who: keyof typeof WHOM, tool: string, measure: str
 
 /** The service's QUESTIONS (tests/test_most_fewest.py), question for question. */
 const QUESTIONS: Row[] = [
-  // The JO-12 check's two cases.
+  // The check's two cases.
   ["Who has the most reopened tickets?", "", COMPARE, "reopened", "most", 90, null, first("Reopened after Done", "highest first")],
   ["Who has the fewest tickets stuck in a status?", "", COMPARE, "stuck_now", "fewest", 90, null, first("Open tickets stuck in a status", "lowest first", null)],
   // Rates, most first.
@@ -84,8 +73,6 @@ const QUESTIONS: Row[] = [
   ["Who has the most tickets closed without code review?", "", COMPARE, "code_review", "fewest", 90, null, /^Not measurable on this board: Code review recorded\./],
   ["Who has the most done tickets that skipped a stage?", "", COMPARE, "skipped_stage", "most", 90, null, first("Skipped a stage", "highest first")],
   ["Who has the most stuck tickets in progress?", "", COMPARE, "stuck_now", "most", 90, null, first("Open tickets stuck in a status", "highest first", null)],
-  // Top N and bottom N give the order only where no other direction word does; the word nearest the measure decides a
-  // question that asks both ways; how many and which end, in other words.
   ["Top 3 people with the fewest reopened tickets", "", COMPARE, "reopened", "fewest", 90, 3, first("Reopened after Done", "lowest first")],
   ["Top 5 people who log the least time", "", COMPARE, "time_logged", "fewest", 90, 5, first("Time logged on done work", "lowest first")],
   ["Who has the most reopened tickets and the fewest stuck?", "", COMPARE, "stuck_now", "fewest", 90, null, first("Open tickets stuck in a status", "lowest first", null)],
@@ -93,8 +80,6 @@ const QUESTIONS: Row[] = [
   ["Which 3 people have the most stuck tickets?", "", COMPARE, "stuck_now", "most", 90, 3, first("Open tickets stuck in a status", "highest first", null)],
   ["Who is at the bottom for estimates?", "", COMPARE, "estimated_before_start", "fewest", 90, null, first("Estimated before work started", "lowest first")],
   ["Who is at the top for reopened tickets?", "", COMPARE, "reopened", "most", 90, null, first("Reopened after Done", "highest first")],
-  // Words that only say how little ("the least work") are the figure named beside them; a word of room itself
-  // ("capacity") stays the open tickets.
   ["Who reopens the least work?", "", COMPARE, "reopened", "fewest", 90, null, first("Reopened after Done", "lowest first")],
   ["Who has the least work in progress?", "", COMPARE, "in_progress", "fewest", null, null, first("In progress now", "fewest first", null)],
   ["Who finished the least work this month?", "", COMPARE, "done_in_period", "fewest", 30, null, first("Done in the period", "fewest first", 30)],
@@ -104,7 +89,7 @@ const QUESTIONS: Row[] = [
   ["Rank everyone by reopened tickets", "", COMPARE, "reopened", "closer", 90, null, first("Reopened after Done", "closest to the process first")],
   ["Who has tickets stuck?", "", COMPARE, "stuck_now", "closer", 90, null, first("Open tickets stuck in a status", "closest to the process first", null)],
   ["Who is best at estimating before they start?", "", COMPARE, "estimated_before_start", "closer", 90, null, first("Estimated before work started", "closest to the process first")],
-  // The other side of the process (the JO-14 review): further from it first, and the least of that closer first.
+  // The other side of the process (the review): further from it first, and the least of that closer first.
   ["Who is worst for reopened work?", "", COMPARE, "reopened", "most", 90, null, first("Reopened after Done", "highest first")],
   ["Who has the worst reopen rate?", "", COMPARE, "reopened", "most", 90, null, first("Reopened after Done", "highest first")],
   ["Who is worst at estimating?", "", COMPARE, "estimated_before_start", "fewest", 90, null, first("Estimated before work started", "lowest first")],
@@ -139,8 +124,6 @@ const QUESTIONS: Row[] = [
   ["Who follows the process least?", "", COMPARE, "overall", "fewest", 90, null, OVERALL_FIRST("fewest first")],
   ["Which developer is least compliant?", "", COMPARE, "overall", "fewest", 90, null, OVERALL_FIRST("fewest first")],
   ["Who is the most compliant?", "", COMPARE, "overall", "closer", 90, null, OVERALL_FIRST("most first")],
-  // The other side of the process, overall: further from it first (the fewest measures closer), and the least of that
-  // closer first, as JO-12 answered "who needs the least help?" before JO-14 turned it round.
   ["Who is struggling the least?", "", COMPARE, "overall", "closer", 90, null, OVERALL_FIRST("most first")],
   ["Who needs the least help?", "", COMPARE, "overall", "closer", 90, null, OVERALL_FIRST("most first")],
   ["Who needs less help?", "", COMPARE, "overall", "closer", 90, null, OVERALL_FIRST("most first")],
@@ -191,7 +174,7 @@ function expectInTheOrderAsked(fact: FactSet, order: CompareOrder) {
 
 describe("most and fewest in people comparisons (JO-14)", () => {
   it("has at least forty questions, each once, of every kind", () => {
-    expect(QUESTIONS.length).toBeGreaterThanOrEqual(90); // 54 at JO-14, and the review's questions since
+    expect(QUESTIONS.length).toBeGreaterThanOrEqual(90); // 54 at and the review's questions since
     expect(new Set(QUESTIONS.map(([question]) => question)).size).toBe(QUESTIONS.length);
     expect(new Set(QUESTIONS.map((row) => row[4]))).toEqual(new Set(["most", "fewest", "closer", null]));
     expect(new Set(QUESTIONS.map((row) => row[1]))).toEqual(new Set(["", "one", "two"]));
@@ -339,8 +322,6 @@ describe("most and fewest in people comparisons (JO-14)", () => {
     ["Who makes the fewest mistakes?", "closer"],
     ["Who writes the most comments?", "closer"],
   ] as const)("keeps the side of the process asked about in the last resort: %s is %s", (question, order) => {
-    // A question about the other side of the process that no figure places: the overall comparison, further from the
-    // process first, the least of that closer first; a direction word alone stays closer first (the JO-14 review).
     const response = ask(question);
     expect(response.outcome).toBe("answered");
     expect(response.answer!.startsWith(LAST_RESORT.overall), response.answer!).toBe(true);
@@ -352,7 +333,7 @@ describe("most and fewest in people comparisons (JO-14)", () => {
   it.each(["Who has lower findings per 10?", "Who has higher findings per 10?", "Who has lower findings rate?", "Who has the highest findings per 10?", "Who has fewer findings per 10 tickets?"])(
     "with comparison off never takes a direction word for a name: %s",
     (question) => {
-      // Regression (the JO-14 review): "No one called Lower is on this board.", an untrue turn-away.
+      // Regression (the review): "No one called Lower is on this board.", an untrue turn-away.
       const response = askSample(dataset, question, 0, { level: "people", mentions: [], comparison: "off" });
       expect([response.outcome, response.message]).toEqual(["not_understood", ASK_DECLINES.comparisonOff]);
     },

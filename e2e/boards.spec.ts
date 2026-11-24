@@ -1,15 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-/*
- * Every Jira board (JO-17), against the sample server: DEMO and MOB synced,
- * HELP never synced. The board picker lists them all, searchable and in two
- * groups, keyboard-complete, and holds dozens; a board not synced yet can be
- * picked, and every page that reads one board shows the state that offers its
- * first sync, never an error. Nothing here syncs HELP: that changes the server
- * for every spec after it, so board-sync.spec.ts does it on servers of its own.
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 /** The pages that read the board picked in the top bar, by their heading. */
@@ -130,8 +121,6 @@ test.describe("a board that has never synced", () => {
       // Settled before the next page: a link's prefetch cut short by leaving is no fault of the page.
       await page.waitForLoadState("networkidle");
     }
-    // WebKit reports a link's prefetch that a navigation cut short as "... ?_rsc=... due to access control checks": no
-    // fault of any page, though networkidle above leaves fewer of them.
     const cutPrefetch = (problem: string) => problem.includes("?_rsc=") && problem.includes("access control checks");
     expect(problems.filter((problem) => !problem.includes("409") && !cutPrefetch(problem))).toEqual([]);
   });

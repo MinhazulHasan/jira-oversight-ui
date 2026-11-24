@@ -1,10 +1,6 @@
 import { vi } from "vitest";
 
-/*
- * Sign-in as the tests configure it: a local dashboard, a made-up Atlassian
- * app, and Atlassian itself replaced by a stub of fetch. Nothing here reaches
- * the real Atlassian or Jira.
- */
+/** Sign-in as the tests configure it: a local dashboard, a made-up Atlassian */
 
 export const APP = "http://localhost:3400";
 export const SECRET = "a-test-secret-of-forty-eight-characters-0123456";
@@ -18,10 +14,6 @@ export const ACCOUNT = "557058:aaaabbbb-cccc-dddd-eeee-ffff00001111";
 export const ACCESS_TOKEN = "atlassian-access-token-never-to-be-seen";
 export const CODE = "authorisation-code-from-atlassian";
 
-/**
- * Sign-in on, with ACCESS_MODE admin-list: admins are ADMIN_EMAILS, everyone else a user held to their own boards,
- * which is what most of these tests are about. The default, everyone-admin, is set by the tests about it (JO-16).
- */
 export const AUTH_ENV: Readonly<Record<string, string>> = {
   AUTH_MODE: "atlassian",
   ACCESS_MODE: "admin-list",
@@ -57,7 +49,7 @@ export const ME = {
   account_id: ACCOUNT,
   email: "reviewer@stellainternational.com",
   email_verified: true,
-  // Kept in the session since JO-12, for the access log to name this person's reads by; never shown to anyone else.
+  // Kept in the session since for the access log to name this person's reads by; never shown to anyone else.
   name: "Robin Okafor",
   picture: "https://avatar.example/not-shown",
   account_status: "active",
@@ -72,10 +64,7 @@ type Answer = unknown | Response | Error | (() => Promise<Response>);
 
 const snapshots = new WeakMap<Response, Promise<{ status: number; headers: [string, string][]; text: string }>>();
 
-/**
- * A fresh Response every call. (Not clone(): a cloned body is a tee, and
- * cancelling one branch of a tee waits for the other, which nothing reads.)
- */
+/** A fresh Response every call. (Not clone(): a cloned body is a tee, and */
 async function respond(answer: Answer): Promise<Response> {
   if (answer instanceof Error) throw answer;
   if (answer instanceof Response) {
@@ -91,10 +80,6 @@ async function respond(answer: Answer): Promise<Response> {
   return Response.json(answer);
 }
 
-/**
- * Atlassian, stubbed: each endpoint answers as given (a body, a Response, or an Error to throw). `projects` is
- * Jira's project search; `service` the live oversight service's board list (only asked when the test runs on live data).
- */
 export function stubAtlassian(
   answers: { token?: Answer; me?: Answer; resources?: Answer; projects?: Answer; service?: Answer } = {},
 ) {

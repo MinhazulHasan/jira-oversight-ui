@@ -11,10 +11,6 @@ import { weeklyTotals, type IssueData } from "./model";
 
 const ROW_H = 46;
 
-/**
- * Time logged on the issue, week by week (Monday to Sunday, UTC). Totals
- * only: the contract never says who logged the time, and neither does this.
- */
 export function IssueWorklogs({ data }: { data: IssueData | null }) {
   const locale = useFigureLocale();
   const weeks = data ? weeklyTotals(data.worklogs) : [];

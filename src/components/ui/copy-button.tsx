@@ -40,10 +40,7 @@ export interface CopyButtonProps {
   className?: string;
 }
 
-/**
- * Copies a value, then acknowledges it twice: the icon turns to a tick for a
- * moment where the reader is looking, and a toast says what was copied.
- */
+/** Copies a value, then acknowledges it twice. */
 export function CopyButton({ value, what, iconOnly = false, variant = "ghost", size = "sm", className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);

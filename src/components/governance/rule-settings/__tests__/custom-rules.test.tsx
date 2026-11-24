@@ -16,17 +16,6 @@ import { RuleSettingsView } from "../rule-settings-view";
 
 import { board, BUGS, entry, ownRule, twoRules, UNTOUCHED } from "./custom-board";
 
-/*
- * A board's own rules on the rule settings page (JO-20), against a stand-in
- * for the service that answers as the contract says: "Add rule" in the
- * header and the "New rule" sheet; the AI's draft of the admin's words, every
- * outcome of it said in a live region; the form checked at each field as the
- * service checks it; the rule in the draft as "New" until the review saves
- * it; a saved rule edited (its check locked) and deleted, each taken back
- * before saving; a refusal of a new rule put right in its sheet; and the
- * history's words and Undo for each.
- */
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), back: vi.fn() }),
   usePathname: () => "/governance/rules",

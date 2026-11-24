@@ -12,20 +12,12 @@ export interface SearchInputProps
   label: string;
   value: string;
   onValueChange: (value: string) => void;
-  /**
-   * This is the page's main search, which `/` focuses from anywhere on the
-   * page (the shell looks for data-page-search). One per page.
-   */
   pageSearch?: boolean;
   /** Width and layout of the field. */
   className?: string;
 }
 
-/**
- * The page's search field. Shows the `/` key that focuses it while it is
- * empty and unfocused; once there is text, a clear button and Escape both
- * empty it (a second Escape leaves the field). A ref reaches the input.
- */
+/** The page's search field. */
 export function SearchInput({
   label,
   value,

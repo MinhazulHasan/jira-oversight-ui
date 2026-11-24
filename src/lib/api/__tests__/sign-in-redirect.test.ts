@@ -11,15 +11,6 @@ import { LEAVE_GUARD_MS, sendToSignIn } from "@/lib/sign-in";
 
 import { getHealth, getOverview, isApiError, postAsk, type ApiError } from "../client";
 
-/*
- * When the session ends, the next API call answers 401 "unauthenticated":
- * the client sends the browser to sign in (and back to the page). While the
- * browser leaves, the call is held rather than failed, so the page keeps what
- * it shows instead of an error that blames the data source; should the
- * browser stay, the call fails as an ApiError, so nothing renders data it
- * does not have.
- */
-
 function respond(body: unknown, status: number) {
   vi.stubGlobal(
     "fetch",

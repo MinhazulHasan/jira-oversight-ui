@@ -24,15 +24,6 @@ import { personOf } from "./team";
 import { DAY, HOUR, iso } from "./time";
 import type { Issue } from "./world";
 
-/*
- * GET /people/scorecard in the sample (JO-11): how each person's tickets are
- * handled next to the whole board's, computed on read from the same issues
- * and findings every other view reads, by each ticket's current assignee, as
- * the service computes it (oversight/api/scorecard.py). The figures are facts
- * about tickets; nothing here rates anyone. Whether someone is closer to the
- * process than the board is said only where both have enough tickets.
- */
-
 /** A rate or ratio compares only when its denominator holds at least this many tickets: one constant, here. */
 export const MIN_TICKETS = 5;
 /** Within this many percentage points of the board, a rate is level with it. */
@@ -52,11 +43,11 @@ const RULE_IDS: Record<ScorecardMeasureKey, readonly string[]> = {
   reopened: ["R-FLOW-03"],
   skipped_stage: ["R-FLOW-02"],
   code_review: ["R-FLOW-01", "W-REV-01"],
-  // Every rule the board runs: its own (JO-20) among them, added per board by rulesOf.
+  // Every rule the board runs: its own among them, added per board by rulesOf.
   open_findings_per_10: RULES.map((rule) => rule.id),
 };
 
-/** The rules a measure reads on the board: the ratio reads every rule the board has, its own rules too (JO-20). */
+/** The rules a measure reads on the board: the ratio reads every rule the board has, its own rules too. */
 function rulesOf(dataset: Dataset, key: ScorecardMeasureKey): string[] {
   return key === "open_findings_per_10" ? dataset.rules.map((rule) => rule.def.id) : [...RULE_IDS[key]];
 }
@@ -67,7 +58,7 @@ export const NOT_MEASURABLE_REASONS = {
   code_review: CODE_REVIEW_NOT_RECORDED,
   time_logged: "No one logged time on this board in the period.",
   estimates: "This board has no estimates.",
-  /** JO-15: the measure's rule turned off in the board's rule settings, so it holds no one to it there. */
+  /** the measure's rule turned off in the board's rule settings, so it holds no one to it there. */
   ruleOff: "Its rule is off on this board.",
   rulesOff: "Its rules are off on this board.",
 } as const;
@@ -86,18 +77,13 @@ function periodOf(dataset: Dataset, days: ScorecardDays): Period {
 
 export const within = (period: Period, at: number | null): at is number => at !== null && at >= period.from && at <= period.to;
 
-/**
- * Whether the rules engine measures a rule on the board, as the service reads
- * its latest rules run (rule_status; JO-12, G11): the sample's engine measures
- * a rule the board runs exactly when nothing it needs is missing, as the
- * Overview and the rule catalogue say.
- */
+/** Whether the rules engine measures a rule on the board, as the service reads */
 function engineMeasures(dataset: Dataset, ruleId: string): boolean {
   const rule = dataset.rules.find((candidate) => candidate.def.id === ruleId);
   return rule !== undefined && rule.enabled && missingFor(rule.catalogue).length === 0;
 }
 
-/** Whether the board has turned the rule off in its rule settings (JO-15). */
+/** Whether the board has turned the rule off in its rule settings. */
 function turnedOff(dataset: Dataset, ruleId: string): boolean {
   return dataset.rules.some((rule) => rule.def.id === ruleId && !rule.enabled);
 }
@@ -111,10 +97,6 @@ function offReason(dataset: Dataset, ruleId: string): string | null {
 /** Why the board cannot show a measure, or null when it can. */
 function reasonFor(dataset: Dataset, key: ScorecardMeasureKey, period: Period): string | null {
   switch (key) {
-    // One truth per board (JO-12, G11): skipped stages and code review are measured exactly where the engine
-    // measures R-FLOW-02 and R-FLOW-01, so the scorecard never says "no stages to skip" beside open "Skipped a stage"
-    // findings. On DEMO the engine measures skipped stages (backlog straight to done), never code review. A rule the
-    // board turned off (JO-15) is measured no more, and that is the reason, unless the board could not measure it on.
     case "skipped_stage":
       return engineMeasures(dataset, "R-FLOW-02") ? null : (offReason(dataset, "R-FLOW-02") ?? NOT_MEASURABLE_REASONS.skipped_stage);
     case "code_review":
@@ -126,9 +108,6 @@ function reasonFor(dataset: Dataset, key: ScorecardMeasureKey, period: Period): 
     case "open_findings_per_10":
       return null;
     default: {
-      // DEMO's estimate is story points (process.yaml's estimate block), so the board has estimates. A measure whose
-      // rules the board has all turned off (JO-15) holds no one to them there: stuck_now never reads 0% for want of
-      // W-AGE-01's findings.
       const rules = RULE_IDS[key];
       if (rules.length === 0 || !rules.every((ruleId) => turnedOff(dataset, ruleId))) return null;
       return rules.length === 1 ? NOT_MEASURABLE_REASONS.ruleOff : NOT_MEASURABLE_REASONS.rulesOff;
@@ -195,16 +174,6 @@ function reachedTesting(issue: Issue): boolean {
   return issue.intervals.some((interval) => STATUS[interval.status].stage === "testing");
 }
 
-/**
- * Every measure over a set of tickets: one person's (their tickets now) or
- * the board's (every ticket, assigned or not), as the service works them out
- * (oversight/api/scorecard.py): the work among them (Epics left out, as every
- * rule counts), an estimate first set within R-EST-02's grace of the start,
- * effort under R-EFF-01's threshold (it breaches at or over it), and the open
- * findings on the open work beside the open work, so both sides count the
- * same tickets. Not measurable measures hold nothing at all, so they can
- * never read as a zero.
- */
 function valuesOf(dataset: Dataset, tickets: readonly Issue[], period: Period, measures: readonly ScorecardMeasure[]): ScorecardValues {
   const issues = tickets.filter(isWork);
   const open = issues.filter((issue) => STATUS[issue.status].category !== "done");
@@ -213,7 +182,7 @@ function valuesOf(dataset: Dataset, tickets: readonly Issue[], period: Period, m
   // An effort ratio needs an estimate and time logged: a ratio of 0 is missing time, not effort (contract 8.2).
   const effort = done.filter((issue) => issue.effortRatio !== null && issue.timeSpentS > 0);
   const tested = done.filter(reachedTesting);
-  // The board's own thresholds (JO-15): R-EST-02's grace, and R-EFF-01's effort limit below.
+  // The board's own thresholds: R-EST-02's grace, and R-EFF-01's effort limit below.
   const grace = estimateGraceHours(dataset.rules) * HOUR;
   const limit = effortThreshold(dataset.rules);
   const all: ScorecardValues = {
@@ -244,12 +213,7 @@ function hasOpenOrResolved(dataset: Dataset, issue: Issue, ruleId: string): bool
   return (dataset.engine.byIssue.get(issue.key) ?? []).some((finding) => finding.rule.id === ruleId);
 }
 
-/**
- * Where a person's rate or ratio stands next to the board's, read on the
- * values as shown (whole percentages, one decimal), so a reader can check it:
- * level within 5 points (0.5 for the ratio), else closer or further by the
- * measure's direction. Nothing when either side has too few tickets.
- */
+/** Where a person's rate or ratio stands next to the board's, read on the */
 export function vsBoard(measure: Pick<ScorecardMeasure, "kind" | "direction">, person: ScorecardValue, board: ScorecardValue): VsBoard | null {
   if (measure.kind === "count" || measure.direction === "neutral") return null;
   if (!person.enough || !board.enough || person.value === null || board.value === null) return null;
@@ -276,11 +240,7 @@ export interface ScorecardSet {
   byId: ReadonlyMap<string, ScorecardPerson>;
   /** The people who hold a ticket on the board now (its work, Epics left out), in the directory's order. */
   holders: readonly ScorecardPerson[];
-  /**
-   * The work nobody holds, as Ask's rankings by a count say it after the
-   * people (JO-12, G5: no one's, never ranked); null when every ticket has
-   * someone.
-   */
+  /** The work nobody holds, as Ask's rankings by a count say it after the */
   unassigned: { tickets: number; values: ScorecardValues } | null;
 }
 
@@ -290,7 +250,7 @@ export function scorecards(dataset: Dataset, days: ScorecardDays): ScorecardSet 
     const period = periodOf(dataset, days);
     const measures = measuresFor(dataset, period);
     const issues = dataset.world.issues;
-    // A person's tickets and the board's are its work, Epics left out, as GET /people counts them (JO-12, G5).
+    // A person's tickets and the board's are its work, Epics left out, as GET /people counts them.
     const work = issues.filter(isWork);
     const board = { tickets: work.length, values: valuesOf(dataset, issues, period, measures) };
     const byPerson = new Map<string, Issue[]>();
@@ -328,12 +288,7 @@ export type ScorecardAnswer =
 
 export const SCORECARD_NOT_ON_BOARD = "Someone asked for is not on this board.";
 
-/**
- * The endpoint's body for a validated query. With comparison off, two or more
- * people is refused in the contract's words, and nobody asked for is the
- * board's figures alone; with it on, nobody asked for is everyone who holds a
- * ticket. Someone asked for who is not on the board at all is not found.
- */
+/** The endpoint's body for a validated query. With comparison off, two or more */
 export function scorecardView(dataset: Dataset, query: ScorecardQuery, comparison: "on" | "off"): ScorecardAnswer {
   if (comparison === "off" && query.person.length > 1) {
     return { found: false, status: 403, error: "comparison_off", message: SCORECARD_SENTENCES.comparisonOff };

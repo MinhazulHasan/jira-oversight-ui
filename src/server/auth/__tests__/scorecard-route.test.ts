@@ -16,14 +16,6 @@ import { emailHash } from "../roles";
 
 import { SECRET, SESSION_KEYS, stubAuthEnv } from "./fixtures";
 
-/*
- * GET /api/oversight/people/scorecard (JO-11, contract 4.15): people level
- * only, decided by this route on every request (never the browser), the
- * period and the people checked and rebuilt, comparison as the organisation
- * set it (SAMPLE_PEOPLE_COMPARISON in the sample, PEOPLE_COMPARISON on the
- * service), and the service told the level this route decided.
- */
-
 const NOW = "2026-11-04T14:30:00Z";
 const ADA = personIdFor("acc-01");
 const CARMEN = personIdFor("acc-03");
@@ -73,7 +65,7 @@ describe("the scorecard in sample mode, sign-in off (people level)", () => {
     expect(Date.parse(body.period.to) - Date.parse(body.period.from)).toBe(90 * 24 * 3600 * 1000);
     expect(body.people.map((row) => row.person.name)).toEqual([...TEAM.map((member) => member.name)].sort((a, b) => a.localeCompare(b, "en")));
     expect(body.measures.map((measure) => measure.key)).toHaveLength(11);
-    // The board's work: 1,150 issues less its 14 Epics (JO-12, G5).
+    // The board's work: 1,150 issues less its 14 Epics.
     expect(body.board.tickets).toBe(1136);
   });
 

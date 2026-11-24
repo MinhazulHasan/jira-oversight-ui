@@ -3,12 +3,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { cutText } from "./cut-text";
 
-/*
- * The Process page against the sample server (SAMPLE_NOW 2026-11-04T14:30Z):
- * the agreed process with its evidence, the rule catalogue, the rule drawer
- * held in the URL, the keyboard, export, and the error state.
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const NOW = new Date("2026-11-04T14:30:00Z");
 
@@ -192,8 +186,6 @@ test("on a phone the flow wraps and the page never scrolls sideways", async ({ p
 });
 
 test("on a phone the catalogue gives its titles room, as it scrolls sideways anyway; on a MacBook it still fits whole (JO-14)", async ({ page }) => {
-  // Regression: at 390 px the Title column was about 80 px: titles ran to four or five lines, and W-EST-01's broke as
-  // "Unestimat" over "ed work in the active sprint", with no hyphen.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/process");
   await shellReady(page);
@@ -227,9 +219,6 @@ test("on a phone the catalogue gives its titles room, as it scrolls sideways any
     return scroller.scrollWidth - scroller.clientWidth;
   });
   expect(sideways).toBeLessThanOrEqual(0);
-  // What Jira lacks for a rule that cannot run reads whole: "No · code review, testing" lost its "ng" to an ellipsis
-  // here, with no title, the text a fraction of a pixel wider than its cell (too little for a measure to see). So:
-  // nothing there ends in an ellipsis, and every line of it ends inside the cell.
   const notMeasurable = catalogue(page).getByRole("cell").filter({ hasText: /^No\b/ });
   await expect(notMeasurable.first()).toBeVisible();
   const cut = await notMeasurable.evaluateAll((cells) =>

@@ -13,11 +13,7 @@ export const PopoverTrigger = PopoverPrimitive.Trigger;
 export const PopoverClose = PopoverPrimitive.Close;
 export const PopoverAnchor = PopoverPrimitive.Anchor;
 
-/**
- * The popover's panel: the sheet lifted off the page, kept 16 px inside the
- * viewport. Escape and an outside click close it, and focus returns to the
- * trigger.
- */
+/** The popover's panel. */
 export function PopoverContent({
   className,
   align = "start",

@@ -17,11 +17,7 @@ export type GoodDirection = "up" | "down" | "neither";
 
 const MINUS = "\u2212";
 
-/**
- * A formatter for a change: the figure with + or a true minus ("+1.2 h",
- * "−3"). A change that rounds to nothing at this precision reads as
- * the plain zero, never "+0.0 h".
- */
+/** A formatter for a change. */
 export function signed(format: FigureFormat): FigureFormat {
   return (value, options) => {
     const magnitude = format(Math.abs(value), options);
@@ -59,11 +55,7 @@ export interface DeltaProps {
   className?: string;
 }
 
-/**
- * A change against the previous period. Never colour alone: an arrow, a
- * signed figure with a true minus, the comparison in words, and (for screen
- * readers) whether that is better or worse.
- */
+/** A change against the previous period. */
 export function Delta({ delta, goodDirection, label, format = formatDelta, className }: DeltaProps) {
   const locale = useFigureLocale();
   const known = typeof delta === "number" && Number.isFinite(delta);
@@ -87,11 +79,7 @@ export function Delta({ delta, goodDirection, label, format = formatDelta, class
   );
 }
 
-/**
- * A formatted figure with its unit set back: "38.2 h" and "1.51×" keep the
- * number at full size and the unit smaller in the muted ink, so the eye lands
- * on the figure. A figure without a unit is left as it is.
- */
+/** A formatted figure with its unit set back. */
 export function FigureText({ text }: { text: string }) {
   const spaced = /^(.+)\u00a0(\S+)$/.exec(text);
   const times = /^(.+)(\u00d7)$/.exec(text);
@@ -139,11 +127,7 @@ export interface StatTileProps {
   className?: string;
 }
 
-/**
- * A headline figure: its label, the number in Plex Mono, the change since
- * last period with its direction judged, and optionally the recent trend.
- * With href the whole tile clicks through to the rows behind the number.
- */
+/** A headline figure. */
 export function StatTile({
   label,
   value,
@@ -169,10 +153,7 @@ export function StatTile({
 
   const body = (
     <>
-      {/* A long label takes a second line, in balanced lines, rather than being cut, at every width (JO-14: on a
-          MacBook too, not only on a phone); a grid whose labels may wrap keeps two lines for each (StatTileGrid's
-          labelLines), so its figures stay level. On a phone the label has the row to itself (the arrow shows only on
-          hover, which a phone has none of), and the row takes up any height its neighbour's label adds. */}
+      {/* Long labels wrap to a second, balanced line instead of being cut. */}
       <span className="flex min-h-5 items-start gap-2 max-sm:grow">
         {mark ? (
           <span className="flex h-5 shrink-0 items-center">
@@ -238,9 +219,6 @@ export function StatTile({
     </>
   );
 
-  // A container, so a tile too narrow for its label and the hover arrow beside it (a fifth of a 1024 px page) gives the
-  // arrow's room to the label: "Rules not measurable" read "measurab…" there (the JO-14 review). The tile's own hover
-  // ground still says it opens.
   const tileClass = cn("@container flex min-w-0 flex-col gap-2.5 bg-sheet p-4 max-sm:p-3", className);
 
   if (interactive && href) {
@@ -276,13 +254,7 @@ function linesOf(label: HTMLElement): number {
   return Math.max(1, tops.size);
 }
 
-/**
- * Keeps the figures in each row of a grid level: where one tile's label takes a second line, every label in that row
- * keeps two (the label's --tile-label-lines), and a row whose labels all fit keeps one, so no row carries a blank line
- * (the JO-14 review: two lines kept everywhere pushed the Overview's first screen down). Measured before the paint of
- * every render (tiles are drawn anew when their figures arrive) and again whenever the grid changes size; a change
- * made on a resize waits a frame, so the observer never loops.
- */
+/** Keeps the figures in each row of a grid level. */
 function useLevelLabels(grid: RefObject<HTMLElement | null>, active: boolean) {
   // No dependencies on purpose: the tiles inside may be new on any render.
   useLayoutEffect(() => {
@@ -313,11 +285,7 @@ function useLevelLabels(grid: RefObject<HTMLElement | null>, active: boolean) {
   });
 }
 
-/**
- * Tiles in a row, divided by hairlines inside one rounded frame (not a row of
- * cards). Five tiles in two columns would leave a hole, so the last takes the
- * whole row on narrow screens.
- */
+/** Tiles in a row, divided by hairlines inside one rounded frame (not a row of cards). */
 export function StatTileGrid({
   children,
   columns = 5,
@@ -329,11 +297,7 @@ export function StatTileGrid({
   columns?: 2 | 3 | 4 | 5;
   /** Names the group for assistive technology: "Headline figures". */
   label?: string;
-  /**
-   * Lines kept for every tile's label: 2 where one may wrap at a width the page is read at (a tile a third of half
-   * a MacBook's page), so the figures under the labels stay level whichever wraps; "auto" keeps two only in a row
-   * where a label takes them, measured in the browser, so a row whose labels all fit has no blank line.
-   */
+  /** Lines kept for every tile's label. */
   labelLines?: 1 | 2 | "auto";
   className?: string;
 }) {

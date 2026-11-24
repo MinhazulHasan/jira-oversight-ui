@@ -8,14 +8,6 @@ import type { Session } from "../cookies";
 
 import { SECRET, stubAuthEnv } from "./fixtures";
 
-/*
- * Admin and user (JO-16): with ACCESS_MODE everyone-admin, the default,
- * everyone who signs in is an admin; with admin-list, an address on
- * ADMIN_EMAILS reads every board, anyone else the boards in their session.
- * Decided on every request from a keyed hash of the address, so a change to
- * ACCESS_MODE or ADMIN_EMAILS takes effect at once.
- */
-
 const LEAD = "lead@stellainternational.com";
 const session = (email: string, boards = ["ALPHA"]): Session => ({
   v: 2,

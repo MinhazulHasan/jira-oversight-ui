@@ -1,13 +1,4 @@
-/**
- * The sample project's team: eight fictional people, the names the backend's
- * own demo gives its made-up accounts acc-01 to acc-08 (oversight/demo.py),
- * and three members of the board who hold none of its work (acc-09 to
- * acc-11), so a person has the same id in both demos. The account ids stay in the
- * sample's world, as they stay in the service's database: a response carries
- * a person as the contract names one, an id derived from the account, the
- * display name and the version of their picture (two of them have one,
- * pictures.ts), and never the account itself.
- */
+/** The sample project's team: eight fictional people, the names the backend's */
 
 import { createHash } from "node:crypto";
 
@@ -36,14 +27,6 @@ export const TEAM: readonly Member[] = [
   { accountId: "acc-08", name: "Hana Mori", share: 2 },
 ];
 
-/**
- * The board's members who hold none of its tickets (JO-10): people Jira lets
- * you assign DEMO's tickets to whom the work never reached, as the service's
- * own demo stores them (acc-09 to acc-11, no pictures), as a member fetch
- * would. They are in the @ list's "No tickets" group, and Ask says they have
- * no tickets on this board; GET /people and everything built on it (the
- * Overview, the Findings filter, the ticket page) leave them out.
- */
 export const MEMBERS: readonly Pick<Member, "accountId" | "name">[] = [
   { accountId: "acc-09", name: "Noor Haddad" },
   { accountId: "acc-10", name: "Tomás Ferreira" },

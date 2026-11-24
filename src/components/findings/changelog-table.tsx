@@ -28,11 +28,6 @@ function Change({ row }: { row: ChangelogRow }) {
 /** When and what changed are read whole: in a drawer as narrow as a phone each wraps, in balanced lines, rather than cut. */
 const WRAPS = "py-1.5 leading-snug [overflow-wrap:anywhere] text-balance whitespace-normal";
 
-/**
- * The exact Jira changelog entries the rule read: when, from and to, and the
- * entry's id, so any of them can be found again in Jira. A rule that reads
- * figures rather than changes says so instead.
- */
 export function ChangelogTable({ finding }: { finding: Finding }) {
   const locale = useFigureLocale();
   const rows = changelogRows(finding.evidence);
@@ -50,8 +45,6 @@ export function ChangelogTable({ finding }: { finding: Finding }) {
         <div className="@container overflow-hidden rounded-md border border-rule-weak">
           <table className="jo-table" data-sticky="false" data-density="compact">
             <caption className="sr-only">Changelog entries the rule read on {subject}</caption>
-            {/* Below 30rem (a phone's drawer) the time takes two lines, so from and to keep their room. The id's column
-                always holds its header whole: the frame's rounded edge clips anything past it (JO-14). */}
             <colgroup>
               <col className="w-[44%] @max-[30rem]:w-[36%]" />
               <col />

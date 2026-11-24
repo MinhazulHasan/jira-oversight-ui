@@ -1,18 +1,7 @@
-/*
- * What the sign-in suite, its mock Atlassian and its servers agree on. Test
- * values only: none of them is a secret, and none reaches a real Atlassian
- * site. The ports sit in 3403-3405 and 3408, clear of the developer's own 3400
- * and of the main suite's.
- */
-
 /** The dashboard with sign-in on and set up. Open it at exactly this address: it is APP_URL. */
 export const APP_URL = "http://localhost:3403";
 /** A second dashboard whose sign-in is set up wrongly (AUTH_SECRET too short), to show that nobody gets in. */
 export const BROKEN_APP_URL = "http://localhost:3405";
-/**
- * A third dashboard with ACCESS_MODE left empty: everyone-admin, the default (JO-16). Everyone who signs in is an
- * admin there. The first runs admin-list, so its tests of users and admins are exactly as before.
- */
 export const EVERYONE_APP_URL = "http://localhost:3408";
 /** The mock Atlassian (e2e-auth/mock-atlassian.mjs), on the loopback address only. */
 export const MOCK_PORT = 3404;

@@ -62,13 +62,6 @@ function windowLabels(total: WindowTotal, locale: string | undefined): string[] 
   return total.series.map((point) => `7 days to ${formatLocalDayMonth(Date.parse(point.end_at), locale)}`);
 }
 
-/**
- * The four headline figures: what is open and what changed this week. Each is
- * a rolling 7-day window ending now, so a tile's sparkline and its change
- * always agree, and each opens the findings behind it. What Jira cannot show
- * is said by Findings by rule and Coverage, not as a fifth figure that never
- * moves (SQA).
- */
 export function HeadlineTiles({ data }: { data?: Overview }) {
   const locale = useFigureLocale();
 
@@ -84,14 +77,10 @@ export function HeadlineTiles({ data }: { data?: Overview }) {
 
   const since = data.tracking_since ? Date.parse(data.tracking_since) : null;
 
-  // Labels levelled in the browser, loading and ready alike: where one takes a second line, every label in the row
-  // keeps two, so its figure stays level with the others; where all fit, none carries a blank line (the JO-14 review).
   return (
     <StatTileGrid label="Headline figures" columns={4} labelLines="auto">
       {TILES.map((tile) => {
         const total = data.totals[tile.key];
-        // New findings in the first tracked week are new only because tracking began: this week's count against it
-        // is no change at all (SQA: "13 new, −202 vs last week" was shown as better).
         const firstWeek = startedThisWeek(total, since) || (tile.key === "new_7d" && againstFirstWeek(total, since));
         return (
           <StatTile
@@ -116,10 +105,6 @@ export function HeadlineTiles({ data }: { data?: Overview }) {
   );
 }
 
-/**
- * The rules first ran after last week's window closed: every finding is "new"
- * only because tracking began, so there is no change or trend to show yet.
- */
 export function startedThisWeek(total: WindowTotal, since: number | null): boolean {
   if (since === null || Number.isNaN(since) || total.series.length < 2) return false;
   return since > Date.parse(total.series[total.series.length - 2].end_at);
@@ -127,10 +112,6 @@ export function startedThisWeek(total: WindowTotal, since: number | null): boole
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-/**
- * The rules first ran inside last week's window: its "new" counts every finding there was, new only because tracking
- * began, so this week's new findings have nothing fair to be compared with yet.
- */
 export function againstFirstWeek(total: WindowTotal, since: number | null): boolean {
   if (since === null || Number.isNaN(since) || total.series.length < 2) return false;
   return since > Date.parse(total.series[total.series.length - 2].end_at) - WEEK_MS;

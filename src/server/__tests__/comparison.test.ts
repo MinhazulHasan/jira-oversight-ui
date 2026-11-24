@@ -6,11 +6,7 @@ vi.mock("server-only", () => ({}));
 import { expectedComparison, forgetReportedComparison, noteComparison } from "../comparison";
 import { readConfig } from "../env";
 
-/*
- * The comparison setting the People page lays itself out for while its
- * figures load (the JO-11 check, G2): the sample's own, or the service's as
- * it last reported it, on until it has.
- */
+/** The comparison setting the People page lays itself out for while its */
 
 afterEach(() => forgetReportedComparison());
 

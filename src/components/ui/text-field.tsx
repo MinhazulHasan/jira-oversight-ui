@@ -4,13 +4,7 @@ import type { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
 
-/*
- * Text a reader types (a rule's name, its description): the 3:1 field edge,
- * the sheet's ground, and the focus ring drawn by the field itself; a value
- * that cannot be saved turns the edge and the ring to the breach ink, and the
- * words beside it say why (never the colour alone). The review's reason field
- * has the same look.
- */
+/* Text a reader types (a rule's name, its description). */
 
 const FIELD =
   "w-full rounded-md border bg-sheet px-3 text-sm text-ink placeholder:text-ink-low focus-visible:outline-2 focus-visible:outline-offset-0 disabled:cursor-not-allowed disabled:opacity-45";

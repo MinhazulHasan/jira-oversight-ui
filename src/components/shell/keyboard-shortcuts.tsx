@@ -9,11 +9,7 @@ import { isTypingTarget, resolveShortcut } from "@/lib/shortcuts";
 import { usePeopleLevel } from "./people-level";
 import { useShell } from "./shell-context";
 
-/**
- * The one keydown listener for the app-wide shortcuts. Pages that want `/` to
- * focus their search mark the field with `data-page-search`; without one, `/`
- * opens the palette instead.
- */
+/** The one keydown listener for the app-wide shortcuts. */
 export function KeyboardShortcuts() {
   const router = useRouter();
   const shell = useShell();

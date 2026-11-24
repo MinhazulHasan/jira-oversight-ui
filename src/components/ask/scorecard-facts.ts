@@ -14,16 +14,6 @@ import {
   type ScorecardValue,
 } from "@/lib/api/schemas";
 
-/*
- * Ask's scorecard tools (JO-11) read back from their facts, so an answer can
- * show the figures as a compact scorecard: oversight_person_scorecard (rows of
- * one person and one measure, the board's value beside each) and
- * oversight_people_compare (everyone in order for one measure, or overall, and
- * the board's row last). The facts are the audit trail and stay in the ledger
- * as they came; this is only another way to read them. A set that does not
- * read as one is simply not drawn (the ledger still shows it).
- */
-
 export const SCORECARD_TOOL = "oversight_person_scorecard";
 export const COMPARE_TOOL = "oversight_people_compare";
 
@@ -82,13 +72,6 @@ function daysOf(fact: FactSet): number {
   return typeof days === "number" && Number.isFinite(days) ? days : SCORECARD_DEFAULT_DAYS;
 }
 
-/**
- * The people's scorecards and the board's figures in a scorecard fact set, or
- * null when it is not one. The board's figures come from each row's board
- * columns, or from a row of no one's (the board's own row), whichever the set
- * holds. A measure is not measurable where the set says so, or where the board
- * holds nothing for it at all.
- */
 export function scorecardsFromFacts(fact: FactSet, resolve: (id: string) => Person | null = () => null): FactScorecards | null {
   if (fact.tool !== SCORECARD_TOOL || fact.rows.length === 0) return null;
   const parsed = z.array(scorecardRow).safeParse(fact.rows);
@@ -171,33 +154,17 @@ export interface FactComparison {
   days: number;
   /** The measure the order is by, or null for the overall order (measures closer than the board). */
   measure: ScorecardMeasure | null;
-  /**
-   * The order the people are in (JO-14), as the call records it: "closer" (closer to the process first), "most" (the
-   * figure highest first; a count's default, most first) or "fewest" (lowest first).
-   */
   order: ComparisonOrder;
   /** In the service's order (above), too few tickets last whatever the order. */
   people: ComparedPerson[];
   board: ScorecardValue | null;
-  /**
-   * By a count: the work nobody holds, after the people and never among them (JO-12, G5), so the rows add up to the
-   * board's; null where the board has none, and for a rate, the ratio or the overall order.
-   */
   unassigned: ScorecardValue | null;
-  /**
-   * Only the people the question mentions, set side by side (the call's person_ids), rather than everyone: what the
-   * answer's captions say they compare.
-   */
   only: boolean;
 }
 
 /** The orders a comparison can be in (the service's oversight_people_compare `order`). */
 export type ComparisonOrder = "closer" | "most" | "fewest";
 
-/**
- * A comparison's order from its call: as recorded, or, from a service that recorded none (before JO-14), a count's
- * most first or fewest first and a measure's closer to the process first.
- */
 function orderOf(fact: FactSet, measure: ScorecardMeasure | null): ComparisonOrder {
   const order = fact.params.order;
   if (order === "most" || order === "fewest" || order === "closer") return order;
@@ -253,20 +220,12 @@ export function comparisonFromFacts(fact: FactSet, resolve: (id: string) => Pers
 /** The counts of now, which no period bounds: their comparison states no days (the service's NOW_COUNTS). */
 export const NOW_COUNTS: readonly string[] = ["open_tickets", "in_progress"];
 
-/**
- * The order a comparison is in, in the answer's own words (JO-14): a count "most first" or "fewest first"; a rate or
- * the ratio "highest first", "lowest first", or "closer to the process first" when the question named no direction.
- */
 export function comparisonOrderWords(comparison: Pick<FactComparison, "measure" | "order">): string {
   if (!comparison.measure || comparison.measure.kind === "count") return comparison.order === "fewest" ? "fewest first" : "most first";
   if (comparison.order === "most") return "highest first";
   return comparison.order === "fewest" ? "lowest first" : "closer to the process first";
 }
 
-/**
- * The People page's sort for a comparison's measure, in the answer's order: left out where it is the page's own first
- * order for that column (closer to the process first; a count most first), so the address stays as short as it can.
- */
 export function peoplePageOrder(comparison: Pick<FactComparison, "measure" | "order">): SortOrder | undefined {
   if (!comparison.measure || comparison.order === "closer") return undefined;
   const wanted: SortOrder = comparison.order === "most" ? "desc" : "asc";

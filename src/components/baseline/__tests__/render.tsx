@@ -7,13 +7,6 @@ import { baselineSchema, type Baseline } from "@/lib/api/schemas";
 
 import baselineSample from "../../../../docs/sample-responses/baseline.json";
 
-/*
- * Shared set-up for the Baseline tests: the real sample report served through
- * a stubbed fetch, a fresh query client, the kit's providers, an en-GB reader
- * (so figures and dates read the same on every machine), and matchMedia,
- * which jsdom lacks and the reduced-motion check reads.
- */
-
 /** The sample report, read through the contract so the tests change it in the contract's types. */
 export const SAMPLE: Baseline = baselineSchema.parse(baselineSample);
 

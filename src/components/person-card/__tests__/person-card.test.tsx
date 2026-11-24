@@ -29,15 +29,6 @@ import {
   PersonCardTrigger,
 } from "../person-card-trigger";
 
-/*
- * The person card (JO-13): what it says in every state, and how it opens.
- * Resting on a name for 350 ms opens it (and only then is it read); it stays
- * while the pointer is on the name or the card and closes 150 ms after both;
- * a press pins it with focus inside, Escape closes it and gives focus back;
- * one card at a time; a touch screen or a phone gets a bottom sheet; and a
- * reader at team level gets the name exactly as before, with no card.
- */
-
 vi.mock("next/link", () => ({
   default: ({ href, children, prefetch: _prefetch, ...rest }: { href: string; children: ReactNode; prefetch?: boolean }) => (
     <a href={href} {...rest}>
@@ -183,8 +174,6 @@ describe("the card's words, in every state", () => {
     const card = await pin("Ada Brooks");
     const body = cardSample as PersonCard;
 
-    // The picture's place: initials at 48 px (the size Jira's picture comes in) where there is no picture, and the
-    // name, never cut short.
     const avatar = card.querySelector("[data-avatar]");
     expect(avatar).toHaveAttribute("data-size", "48");
     expect(avatar).toHaveAttribute("data-initials", "AB");
@@ -226,8 +215,6 @@ describe("the card's words, in every state", () => {
     expect(more).toHaveAttribute("href", `/ask?${new URLSearchParams({ q: "What is @Ada Brooks working on?", m: ADA.id }).toString()}`);
     expect(card.querySelector("[data-card-activity]")).toHaveTextContent(/^Last activity/);
 
-    // The other boards are named, never offered as a way in where the top bar cannot open them (its list here is DEMO's
-    // alone): the sample's MOB, then its made-up boards.
     const boards = card.querySelector("[data-card-boards]") as HTMLElement;
     expect(boards).toHaveTextContent(/^Also on MOB \(1 open\).*OPS \(3 open\).*WEB \(1 open\)$/);
     expect(within(boards).queryByRole("link")).not.toBeInTheDocument();
@@ -1056,8 +1043,6 @@ describe("a bottom sheet (a touch screen, a phone)", () => {
   });
 
   it("keeps Backspace from the browser, as a pinned card does: WebKit would go Back and leave the page behind it", async () => {
-    // Regression: a tap on an answer's pill on a phone, then Backspace, took WebKit back to the page before Ask, and the
-    // answer and the question being written went with it. The pinned card kept Backspace; its sheet did not.
     server();
     renderCards(<Name />);
     fireEvent.click(screen.getByRole("button", { name: "Ada Brooks" }));
@@ -1142,11 +1127,6 @@ describe("the way from a name to its card (a hover card)", () => {
     return row >= 0 ? document.querySelector(`[data-person-card-trigger="${PEOPLE[row].id}"]`) : null;
   }
 
-  /**
-   * The pointer moved at `speed` px/s, an event every 16 ms, entering and leaving what it crosses: in a straight
-   * line, or along a hand's curve whose middle is `bow` px off it (positive: to the left of the way, which on a way
-   * down to a card on the right is away from the card).
-   */
   function glide(from: [number, number], to: [number, number], speed: number, bow = 0) {
     const chord = Math.hypot(to[0] - from[0], to[1] - from[1]);
     const control = [(from[0] + to[0]) / 2 - (2 * bow * (to[1] - from[1])) / chord, (from[1] + to[1]) / 2 + (2 * bow * (to[0] - from[0])) / chord];
@@ -1168,10 +1148,6 @@ describe("the way from a name to its card (a hover card)", () => {
     }
   }
 
-  /**
-   * Points on a hand's curve (as `glide` draws it) one every `gap` px of its length, the first `offset` px in, and
-   * its end: where a browser that delivers few moves reports the pointer (WebKit here, about every 150 px).
-   */
   function reported(from: [number, number], to: [number, number], bow: number, gap: number, offset: number): [number, number][] {
     const chord = Math.hypot(to[0] - from[0], to[1] - from[1]);
     const control = [(from[0] + to[0]) / 2 - (2 * bow * (to[1] - from[1])) / chord, (from[1] + to[1]) / 2 + (2 * bow * (to[0] - from[0])) / chord];
@@ -1300,8 +1276,6 @@ describe("the way from a name to its card (a hover card)", () => {
   });
 
   it("holds the card when a report lands once on another name off the straight ways and the next comes 400 ms later: a pass, not a rest", async () => {
-    // Regression (JO-14): WebKit here reports a hand only every 150 to 450 ms, so a pointer passing over a name on its
-    // way to the card's foot stood on it long enough for that name's 350 ms, and its card took Ada's place.
     const fetchMock = await hovered();
     // Down and to the left onto the third row's name (on the way, off the straight ways), reported there once.
     hop([360, 398], [[300, 500]], 400);
@@ -1326,9 +1300,6 @@ describe("the way from a name to its card (a hover card)", () => {
 
   it("holds the card when the pointer is reported only every 100 px: the way runs from where it crossed the name's foot", async () => {
     await hovered();
-    // On the name by its left end (beside a picture), then down to View scorecard bowing 60 px away from the card,
-    // reported every 166 ms at 600 px/s (WebKit's synthetic moves here): the first report off the name lies nearer
-    // its far side than its foot, and read as where it left, the way would face away from the card.
     fireEvent.pointerMove(screen.getByRole("button", { name: "Ada Brooks" }), { pointerType: "mouse", clientX: 285, clientY: 398 });
     hop([285, 398], reported([285, 398], [505, 870], 60, 100, 25), 166);
     pass(HOVER_INTENT_MS * 2);

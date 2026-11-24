@@ -54,8 +54,6 @@ describe("SegmentedControl", () => {
     renderKit(<Harness onChange={onChange} />);
     const checked = screen.getByRole("radio", { name: "30d" });
     act(() => checked.focus());
-    // Radix moves roving focus on the next task and checks the radio as focus
-    // lands, while the arrow is still down: press, wait for the move, release.
     const press = async (key: string, expected: Period) => {
       await user.keyboard(`{${key}>}`);
       await waitFor(() => expect(onChange).toHaveBeenLastCalledWith(expected));

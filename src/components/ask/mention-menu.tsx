@@ -26,11 +26,6 @@ export interface MentionMenuProps {
   listId: string;
   optionId: (index: number) => string;
   state: MentionMenuState;
-  /**
-   * Everyone the search finds, in the list's groups ("With tickets", then
-   * "No tickets"), a group the search empties left out. The options are
-   * numbered through both, in order: `activeIndex` and `optionId` count them so.
-   */
   groups: readonly MentionGroup[];
   /** What was typed after the @, for the empty state. */
   query: string;
@@ -56,18 +51,8 @@ function LoadingRows() {
   );
 }
 
-/**
- * The list's width: a comfortable column for a name, never wider than a phone
- * allows, and never past the question box: it starts 12 px in from the box's
- * edge (alignOffset) and ends 12 px in from the other.
- */
 export const MENU_WIDTH = "w-[min(20rem,calc(100vw-2rem),calc(var(--radix-popper-anchor-width,22rem)-1.5rem))]";
 
-/**
- * The list's height until it is fitted (useFittedHeight): the first heading
- * and eight rows, then part of the next; never taller than the room Radix
- * finds below (or above) the box, less the list's 4 px above and below.
- */
 export const LIST_HEIGHT = "max-h-[min(18.5rem,calc(var(--radix-popover-content-available-height,19rem)-1rem))]";
 /** The same room, for the fitted height. */
 export const ROOM = "calc(var(--radix-popover-content-available-height, 19rem) - 1rem)";
@@ -75,16 +60,6 @@ export const ROOM = "calc(var(--radix-popover-content-available-height, 19rem) -
 const LIST_REM = 18.5;
 const STRETCH_REM = 21.5;
 
-/**
- * The list's height, fitted so its clipped edge always cuts a row in half,
- * the cue every menu gives that there is more: never in the gap between the
- * groups or on a heading, where a cut says nothing. When the next group's
- * heading and half its first row lie just past the rule's height (up to
- * 21.5rem), the list grows to show them, so "No tickets" is seen at once.
- * Measured after layout, again whenever the list's size changes (the room
- * Radix finds included); null while the list fits whole, or where nothing is
- * laid out.
- */
 export function useFittedHeight(listId: string, groups: readonly unknown[]): number | null {
   const [height, setHeight] = useState<number | null>(null);
   useLayoutEffect(() => {
@@ -121,12 +96,6 @@ export function useFittedHeight(listId: string, groups: readonly unknown[]): num
   return height;
 }
 
-/**
- * Where the list is clipped, the kit's fade, and a hairline in `--rule` along
- * the clipped edge, 4 px inside the menu's own: the fade alone says nothing
- * where the clip falls in white space (between the groups, or the scroll
- * padding below the row the keyboard is on). Both appear and go at once.
- */
 export const CLIPPED_EDGES = [
   "before:transition-none after:transition-none",
   "before:border-t-[length:var(--hairline)] before:border-rule after:border-b-[length:var(--hairline)] after:border-rule",
@@ -137,14 +106,6 @@ export type MentionListProps = Pick<
   "listId" | "optionId" | "state" | "groups" | "query" | "nobody" | "activeIndex" | "onActive" | "onChoose" | "onRetry"
 >;
 
-/**
- * What the @ list holds, in each state: its loading rows, the reason it
- * holds no one, or the people the search finds as a listbox in two groups,
- * each a `group` named by its heading, each row their picture and name, the
- * highlighted row a ground change as in every menu. The listbox is the
- * scroller (a combobox's popup, as ARIA has it); the edge it can scroll
- * towards fades and takes a hairline, as macOS hides the scrollbar.
- */
 export function MentionList({ listId, optionId, state, groups, query, nobody, activeIndex, onActive, onChoose, onRetry }: MentionListProps) {
   const fitted = useFittedHeight(listId, groups);
   if (state === "pending") return <LoadingRows />;
@@ -193,8 +154,6 @@ export function MentionList({ listId, optionId, state, groups, query, nobody, ac
               {group.people.map((person, offset) => {
                 const index = firsts[at] + offset;
                 return (
-                  // Reached through the field's aria-activedescendant, so the options take the pointer but never
-                  // the keyboard; the keyboard path is the field's own onKeyDown.
                   // eslint-disable-next-line jsx-a11y/click-events-have-key-events
                   <div
                     key={person.id}
@@ -226,15 +185,6 @@ export function MentionList({ listId, optionId, state, groups, query, nobody, ac
   );
 }
 
-/**
- * The @ list: everyone on the board, those who hold its tickets and then its
- * members who hold none, each with their picture and name, the one the
- * keyboard is on highlighted. A listbox the question field drives
- * (aria-activedescendant), so focus never leaves the question: the arrows
- * move, Enter or Tab chooses, Esc closes, and the pointer works as well.
- * Placed against the question box by Radix's popper, which keeps it on
- * screen; it opens and closes with the kit's calm pop, still with reduced motion.
- */
 export function MentionMenu({
   open,
   anchor,

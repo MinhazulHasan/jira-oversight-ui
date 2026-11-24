@@ -10,16 +10,7 @@ import { cn } from "@/lib/utils";
 
 import { Tooltip } from "./tooltip";
 
-/*
- * Three kinds of button, and deliberately no "danger": the product is
- * read-only, so nothing on screen can destroy anything.
- *
- * - primary: the one filled control on a view, in the accent, because the
- *   accent means "traceable" and the primary action is the one that leads to
- *   evidence (Ask, Open finding, Go to Overview).
- * - secondary: a hairline-edged control on the sheet (Copy link, Export CSV).
- * - ghost: no edge until hovered; toolbars and icon buttons.
- */
+/* Three kinds of button, and deliberately no "danger". */
 export const buttonVariants = cva(
   "pressable relative inline-flex shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-md whitespace-nowrap select-none disabled:pointer-events-none disabled:opacity-45 aria-disabled:cursor-not-allowed aria-disabled:opacity-45 [&_svg]:shrink-0",
   {
@@ -49,17 +40,9 @@ export interface ButtonProps extends ComponentProps<"button">, ButtonVariantProp
   icon?: LucideIcon;
   /** A Lucide icon after the label, e.g. an arrow for "leads somewhere". */
   iconEnd?: LucideIcon;
-  /**
-   * Waiting for the action to finish: a thin line sweeps along the foot of
-   * the button (nothing spins) and presses are ignored until it ends. It
-   * keeps its full colour, because waiting is not the same as unavailable.
-   * Announced through aria-busy; say what is happening in the label too.
-   */
+  /** Waiting for the action to finish. */
   loading?: boolean;
-  /**
-   * Render the child element instead, with the button's styles: a Next.js
-   * Link that should look like a button. Icons are then the child's to draw.
-   */
+  /** Render the child element instead, with the button's styles. */
   asChild?: boolean;
 }
 

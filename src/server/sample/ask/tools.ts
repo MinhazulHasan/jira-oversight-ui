@@ -20,12 +20,7 @@ import { round4 } from "../stats";
 import { iso } from "../time";
 import { TREND_DEFINITIONS, trendPoints } from "../series";
 
-/**
- * The backend's read-only query catalogue (oversight/ask/catalog.py), run over
- * the sample project. Same tool names, parameters, columns, notes and
- * four-decimal rounding, so a sample answer is built from facts shaped exactly
- * as a live one would be.
- */
+/** The backend's read-only query catalogue (oversight/ask/catalog.py), run over */
 
 type Params = FactSet["params"];
 type Row = Record<string, FactCell>;
@@ -140,7 +135,7 @@ export function ruleStatusFacts(dataset: Dataset, ref: string): FactSet {
       { key: "open_findings", label: "Open findings", kind: "count" },
       { key: "version", label: "Version", kind: "text" },
     ],
-    // The rules the board runs, as its settings make them (JO-15): a rule turned off there is not one of them.
+    // The rules the board runs, as its settings make them: a rule turned off there is not one of them.
     dataset.rules.filter((rule) => rule.enabled).map(({ def: rule, catalogue, custom, version }) => {
       const missing = missingFor(catalogue);
       return {
@@ -151,7 +146,7 @@ export function ruleStatusFacts(dataset: Dataset, ref: string): FactSet {
         measurable: missing.length === 0,
         missing: missing.length > 0 ? missing.join(", ") : null,
         open_findings: open.get(rule.id) ?? 0,
-        // A board's own rule (JO-20) by its own version, the revision that added it.
+        // A board's own rule by its own version, the revision that added it.
         version: custom ? version : RULES_VERSION,
       };
     }),
@@ -188,7 +183,7 @@ export function listFindingsFacts(dataset: Dataset, ref: string, params: ListFin
     (a, b) => Number(a.state === "resolved") - Number(b.state === "resolved"),
   );
   const described = [`${params.state} findings`];
-  // The board's rule by its own title (JO-20: a custom rule's too); a rule the board does not run, by its id alone.
+  // The board's rule by its own title; a rule the board does not run, by its id alone.
   const named = params.rule_id ? dataset.rules.find((rule) => rule.def.id === params.rule_id)?.def.title : undefined;
   if (params.rule_id) described.push(named ? `rule ${params.rule_id} (${named})` : `rule ${params.rule_id}`);
   const window = periodWindow(dataset, params.period);
@@ -266,11 +261,7 @@ export function trendFacts(dataset: Dataset, ref: string, metric: TrendMetric, l
 
 /* --------------------------------------------------- effort vs estimate -- */
 
-/**
- * Grouped by epic, the group is an epic key, so its column is of kind
- * issue_key (the catalogue types it text, which leaves an answer unable to
- * name the epic it is about); the title rides alongside as ticket text.
- */
+/** Grouped by epic, the group is an epic key, so its column is of kind */
 export function effortFacts(dataset: Dataset, ref: string, period: Period = "90d"): FactSet {
   const window = periodWindow(dataset, period);
   return facts(

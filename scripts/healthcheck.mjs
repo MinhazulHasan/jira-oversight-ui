@@ -1,16 +1,3 @@
-// The dashboard container's health check (the Dockerfile's HEALTHCHECK runs `node healthcheck.mjs`). Healthy only
-// when both hold:
-//
-// 1. This server answers its own health route: 200 with sign-in off, or 401 with sign-in on (the sign-in gate
-//    answering a request that has no session). 500 means sign-in is on but not configured, so nobody can get in.
-// 2. The oversight API answers its health route to this server's own settings (OVERSIGHT_API_URL, with
-//    OVERSIGHT_SERVICE_KEY): 200 with status ok or degraded. With sign-in on, the first check never reaches the API, so
-//    this is what sees a stopped or unreachable API, or a service key that does not match the API's (401): every page
-//    would fail. With the bundled sample (OVERSIGHT_DATA=sample) there is no API to ask.
-//
-// Node's http module rather than fetch (exiting while fetch's connection is still closing can abort the process),
-// no keep-alive, no redirect followed (one would carry the key elsewhere), and nothing printed: the key never leaves.
-
 import http from "node:http";
 import https from "node:https";
 import { pathToFileURL } from "node:url";

@@ -18,11 +18,6 @@ function stepDecimals(step: number): number {
   return text.includes(".") ? text.length - text.indexOf(".") - 1 : 0;
 }
 
-/**
- * One step from `value` towards `direction` (-1 or 1, `steps` at a time), on
- * the grid the step makes from `min`, as a native number field steps: a value
- * between two marks goes to the next mark, never past the bounds.
- */
 export function stepValue(value: number | null, direction: -1 | 1, steps: number, bounds: { min: number; max: number; step: number }): number {
   const { min, max, step } = bounds;
   const decimals = Math.max(stepDecimals(step), stepDecimals(min));
@@ -58,14 +53,7 @@ export interface NumberFieldProps {
   className?: string;
 }
 
-/**
- * A number with its bounds, for a threshold: a spin button a reader types
- * into, or steps with the arrow keys (Shift for ten steps, Page Up and Down
- * too; Home and End for the bounds), as a native number field does, but drawn
- * the kit's way in every browser (no spinners, Plex Mono, its unit inside the
- * field) and read leniently (a decimal comma counts). It holds the text as
- * typed: what is wrong with it is the page's to say, beside it.
- */
+/** A number with its bounds, for a threshold. */
 export function NumberField({
   value,
   onValueChange,

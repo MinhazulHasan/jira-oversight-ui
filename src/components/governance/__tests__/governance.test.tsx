@@ -128,8 +128,6 @@ describe("the access log page", () => {
     await within(table).findByText("Viewed a scorecard");
     const rows = within(table).getAllByRole("row").slice(1);
     expect(rows).toHaveLength(log.entries.length);
-    // The reader's own zone and locale, as every other time on screen (SQA: the organisation's zone, unnamed, read
-    // an hour or more off the top bar's sync time); the zone is never named, and the year is there.
     const time = rows[0].querySelector("time");
     expect(time).toHaveAttribute("datetime", log.entries[0].at);
     expect(time?.textContent).toBe(formatDateTime(log.entries[0].at));

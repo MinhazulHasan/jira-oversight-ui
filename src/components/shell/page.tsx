@@ -2,12 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-/**
- * Every page is a sheet on the desk that opens with a header: the title, one
- * line on what the page answers, and its actions (Copy link, Export CSV where
- * there is a table). Sections inside the body are separated by hairlines, not
- * by more cards.
- */
+/** Every page is a sheet on the desk that opens with a header. */
 
 export function PageSheet({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={cn("sheet rise", className)}>{children}</div>;

@@ -15,15 +15,6 @@ import { cn } from "@/lib/utils";
 import { missingEvidenceText } from "./copy";
 import { ruleHref } from "./links";
 
-/*
- * One rule on a line: its mark, id and title, a thin bar of its open findings
- * and the count. The kit's BarRow gives the name two fifths of the row, which
- * cuts rule titles short; this row gives the name the room and keeps the bar
- * as a compact column, with the kit's row classes, marks and tooltip body.
- * In a narrow container the bar drops under the name, as the kit's rows do,
- * and a title longer than its room wraps in balanced lines rather than being
- * cut: a phone has no hover for a tooltip (JO-14).
- */
 const ROW = cn(
   "jo-bar-row pressable grid min-h-7 items-center gap-x-3 gap-y-1 rounded-[6px] px-2 py-1.5 outline-offset-[-2px] hover:bg-rail",
   "grid-cols-[minmax(0,1fr)_2.75rem_0.875rem] [grid-template-areas:'label_value_go'_'bar_bar_bar']",

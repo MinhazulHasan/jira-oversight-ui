@@ -7,11 +7,6 @@ import { cn } from "@/lib/utils";
 
 import { sameQuestion } from "./describe";
 
-/**
- * Questions the catalogue can answer, by the part of the work they look at.
- * They are the first thing on an empty page and the way back from an answer
- * that could not be given.
- */
 export const STARTERS = [
   { topic: "Where work waits", question: "Where do tickets get stuck most?" },
   { topic: "Hot spots", question: "Which epics have the most open breaches?" },
@@ -31,10 +26,6 @@ function startersFor(level: AskLevel): readonly { topic: string; question: strin
   return level === "people" ? [...STARTERS.slice(0, -2), ...PEOPLE_STARTERS] : STARTERS;
 }
 
-/**
- * What to offer next: the service's own suggestions first, then starters,
- * never the question just asked and never the same question twice.
- */
 export function nextQuestions(asked: string, offered: readonly string[] = [], count = 3, level: AskLevel = "team"): string[] {
   const picked: string[] = [];
   // At people level the questions about people come first, as the service suggests them.

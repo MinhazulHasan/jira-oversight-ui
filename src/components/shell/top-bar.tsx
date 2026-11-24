@@ -15,18 +15,7 @@ import { useShell } from "./shell-context";
 import { AdminBadge, SignOutButton } from "./sign-out";
 import { ThemeMenu } from "./theme-menu";
 
-/**
- * 56px across the top of the content column: which Jira board, where you are,
- * where the data comes from, how fresh it is, and the way to everything else
- * (Cmd/Ctrl+K). With sign-in on, Sign out sits at the end; below 768px it
- * lives in the navigation sheet instead, and the palette has it everywhere.
- *
- * The bar never scrolls sideways. The controls on the right never shrink;
- * the page name gives way first, then the board's name truncates. They are
- * laid out for 1440px (docs/DESIGN.md, section 5) and shed words, never
- * controls, below it: the search becomes its icon below 1280px, and below
- * 1024px the theme moves to the palette, as on a phone.
- */
+/** 56px across the top of the content column. */
 export function TopBar({ showSignOut = false, admin = false }: { showSignOut?: boolean; admin?: boolean }) {
   const { setMobileNavOpen } = useShell();
 
@@ -64,17 +53,10 @@ export function TopBar({ showSignOut = false, admin = false }: { showSignOut?: b
   );
 }
 
-/**
- * The page you are on by its name, or "Issue / KEY" on an issue. It takes the
- * room the bar has left. A page's rail group is not shown: it showed only when
- * the bar had room, so one page read "Oversight / Overview" on one board and
- * "Overview" on another (SQA); the rail says the group.
- */
+/** The page you are on by its name, or "Issue / KEY" on an issue. */
 function Whereabouts() {
   const pathname = usePathname();
   const page = pageForPath(pathname);
-  // Below 768px the board picker lives in the navigation sheet: the board's key stays in the bar (SQA: on a phone
-  // nothing on screen said which board a page was about).
   const { key: board } = useCurrentBoard();
   const issue = /^\/issues\/([^/]+)/.exec(pathname);
 

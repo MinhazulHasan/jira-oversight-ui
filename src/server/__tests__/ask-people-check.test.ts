@@ -11,15 +11,6 @@ import { boardPeople, directoryPeople } from "../sample/people";
 import { scorecards } from "../sample/scorecard";
 import { personIdFor } from "../sample/team";
 
-/*
- * The JO-11 final check's findings on Ask at people level, in sample mode, as
- * the service answers them (tests/test_ask_check.py): nothing answerable is
- * turned away with the help; who is on the board is everyone on it; a first
- * name typed in lower case is that person when only one has it; "backlog" is
- * one figure; the least comes first; a count of now states no period; a
- * comparison carries n only for "top N".
- */
-
 const dataset = buildDataset(Date.parse("2026-11-04T14:30:00Z"));
 const ADA = personIdFor("acc-01");
 const NOT_UNDERSTOOD = "That question can't be answered from the Jira data; try one of the suggestions.";
@@ -37,7 +28,7 @@ const members = () => {
 
 describe("Ask in sample mode, the JO-11 check's findings", () => {
   it.each([
-    // Who struggles, needs help or falls behind: the other side of the process, further from it first (the JO-14 review).
+    // Who struggles, needs help or falls behind: the other side of the process, further from it first (the review).
     ["Which developers are struggling?", [{ tool: "oversight_people_compare", measure: "overall", days: 90, order: "fewest" }]],
     ["Who needs help?", [{ tool: "oversight_people_compare", measure: "overall", days: 90, order: "fewest" }]],
     ["Who is falling behind?", [{ tool: "oversight_people_compare", measure: "overall", days: 90, order: "fewest" }]],
@@ -63,7 +54,7 @@ describe("Ask in sample mode, the JO-11 check's findings", () => {
     const everyone = at("Who is on this board?");
     const names = [...holders(), ...members()];
     expect(everyone.facts[0].rows.map((row) => row.name)).toEqual(names);
-    // Each name once (JO-12, G8): the people who hold its tickets, then how many members hold none, and who.
+    // Each name once: the people who hold its tickets, then how many members hold none, and who.
     expect(everyone.answer).toBe(
       `${names.length} people are on this board: ${holders().slice(0, -1).join(", ")} and ${holders().at(-1)}, ` +
         `and ${members().length} members who hold none of its tickets: ${members().slice(0, -1).join(", ")} and ${members().at(-1)}.`,
@@ -131,7 +122,7 @@ describe("Ask in sample mode, the JO-11 check's findings", () => {
     const response = at("Who has the most tickets in progress?");
     const [facts] = response.facts;
     expect(facts.note).not.toContain("now now");
-    // The measure named mid-sentence in lower case (JO-12, G9).
+    // The measure named mid-sentence in lower case.
     expect(facts.note).toContain("by in progress now, most first");
     expect(response.plan[0].params.days).toBeUndefined();
     expect(response.answer).toMatch(/^In progress now, most first: /);

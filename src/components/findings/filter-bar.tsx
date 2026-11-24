@@ -40,24 +40,12 @@ type Facets = FindingsPage["facets"];
 /** One toast for the filters, replaced as they change rather than stacked. */
 const FILTER_TOAST = "findings-filters";
 
-/**
- * A trigger that shows a chosen name (an epic's title, a person's name) stops
- * at a fixed width and cuts the name short. A fixed width, not a share of the
- * row: Chromium sizes the wrapping row by the whole name and ignores a
- * percentage, so a long name would widen the page on a phone. 17rem fits the
- * narrowest screen (390 px less its gutters).
- */
 const NAMED_TRIGGER = "max-w-[17rem]";
 
 function acknowledge(description: string) {
   notify.info("Filter applied", { description, id: FILTER_TOAST });
 }
 
-/**
- * Every filter back to its default (the sort is kept), and said so. The
- * control that asked goes away with the filters, so focus moves to the page
- * search, where a fresh view starts, rather than falling to the page.
- */
 export function clearFilters(setFilters: SetFindingsUrl) {
   void setFilters(CLEARED_FILTERS);
   notify.info("Filters cleared", { description: "Showing every open finding.", id: FILTER_TOAST });
@@ -70,13 +58,6 @@ const countOf = (entries: Facets["severity"] | undefined, value: string) =>
 const sum = (...values: (number | undefined)[]) =>
   values.some((value) => value === undefined) ? undefined : values.reduce<number>((total, value) => total + (value ?? 0), 0);
 
-/**
- * The Person menu's choices: everyone assigned a ticket on the board now, by
- * name with their Jira picture (or initials), with what each would show,
- * then Unassigned last. A person in the URL whom the board does not list (a
- * link from another board) stays choosable, named plainly rather than by
- * their id, and drawn as an account with no name.
- */
 export function personOptions(entries: Facets["people"] | undefined, chosen: readonly string[], locale?: string): ComboboxOption[] {
   const people = (entries ?? []).filter((entry) => entry.value !== UNASSIGNED);
   const unassigned = entries?.find((entry) => entry.value === UNASSIGNED);
@@ -118,12 +99,6 @@ export interface FilterBarProps {
   facets: Facets | undefined;
 }
 
-/**
- * The one filter row above the list: the page search (`/` focuses it), then
- * severity and state with the number each would show, then rule, epic,
- * person and first seen, and Clear once anything is set. Every change goes to the URL
- * and resets to the first page.
- */
 export function FilterBar({ filters, setFilters, facets }: FilterBarProps) {
   const locale = useFigureLocale();
   const pending = facets === undefined;
@@ -135,15 +110,13 @@ export function FilterBar({ filters, setFilters, facets }: FilterBarProps) {
   // At people level, one person (not the unassigned tickets) chosen: the way to their scorecard.
   const peopleLevel = usePeopleLevel();
   const scorecardFor = peopleLevel && filters.person.length === 1 && filters.person[0] !== UNASSIGNED ? filters.person[0] : null;
-  // Whose scorecard the link opens, by name: the board's directory knows everyone on it (members with no tickets too),
-  // whether or not the findings have loaded; until it answers, the link names no one rather than someone wrongly.
   const directory = usePeopleDirectory({ enabled: scorecardFor !== null });
   const scorecardName = scorecardFor
     ? (directory.data?.people.find((entry) => entry.person.id === scorecardFor)?.person.name ??
       facets?.people?.find((entry) => entry.value === scorecardFor)?.label ??
       null)
     : null;
-  // The one person chosen, as the board names them: resting on their name in the Person filter opens their card (JO-13).
+  // The one person chosen, as the board names them: resting on their name in the Person filter opens their card.
   const chosenFacet = scorecardFor ? facets?.people?.find((entry) => entry.value === scorecardFor) : undefined;
   const chosenPerson = scorecardFor
     ? (directory.data?.people.find((entry) => entry.person.id === scorecardFor)?.person ??
@@ -287,8 +260,6 @@ export function FilterBar({ filters, setFilters, facets }: FilterBarProps) {
           renderValue={
             chosenPerson
               ? (text) => (
-                  // The press is the filter's (it opens the Person menu); resting on the name shows their card,
-                  // but never over the open menu.
                   <PersonCardHover person={chosenPerson} disabled={personMenuOpen}>
                     <span data-person-filter-name>{text}</span>
                   </PersonCardHover>
@@ -298,12 +269,10 @@ export function FilterBar({ filters, setFilters, facets }: FilterBarProps) {
           className={NAMED_TRIGGER}
         />
         {scorecardFor ? (
-          // People level, one person chosen: their scorecard is a step away (JO-11).
+          // People level, one person chosen: their scorecard is a step away.
           <Button asChild variant="ghost" size="sm" className="-ml-1">
             <Link href={scorecardHref(scorecardFor)} data-print="hide">
               {"View scorecard "}
-              {/* The name from the board's directory, which knows everyone on it: never "someone not on this board"
-                  while the findings load, or when they fail. */}
               <span className="sr-only">{scorecardName ? `of ${scorecardName}` : ""}</span>
               <ArrowRight aria-hidden strokeWidth={1.75} />
             </Link>

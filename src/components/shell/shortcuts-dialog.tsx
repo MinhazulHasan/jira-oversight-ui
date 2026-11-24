@@ -84,8 +84,6 @@ export function ShortcutsDialog() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[var(--z-overlay)] bg-overlay data-[state=closed]:animate-[jo-fade-out_120ms_ease_both] data-[state=open]:animate-[jo-fade-in_140ms_ease_both]" />
         <Dialog.Content
-          // A sheet to read, not a form: focus the sheet itself so the close
-          // button does not open wearing a focus ring. Tab still reaches it.
           onOpenAutoFocus={(event) => {
             event.preventDefault();
             if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();

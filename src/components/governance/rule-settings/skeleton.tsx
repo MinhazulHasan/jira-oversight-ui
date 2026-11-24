@@ -3,12 +3,6 @@ import { Skeleton, SkeletonGroup } from "@/components/ui/skeleton";
 import { SettingsNote } from "./apply-status";
 import { RuleListHead } from "./rule-row";
 
-/*
- * The page while its settings load, line for line as it will stand: each
- * placeholder sits in a line box of the text it stands for (`h-[1lh]` at that
- * text's size), so nothing moves when the rules arrive.
- */
-
 /** One rule's row: the row's own grid, its id line, title and "What it checks"; its controls; its thresholds and default. */
 function RowSkeleton() {
   return (
@@ -71,10 +65,6 @@ function GroupSkeleton({ rows }: { rows: number }) {
   );
 }
 
-/**
- * The custom rules' group (JO-20) as most boards have it, with none: its heading, its line, and the empty state's
- * frame (its mark, its two lines and its button), so a board with none moves nothing when its settings arrive.
- */
 function CustomGroupSkeleton() {
   return (
     <div className="flex flex-col gap-3">

@@ -19,14 +19,6 @@ export const NO_EPIC_LABEL = "(no epic)";
 
 type Seen = Pick<Finding, "first_seen_at" | "last_seen_at" | "resolved_at">;
 
-/**
- * The clock an open finding's age is read on, one for the page (JO-13m):
- * now, the clock "First seen 4 h ago" beside it reads, while the board's
- * last sync is fresh; once that sync is stale (older than the top bar's two
- * hours), what is open is known only as of it, so the age stops at the last
- * rules run that saw the finding, and the page says "at last sync". Without
- * a sync time or the reader's clock, the age is by the rules runs alone.
- */
 export interface FindingClock {
   /** What an open finding's age runs to: now, or null for the last run that saw it. */
   now: number | null;
@@ -45,13 +37,6 @@ export function findingClock(lastSyncedAt: string | null | undefined, now: numbe
   return { now: stale ? null : now, stale, syncedAt: lastSyncedAt };
 }
 
-/**
- * How long a finding has been open: from the rules run that first saw it to
- * the run that no longer saw it, once resolved. While it is open, to `now`
- * where the page reads ages on that clock (the board's data is fresh), never
- * short of the last run that saw it; else to that last run, so the figure
- * can be checked against the two timestamps beside it.
- */
 export function findingAgeMs(finding: Seen, now: number | null = null): number {
   const start = Date.parse(finding.first_seen_at);
   const lastRun = Date.parse(finding.resolved_at ?? finding.last_seen_at);
@@ -59,12 +44,6 @@ export function findingAgeMs(finding: Seen, now: number | null = null): number {
   return Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) : 0;
 }
 
-/**
- * "<1 h", "5 h", "47 h", "2 d", "38 d": the nearest whole hour under two
- * days, the nearest whole day after, rounded as "First seen 5 h ago" beside
- * it is (under 45 minutes it says minutes, where this says "<1 h"), so the
- * two never read the same span apart.
- */
 export function formatAge(ms: number, locale?: string): string {
   if (ms < 45 * MINUTE) return `<1${NBSP}h`;
   const hours = Math.max(1, Math.round(ms / HOUR));
@@ -76,10 +55,6 @@ export function formatAge(ms: number, locale?: string): string {
 
 export type FindingStatus = "open" | "resolved" | "superseded" | "settings_changed";
 
-/**
- * Resolved because the condition stopped, because a newer rules version replaced it, or (JO-15) because the board's
- * rule settings changed, so the rule no longer holds it: never read as fixed.
- */
 export function findingStatus(finding: Pick<Finding, "state" | "resolved_why">): FindingStatus {
   if (finding.state === "open") return "open";
   if (finding.resolved_why === "superseded") return "superseded";
@@ -100,15 +75,6 @@ export const SETTINGS_CHANGED_TITLE = "Closed because the rule settings changed"
 
 export type NoOnesReason = "sprint" | "gone";
 
-/**
- * Why a finding belongs to no one, or null when it belongs to its issue's
- * assignee (or to Unassigned). A sprint finding has no issue. A finding whose
- * issue has left the synced snapshot (deleted or moved in Jira since the rules
- * last ran) keeps its key but comes with neither the issue's summary nor its
- * type, which Jira gives every live ticket; no person filter matches it,
- * Unassigned included (API_CONTRACT.md, `assignee`), so it must not read
- * "Unassigned" either.
- */
 export function noOnesReason(finding: Pick<Finding, "scope" | "issue_type" | "issue_summary">): NoOnesReason | null {
   if (finding.scope === "sprint") return "sprint";
   return finding.issue_type === null && finding.issue_summary === null ? "gone" : null;
@@ -177,11 +143,6 @@ function listed(ids: readonly string[], name: (id: string) => string, one: strin
   return `${ids.length} ${many}`;
 }
 
-/**
- * The filters in words, so an empty list (or a printed one) says exactly
- * what was looked at: "open breaches in DEMO, rule R-EST-01, assigned to
- * Ada Brooks, first seen in the last 7 days, matching “webhook”".
- */
 export function describeFilters(filters: FindingsFilters, projects: readonly string[], names?: FacetNames): string {
   const severity = filters.severity === "breach" ? "breaches" : filters.severity === "warning" ? "warnings" : "findings";
   const subject = filters.state === "all" ? `${severity}, open or resolved` : `${filters.state} ${severity}`;

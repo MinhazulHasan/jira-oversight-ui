@@ -23,10 +23,6 @@ export interface SparklineProps {
   period?: string;
   /** How a value reads; any formatter from src/lib/format.ts fits. */
   format?: FigureFormat;
-  /**
-   * The colour of the latest point, the only coloured mark: the line itself is
-   * the context grey, so a row of tiles stays calm.
-   */
   tone?: "neutral" | "breach" | "warning" | "resolved";
   /** Height in px; the width follows the container. */
   height?: number;
@@ -97,11 +93,6 @@ function toPath(points: ({ x: number; y: number } | null)[]): string {
   return d;
 }
 
-/**
- * A small line with no axes: the shape of the last few periods, the latest
- * point marked. It answers "which way is this going", while the figure beside
- * it answers "how much". Hovering reads out any point.
- */
 export function Sparkline({
   values,
   labels,

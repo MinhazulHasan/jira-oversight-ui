@@ -12,13 +12,6 @@ import scorecardSample from "../../../../docs/sample-responses/people-scorecard.
 import personCardSample from "../../../../docs/sample-responses/person-card.json";
 import { invalidateAfterSync, useAccessLog, useFindings, useOverview, usePeopleScorecard, usePersonCard } from "../hooks";
 
-/*
- * Every read of person-level data is an entry in the service's access log
- * (JO-12): "who looked at whom". So a scorecard, someone's findings, a person
- * card (JO-13) and the access log itself are read only when the reader asks,
- * never on focus, a reconnect, a timer or a sync, and never twice for one look.
- */
-
 const ADA = "p3f9a2c41b0de";
 const CARD = `people/${ADA}/card`;
 const BODIES: Record<string, unknown> = {

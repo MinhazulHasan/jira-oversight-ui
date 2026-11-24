@@ -1,14 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-/*
- * Sync syncs the board you are on (JO-18), and a board's first sync (JO-17),
- * end to end on the sample, which runs syncs as the service does: one at a
- * time, another board's queued behind it. Its servers are this spec's own
- * (playwright.config.ts), one for each browser: HELP's first sync makes HELP a
- * synced board for the rest of that server's life. Serial: the tests follow
- * one server's syncs in order.
- */
-
 test.describe.configure({ mode: "serial" });
 
 test("Sync in the top bar syncs the board on screen: Syncing while it runs, then every figure reloads and it says so", async ({ page }) => {

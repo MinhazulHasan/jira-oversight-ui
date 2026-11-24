@@ -134,12 +134,6 @@ function NotUnderstood({ response, onAsk, busy }: BodyProps) {
 /** No citations: a sentence built in code quotes no figure. */
 const NOTHING_CITED = () => "";
 
-/**
- * People mentioned who are on the board but hold none of its tickets (the
- * response's `answer`, built by the service in code): the sentence, with
- * each of them marked where their name stands, as an answer marks people,
- * but with no link: they hold no tickets, so their open findings are empty.
- */
 function NoTickets({ response, onAsk, busy }: BodyProps) {
   const sentence = response.answer?.trim() ?? "";
   const everyone = new Set(response.people.map((person) => person.id));

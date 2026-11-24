@@ -32,48 +32,7 @@ import { boardPicture } from "./sample/people";
 import { sampleBoardsAt } from "./sample/served";
 import { sampleResponse } from "./sample";
 
-/**
- * /api/oversight/*: the credential boundary between the browser and the
- * oversight service. Every request is resolved against the allowlist first;
- * then it is answered from the bundled sample project, or forwarded to the
- * live service with the key only this server holds.
- *
- * With sign-in on, an admin reads every board: everyone who signs in, unless
- * ACCESS_MODE is admin-list, where the admins are ADMIN_EMAILS. Anyone else
- * reads only the boards in their session (worked out at sign-in from what
- * their Jira account can open): another board is refused, no pick means their
- * first board, and the board list holds theirs (auth/roles.ts decides).
- *
- * Ask's level is decided here too, on every question: people level (naming
- * people, counting their tickets and findings) with sign-in off or for an
- * admin, team level for everyone else. A team-level reader's question that
- * mentions people is refused before anything is asked.
- *
- * Governance (JO-12): the access log and Ask's usage are people level's
- * alone, refused to anyone else before anything is asked; the Portfolio
- * covers every board and is held to the reader's here. Every request the
- * service is asked carries who is reading and at what level (auth/viewer.ts),
- * so its access log can name the reader of any person-level figure.
- *
- * The person card (JO-13) is people level's alone too, as the scorecard is;
- * the other boards it names are held to the reader's here, as the
- * Portfolio's are, before anything reaches the browser.
- *
- * Rule settings (JO-15) are an admin's alone (people level, as above), read
- * and changed on the board picked in the top bar; so is an AI draft of a rule
- * (JO-20), which saves nothing.
- *
- * Sync (JO-18) syncs the board picked in the top bar and no other, held to the
- * reader's boards as every board-scoped request is. A board that has never
- * synced (JO-17) answers 409 board_not_synced everywhere but its sync, from
- * the sample as from the service, and every page offers its first sync.
- *
- * Every POST (a question, "Sync now", a rule settings preview, save or draft)
- * must come from this dashboard's own pages: its Origin is checked before anything
- * else, and one with a body must send it as JSON, so a page on another site
- * can neither ask, nor start a sync, nor change anything in a reader's name,
- * whether sign-in is on or off.
- */
+/** /api/oversight/*: the credential boundary between the browser and the */
 
 const BOARD_NOT_ALLOWED = "Your Jira account cannot open the board picked in the top bar. Pick one of yours.";
 const NO_BOARDS = "Your Jira account cannot open any of the boards this dashboard covers.";
@@ -133,11 +92,6 @@ const RULE_SETTINGS_ROUTES: ReadonlySet<Resolved["route"]["name"]> = new Set([
 /** The routes that wait on a model in the service (Ask, an AI draft of a rule): the sample takes Ask's time over them. */
 const MODEL_ROUTES: ReadonlySet<Resolved["route"]["name"]> = new Set(["ask", "rule_settings_draft"]);
 
-/**
- * The sample's answer, as the service would give it: for the board picked (or named), as `board` says, or its
- * default, DEMO. Like the service, it answers a board it does not serve 404 unknown_board, and a board that has
- * never synced (HELP, until its first sync has run) 409 board_not_synced on every route but its sync.
- */
 async function serveSample(config: SampleConfig, resolved: Resolved, reader: ReaderContext, picked: string | null): Promise<Response> {
   const { route } = resolved;
   const delay = MODEL_ROUTES.has(route.name) ? config.latency.ask : config.latency.read;
@@ -182,11 +136,6 @@ async function serveSample(config: SampleConfig, resolved: Resolved, reader: Rea
   return json(parsed.data);
 }
 
-/**
- * Health for a board that has never synced (JO-17), as the shell reads it: the service up and serving, the board
- * named, and no sync time, so the top bar says "Not synced yet" rather than that the service is down. From the
- * sample, or from the service's own health for its default board when it answers this board's 409 board_not_synced.
- */
 function notSyncedHealth(service: Pick<Health, "data_mode" | "api_version" | "report_timezone">, board: string): Health {
   return {
     status: "ok",
@@ -236,13 +185,6 @@ async function boardListFor(response: Response, allowed: readonly string[]): Pro
   return mine ? json(mine) : problem(403, "board_not_allowed", NO_BOARDS);
 }
 
-/**
- * The Portfolio as this person may see it: the boards they may open and the
- * oldest open breaches on those alone, before anything reaches the browser.
- * The service was asked for their boards (the route's `boards`), so its
- * oldest breaches are already the ten oldest across them; both lists are held
- * to those boards again here all the same.
- */
 async function portfolioFor(response: Response, allowed: readonly string[]): Promise<Response> {
   if (allowed.length === 0) return problem(403, "board_not_allowed", NO_BOARDS);
   const parsed = portfolioSchema.safeParse(await response.json());
@@ -260,24 +202,13 @@ async function portfolioFor(response: Response, allowed: readonly string[]): Pro
   });
 }
 
-/**
- * A person card as this person may see it: the other boards it names, only
- * those they may open (an admin, or sign-in off: every board, so nothing is
- * cut), before anything reaches the browser. The service names every synced
- * board the person holds open tickets on.
- */
 async function personCardFor(response: Response, allowed: readonly string[]): Promise<Response> {
   const parsed = personCardSchema.safeParse(await response.json());
   if (!parsed.success) return problem(500, "internal_error", "Something went wrong in this interface. Try again in a moment.");
   return json(cardForBoards(parsed.data, allowed));
 }
 
-/**
- * An Ask answer passed on only when it keeps to its reader's limits: read
- * from `board` alone when they read only their own boards (the service pins
- * every call to the board it is asked on, and this checks again, since this
- * route is where the per-person rule lives), and naming no one at team level.
- */
+/** An Ask answer passed on only when it keeps to its reader's limits: read */
 async function answerWithin(response: Response, board: string | null, level: AskLevel): Promise<Response> {
   const parsed = askResponseSchema.safeParse(await response.json());
   if (!parsed.success) return problem(500, "internal_error", "Something went wrong in this interface. Try again in a moment.");
@@ -319,25 +250,13 @@ async function readBody(request: Request, words: BodyWords): Promise<{ ok: true;
   }
 }
 
-/**
- * The host the browser addressed: a proxy in front names it in
- * X-Forwarded-Host (its first, where there are several), else the Host header
- * does (Next.js sets X-Forwarded-Host from it when no proxy has). Never the
- * request's URL, which Next.js builds from the address the server is bound to
- * (0.0.0.0 in the container), whatever name the browser used.
- */
+/** The host the browser addressed: a proxy in front names it in */
 function addressedHost(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
   return forwarded || request.headers.get("host") || new URL(request.url).host;
 }
 
-/**
- * With sign-in off there is no APP_URL to hold an Origin to: it must name the
- * host the browser addressed, by http or https (a proxy in front may end TLS,
- * so the address this server sees says http), and be an origin and nothing
- * more. A page on another site sends its own host; one sent as "null" names
- * none. (Next.js's own check of a Server Action's Origin reads the same.)
- */
+/** With sign-in off there is no APP_URL to hold an Origin to: it must name the */
 function ownHost(origin: string | null, request: NextRequest): boolean {
   if (origin === null) return false;
   try {
@@ -350,16 +269,7 @@ function ownHost(origin: string | null, request: NextRequest): boolean {
   }
 }
 
-/**
- * Whether a POST came from somewhere it may not: it must carry this
- * dashboard's own Origin (APP_URL's with sign-in on, as signing out checks it;
- * the host the browser addressed with sign-in off) and, when it has a body
- * (Ask's, a rule settings change's), send it as JSON. A form on another site
- * can send neither, and a script there cannot send JSON here without a
- * preflight this route never answers; the SameSite session cookie alone would
- * not stop a sibling site, and with sign-in off there is no cookie at all. So
- * nothing can be asked, synced or changed in a reader's name. Null to go on.
- */
+/** Whether a POST came from somewhere it may not: it must carry this */
 function crossSiteRefusal(request: NextRequest, words: PostWords): Response | null {
   const auth = resolveAuth();
   const origin = request.headers.get("origin");
@@ -397,8 +307,6 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
       if (!read.ok) return read.response;
       resolution = resolvePost(segments, search, read.body);
     } else if (ruleSettingsPost(segments)) {
-      // A change to rule settings (JO-15), or an AI draft of a rule (JO-20): from this dashboard's own pages, by an
-      // admin, both decided before the body is read or the sample or the service is asked anything.
       const draft = ruleSettingsPost(segments) === "rule_settings_draft";
       const forged = crossSiteRefusal(request, draft ? DRAFT_POST : SETTINGS_POST);
       if (forged) return forged;
@@ -418,8 +326,6 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
     if (!resolution.ok) return refusal(resolution);
     let resolved = resolution.value;
 
-    // Ask's level is this server's to decide, never the browser's: the question is answered at it, and a
-    // team-level reader's mentions are refused before anyone (the sample or the service) is asked anything.
     if (resolved.route.name === "ask") {
       const level = askLevel(access.session);
       if (level === "team" && resolved.route.mentions.length > 0) return problem(403, "people_not_allowed", PEOPLE_NOT_ALLOWED);
@@ -427,9 +333,6 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
     }
     const { route } = resolved;
 
-    // The board picked in the top bar (a cookie), read as sign-in and the pages read cookies (Next.js's
-    // parser: the last of two with one name): the service is told which one to read. A picture or a person card may
-    // name its own board (an access log entry's), held to the reader's boards exactly as a pick is.
     const named = route.name === "person_avatar" ? (route.board ?? null) : route.name === "person_card" ? (route.query.board ?? null) : null;
     let board = named ?? boardFromCookie(request.cookies.get(BOARD_COOKIE)?.value);
     if (allowed !== null && !BOARDLESS_ROUTES.has(route.name)) {
@@ -439,33 +342,23 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
       // No pick: their first board, never the service's default, which they may not be able to open.
       board ??= allowed[0];
     }
-    // The directory is the @ list's, which only people level has: least privilege, so a team-level reader never
-    // reads it (members who hold no ticket appear nowhere else), from the sample or the service.
     if (route.name === "people_directory" && askLevel(access.session) === "team") {
       return problem(403, "people_not_allowed", DIRECTORY_NOT_ALLOWED);
     }
-    // Scorecards are people level's alone, decided here on every request as Ask's level is: a team-level reader is
-    // refused before the sample or the service is asked anything, and the service is told the level this server set.
     if (route.name === "people_scorecard") {
       if (askLevel(access.session) === "team") return problem(403, "people_not_allowed", SCORECARD_NOT_ALLOWED);
       resolved = { ...resolved, route: { ...route, level: "people" } };
     }
-    // A person card is people level's alone (JO-13), decided as the scorecard's is: a team-level reader (a user) gets
-    // no card and is refused here, before the sample or the service is asked anything (so nothing is recorded).
     if (route.name === "person_card") {
       if (askLevel(access.session) === "team") return problem(403, "people_not_allowed", CARD_NOT_ALLOWED);
       resolved = { ...resolved, route: { ...route, level: "people" } };
     }
-    // Governance is people level's alone (JO-12), decided as the scorecard's is: the access log and Ask's usage are
-    // refused to anyone else before the sample or the service is asked anything (so a refusal is never logged).
     if (route.name === "access_log" || route.name === "usage") {
       if (askLevel(access.session) === "team") {
         return problem(403, "people_not_allowed", route.name === "access_log" ? ACCESS_LOG_NOT_ALLOWED : USAGE_NOT_ALLOWED);
       }
       resolved = { ...resolved, route: { ...route, level: "people" } };
     }
-    // Rule settings are an admin's alone (JO-15), an AI draft of a rule too (JO-20), decided as Governance's are, before
-    // the sample or the service is asked anything; the service is told the level this server set.
     if (
       route.name === "rule_settings" ||
       route.name === "rule_settings_preview" ||
@@ -478,8 +371,6 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
       resolved = { ...resolved, route: { ...route, level: "people" } };
     }
 
-    // A reader of some boards sees the Portfolio across those alone: the service is told them, so "Needs attention"
-    // is their own ten oldest breaches, not the service's ten oldest cut to their boards.
     if (route.name === "portfolio" && allowed !== null && allowed.length > 0) {
       resolved = { ...resolved, route: { ...route, boards: allowed } };
     }
@@ -489,7 +380,7 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
     let response =
       config.mode === "sample" ? await serveSample(config.sample, resolved, reader, board) : await forward(config.live, resolved, board, reader);
     if (config.mode === "live" && route.name === "health" && response.status === 409 && board !== null) {
-      // A board that has never synced (JO-17): health still says the service is up, with no sync time for the board.
+      // A board that has never synced: health still says the service is up, with no sync time for the board.
       response = (await liveNotSyncedHealth(config.live, resolved, board, reader)) ?? response;
     }
     if (allowed !== null && route.name === "projects" && response.ok) return await boardListFor(response, allowed);

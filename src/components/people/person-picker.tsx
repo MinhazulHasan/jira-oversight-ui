@@ -15,19 +15,6 @@ import { formatCount } from "@/lib/format";
 import { foldText } from "@/lib/names";
 import { cn } from "@/lib/utils";
 
-/*
- * Choose one person from the board, as Jira's assignee picker lists them
- * (GET /people/directory): those who hold its tickets ("With tickets") first,
- * then its members who hold none ("No tickets"), each a 20 px picture and the
- * name. Typing narrows both groups as one list, folded for case and accents as
- * Ask's @ list folds a search; the arrow keys run through both, Enter chooses.
- * The list is the @ list's: its height fitted so the clipped edge cuts a row
- * (or shows the next group's heading), with the kit's fade and hairline there,
- * as macOS hides the scrollbar. A list with no one in it (nothing matches,
- * nobody yet, or the people could not be loaded) says so beside the listbox,
- * never inside it, and says it aloud too.
- */
-
 export interface PersonPickerProps {
   /** The directory's entries; undefined while they load. */
   entries: readonly DirectoryEntry[] | undefined;
@@ -55,10 +42,6 @@ export function pickerGroups(entries: readonly DirectoryEntry[], query: string):
   ].filter((group) => group.entries.length > 0);
 }
 
-/**
- * The list's fitted height, worked out where the list is: inside the popover,
- * which mounts after the picker renders, so the list is laid out when this runs.
- */
 function Fitted({ listId, groups, children }: { listId: string; groups: readonly unknown[]; children: (fitted: number | null) => ReactNode }) {
   const fitted = useFittedHeight(listId, groups);
   return <>{children(fitted)}</>;
@@ -76,8 +59,6 @@ export function PersonPicker({ entries, state, onRetry, value, onValueChange, cl
   const chosen = entries?.find((entry) => entry.person.id === value)?.person ?? null;
   const groups = useMemo(() => pickerGroups(entries ?? [], query), [entries, query]);
   const flat = groups.flatMap((group) => group.entries);
-  // Each row's place in the one list the arrow keys run through, from the data alone: the list is drawn again on its
-  // own when its height is fitted, and its rows' ids (aria-activedescendant's targets) must not move when it is.
   const positions = new Map(flat.map((entry, index) => [entry.person.id, index]));
   const activeIndex = flat.length === 0 ? -1 : Math.min(active, flat.length - 1);
 

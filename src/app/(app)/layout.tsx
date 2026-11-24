@@ -21,17 +21,8 @@ import { LOGIN_PATH } from "@/lib/sign-in";
 import { authStatus } from "@/server/auth/config";
 import { currentAdminBadge, currentAskLevel, currentSession } from "@/server/auth/session";
 
-/**
- * The application shell: skip link, rail, top bar and the content column,
- * plus the palette, the shortcuts sheet and the key listener that every page
- * shares. Landmarks: the rail is complementary (with the primary navigation
- * inside it), the top bar is the banner, and the page is main.
- */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const auth = authStatus();
-  // src/proxy.ts sends a page without a session to /login long before this. One kind of request never
-  // meets the proxy: an address under /_next/static/ that is no file, which Next.js answers with the 404
-  // in this shell (see ../(missing)/layout.tsx). So the shell checks for itself as well.
   if (auth.mode !== "off" && (await currentSession()) === null) redirect(LOGIN_PATH);
 
   const [cookieStore, headerList] = await Promise.all([cookies(), headers()]);
@@ -44,8 +35,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   );
   // Sign out appears only when sign-in is on; the sample project has no one to sign out.
   const showSignOut = auth.mode === "atlassian";
-  // An admin reads every board, and the top bar says so where it tells them apart: with ACCESS_MODE admin-list only
-  // (with everyone-admin, the default, everyone is one). auth/roles.ts decides.
   const admin = showSignOut && (await currentAdminBadge());
   // People level (an admin, or sign-in off) is offered the People page; the page and the route check again.
   const peopleLevel = (await currentAskLevel()) === "people";
@@ -67,7 +56,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             >
               <div className="mx-auto w-full max-w-[var(--content-max)]">
                 <PrintHeader />
-                {/* A board that has never synced (JO-17): every page that reads it offers its first sync instead. */}
+                {/* A board that has never synced: every page that reads it offers its first sync instead. */}
                 <BoardGate>{children}</BoardGate>
               </div>
             </main>
@@ -79,9 +68,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <ShortcutsDialog />
         <MobileNav showSignOut={showSignOut} admin={admin} />
         <KeyboardShortcuts />
-        {/* A rule settings save's re-check, followed to its end whichever page the reader goes to meanwhile (JO-15). */}
+        {/* A rule settings save's re-check, followed to its end whichever page the reader goes to meanwhile. */}
         <RecheckFollower />
-        {/* The board's sync, followed to its end and said once, however it was started (JO-18). */}
+        {/* The board's sync, followed to its end and said once, however it was started. */}
         <SyncFollower />
       </BoardPickProvider>
     </ShellProvider>

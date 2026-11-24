@@ -56,15 +56,7 @@ const HOUR = 60 * 60 * 1000;
 /** Why a board that has never synced does not open. */
 const NOT_SYNCED_YET = "Not synced yet: no Overview to open";
 
-/*
- * The Portfolio (JO-12): every board the reader may open, one row each, with
- * the Overview's own figures for it, so the two never disagree; and under it
- * the oldest open breaches across them. A row opens its board's Overview,
- * switching the board picker as the top bar does; a breach opens its ticket
- * on its board. The sort lives in the address, so Copy link shares the view.
- * Below 48rem of width the table becomes a card per board, with the sort
- * above them.
- */
+/* The Portfolio. */
 
 const sortParsers = {
   sort: parseAsStringLiteral(PORTFOLIO_SORTS),
@@ -87,11 +79,7 @@ function errorDetail(error: ApiError): string {
 
 /* -------------------------------------------------------------- cells --- */
 
-/**
- * The board: its name (or, on a card, the link that is its name), and under it its key and when it last synced,
- * plainly when that is more than a day ago (or never), in the warning ink with its mark. Open and in-progress work
- * go in the export; the row keeps to what an executive scans.
- */
+/** The board. */
 function BoardCell({ board, name }: { board: PortfolioBoard; name?: ReactNode }) {
   return (
     <span className="flex min-w-0 flex-col gap-0.5 py-0.5">
@@ -109,10 +97,7 @@ function BoardCell({ board, name }: { board: PortfolioBoard; name?: ReactNode })
   );
 }
 
-/**
- * Whether the board has an Overview to open: not before its first sync, when the service has no figures for it (its
- * Overview answers without a sync time), as the board picker offers it only once synced.
- */
+/** Whether the board has an Overview to open. */
 const opensOverview = hasFigures;
 
 /** A figure a board does not have yet (it has never synced): a dash, read out as what it means. */
@@ -132,10 +117,7 @@ function TrackedFrom({ board }: { board: PortfolioBoard }) {
   return <>{board.tracking_since ? formatLocalDayMonth(Date.parse(board.tracking_since), locale) : null}</>;
 }
 
-/**
- * When the board last synced: "synced 4 min ago"; "Stale, synced 2 d ago" once it is stale, by the top bar's own rule
- * on the reader's clock (the boards are read on it before they reach here, JO-14); "Never synced".
- */
+/** When the board last synced. */
 function SyncState({ board }: { board: PortfolioBoard }) {
   if (board.last_sync_at === null) {
     return (
@@ -168,10 +150,7 @@ function CountCell({ board, value, severity }: { board: PortfolioBoard; value: n
   );
 }
 
-/**
- * This week: the net change as the figure, and what it is made of under it. In the board's first tracked week
- * every finding is new only because tracking began, so it says that instead, as the Overview's tiles do.
- */
+/** This week. */
 function WeekCell({ board, now }: { board: PortfolioBoard; now: number }) {
   const locale = useFigureLocale();
   if (!hasFigures(board)) return <NoFigure />;
@@ -215,10 +194,7 @@ function TrendCell({ board, now, interactive = true, className }: { board: Portf
   );
 }
 
-/**
- * The active sprint: at risk, or no risk flagged, and its work with no estimate. "No active sprint" alone when there
- * is none; what cannot be measured says so, never a 0.
- */
+/** The active sprint. */
 function SprintCell({ board }: { board: PortfolioBoard }) {
   const locale = useFigureLocale();
   const unestimated = board.unestimated_in_active_sprint;
@@ -255,8 +231,6 @@ function TopRuleCell({ board }: { board: PortfolioBoard }) {
   if (!hasFigures(board)) return <NoFigure />;
   if (!rule) return <span className="text-ink-low">Nothing open</span>;
   return (
-    // The rule's title has up to two lines to itself, so a typical title reads whole; its id and open findings go
-    // under it.
     <span className="flex min-w-0 flex-col gap-0.5 py-0.5">
       <span className="line-clamp-2 text-ink [overflow-wrap:anywhere] whitespace-normal" title={rule.title}>
         {rule.title}
@@ -387,11 +361,7 @@ function Figure({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-/**
- * A board on a phone: its name and sync, the figures that matter, the trend, the sprint and the top rule. The
- * board's name is the card's link, its press area stretched over the whole card, so the link is named by the
- * words it shows and the card still opens from anywhere on it.
- */
+/** A board on a phone. */
 function BoardCard({ board, now }: { board: PortfolioBoard; now: number }) {
   const locale = useFigureLocale();
   const openable = opensOverview(board);
@@ -516,11 +486,7 @@ function AgeText({ ms }: { ms: number }) {
   );
 }
 
-/**
- * "2 findings": a ticket holding more than one open finding of the row's rule (R-FLOW-02 opens one for each
- * transition that skipped a stage), which the list shows as one row, dated from the oldest. A plain fact, so the
- * neutral badge, 16 px tall to sit inside the line without making the row taller than its neighbours.
- */
+/** "2 findings". */
 function FindingsCount({ count, issueKey }: { count: number; issueKey: string }) {
   const locale = useFigureLocale();
   return (
@@ -537,11 +503,7 @@ function FindingsCount({ count, issueKey }: { count: number; issueKey: string })
   );
 }
 
-/**
- * One of the oldest open breaches, one row for each ticket and rule: its ticket, on its board, opened with a click (the
- * board picked first), with how many open findings of the rule it holds when more than one. Its age is read on the
- * clock Findings reads "Open for" on (attentionAge): as at the last sync once the board's sync is stale.
- */
+/** One of the oldest open breaches, one row for each ticket and rule. */
 function AttentionRow({ item, board, syncedAt, readerNow }: { item: AttentionItem; board: string; syncedAt: string | null; readerNow: number | null }) {
   const age = attentionAge(item, syncedAt, readerNow);
   const href = `/issues/${encodeURIComponent(item.issue_key)}`;
@@ -595,10 +557,7 @@ function AttentionRow({ item, board, syncedAt, readerNow }: { item: AttentionIte
   );
 }
 
-/**
- * What an empty "Needs attention" says, true to the boards above it: none synced yet; no open breach anywhere; or
- * open breaches, but all on sprints, which have no ticket to open.
- */
+/** What an empty "Needs attention" says, true to the boards above it. */
 function NoAttention({ data, now }: { data: Portfolio | undefined; now: number }) {
   const locale = useFigureLocale();
   const totals = portfolioTotals(data?.boards ?? [], now);
@@ -693,11 +652,7 @@ function Attention({ data, now, readerNow }: { data: Portfolio | undefined; now:
 
 /* ------------------------------------------------------------- summary --- */
 
-/**
- * One sentence across every board: what is open, and what changed this week. A board with no figures yet is said
- * apart, never added as zeros; a board in its first tracked week is left out of the week's new and resolved, whose
- * every finding is new only because tracking began.
- */
+/** One sentence across every board. */
 function Summary({ data, now }: { data: Portfolio | undefined; now: number }) {
   const locale = useFigureLocale();
   if (!data) {
@@ -753,7 +708,7 @@ function Summary({ data, now }: { data: Portfolio | undefined; now: number }) {
 export function PortfolioView() {
   const { data: served, error, refetch, isFetching } = usePortfolio();
   const [{ sort, order }, setSort] = usePortfolioSort();
-  // The reader's clock, the top bar's: each board's staleness is read on it, by the top bar's rule (JO-14).
+  // The reader's clock, the top bar's: each board's staleness is read on it, by the top bar's rule.
   const readerNow = useNow();
   const data = useMemo(() => (served ? { ...served, boards: onReadersClock(served.boards, readerNow) } : undefined), [served, readerNow]);
   // The figures' own moment, which a board's first tracked week is read against (as the Overview reads its tiles').
@@ -799,7 +754,7 @@ export function PortfolioView() {
             <BoardCards boards={boards} sort={sort} order={order} onSort={setSort} now={now} />
           </div>
         </div>
-        {/* The boards in Jira not synced yet have no row (JO-17): counted here, with the way to sync one. */}
+        {/* The boards in Jira not synced yet have no row: counted here, with the way to sync one. */}
         <NotSyncedLine count={data?.boards_not_synced} synced={data?.boards.length ?? 0} />
       </div>
 

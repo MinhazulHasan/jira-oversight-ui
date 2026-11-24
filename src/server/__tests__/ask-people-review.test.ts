@@ -12,18 +12,6 @@ import { scorecards } from "../sample/scorecard";
 import { personIdFor } from "../sample/team";
 import { verify } from "../sample/verify";
 
-/*
- * The JO-11 review's findings on Ask at people level in sample mode, each with
- * the test that would have caught it (12 Nov 2026). The sample reads a
- * question as the service's catalogue path does (oversight/ask/router.py and
- * the backend's tests/test_ask_scorecard_review.py hold the same table): at
- * people level nothing about people is declined, personnel questions in any
- * common wording get the scorecard and the decision sentence, a measure named
- * is that measure's order, finished work and work in progress put everyone in
- * order by the count, a first name one person has is that person, and the
- * help never says the Jira data cannot answer.
- */
-
 const dataset = buildDataset(Date.parse("2026-11-04T14:30:00Z"));
 const ADA = personIdFor("acc-01");
 const CARMEN = personIdFor("acc-03");
@@ -36,7 +24,7 @@ describe("Ask in sample mode answers every question about people from the figure
   it.each([
     ["Who closed the most tickets this month?", compare("done_in_period", 30)],
     ["Who finished the most work last quarter?", compare("done_in_period")],
-    // A count of now has no period (the JO-11 check: "by In progress now now", "last 90 days").
+    // A count of now has no period (the check: "by In progress now now", "last 90 days").
     ["Who has the most tickets in progress?", { tool: "oversight_people_compare", measure: "in_progress", days: undefined }],
     ["Whose tickets get stuck the most?", compare("stuck_now")],
     ["Who has the most reopened tickets?", compare("reopened")],
@@ -79,20 +67,18 @@ describe("Ask in sample mode answers every question about people from the figure
     expect(holder.plan.map((step) => step.tool)).toEqual(["oversight_ticket_assignee"]);
     const row = holder.facts[0].rows[0];
     expect(holder.answer).toBe(row.assignee_id ? `DEMO-12 (${String(row.status)}) is assigned to ${String(row.assignee)} now.` : `Nobody is assigned DEMO-12 (${String(row.status)}) now.`);
-    // The biggest backlog is the scorecard's open tickets, as one person's backlog is counted; who is on the board is
-    // everyone on it, members with no tickets too (the JO-11 check).
     const backlog = at("Who has the biggest backlog?");
     expect([backlog.outcome, backlog.plan[0].tool, backlog.plan[0].params.measure]).toEqual(["answered", "oversight_people_compare", "open_tickets"]);
-    // The work nobody holds after the ranking, never in it (JO-12, G5).
+    // The work nobody holds after the ranking, never in it.
     expect(backlog.answer).toMatch(/^Open tickets, most first: .+ \d+\. Unassigned: \d+ open tickets?\. The whole board: \d+\.$/);
     const board = at("Who is on this board?");
     expect([board.outcome, board.plan[0].tool]).toEqual(["answered", "oversight_board_people"]);
-    // Each name once (JO-12, G8).
+    // Each name once.
     expect(board.answer).toMatch(/^\d+ people are on this board: .+?(, and \d+ members? who holds? none of its tickets: .+)?\.$/);
   });
 
   it("keeps the help for what no figure answers per person where comparing people is off, in words that never blame the data", () => {
-    // With comparing on, the overall comparison answers them, said so first (JO-12, G3/G4: tests in ask-jo11-leftovers).
+    // With comparing on, the overall comparison answers them, said so first.
     for (const question of ["Show cycle time per person", "Who writes the most comments?"]) {
       const response = at(question, [], "off");
       expect([response.outcome, response.message, response.suggestions], question).toEqual(["not_understood", PEOPLE_HELP_MESSAGE, PEOPLE_SUGGESTIONS]);

@@ -6,11 +6,6 @@ import { renderKit } from "@/components/ui/__tests__/kit";
 
 import { NotSyncedLine } from "../not-synced-line";
 
-/*
- * The Portfolio lists the synced boards only (JO-17); the boards in Jira not
- * synced yet are counted in one line, which points at the board picker.
- */
-
 /** Says whether the picker was asked to open, as the top bar's (or the navigation sheet's) picker would take it up. */
 function Picker() {
   return <p data-testid="picker">{useBoardPickerRequested() ? "asked" : "not asked"}</p>;

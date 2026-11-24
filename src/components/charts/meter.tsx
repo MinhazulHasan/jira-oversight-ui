@@ -35,18 +35,9 @@ export interface MeterProps {
   total: number;
   /** What the total counts, for "192 of 291 issues". */
   noun?: string;
-  /**
-   * Colour by what the share means. Neutral unless a rule judges it: a
-   * coverage below its agreed floor can be warning.
-   */
   tone?: MeterTone;
   /** A target share (0 to 1), drawn as a tick on the track. */
   target?: number;
-  /**
-   * False when Jira holds no evidence for this at all: the track is hatched
-   * and the figure says "Not measurable". That gap is a finding for the
-   * reader, so it reads calmly, not as an error.
-   */
   measurable?: boolean;
   /** Why it is not measurable: "No review status in the workflow". */
   reason?: string;
@@ -55,11 +46,6 @@ export interface MeterProps {
   className?: string;
 }
 
-/**
- * One share against the whole: coverage of estimates, of logged time, of
- * process evidence. The share leads, n of N follows, and the bar fills a
- * light track of its own hue.
- */
 export function Meter({
   label,
   value,

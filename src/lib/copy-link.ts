@@ -1,9 +1,5 @@
 import { notify } from "./notify";
 
-/**
- * Copy the address of the current view. The URL holds every filter, the sort
- * and the open drawer, so the link reopens exactly what the reader sees.
- */
 export async function copyCurrentLink(): Promise<void> {
   try {
     await navigator.clipboard.writeText(window.location.href);

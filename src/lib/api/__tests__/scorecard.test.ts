@@ -16,13 +16,6 @@ import {
   type PeopleScorecard,
 } from "../schemas";
 
-/*
- * GET /people/scorecard's contract (4.15) as the schema holds it: the
- * eleven measures in order, keys exact, each value's arithmetic, a measure
- * the board cannot show never holding a figure, too few tickets never
- * compared, and comparison off never naming more than one person.
- */
-
 const everyone = everyoneJson as unknown as PeopleScorecard;
 const clone = (): PeopleScorecard => structuredClone(everyone);
 const issues = (body: unknown) => {

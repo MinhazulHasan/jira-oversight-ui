@@ -5,11 +5,7 @@ import { keepBackspaceFromBrowser } from "../contained-events";
 import { Sheet } from "../sheet";
 import { renderKit } from "./kit";
 
-/*
- * Backspace in a layer that holds no field of its own (a person card): WebKit
- * takes it for Back, so the layer keeps it from the browser. A field inside
- * keeps its Backspace, and a key with a modifier is left alone.
- */
+/* Backspace in a layer that holds no field of its own (a person card). */
 
 function Layer() {
   return (

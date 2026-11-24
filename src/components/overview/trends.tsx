@@ -102,7 +102,7 @@ function TrendChart({ metric, card }: { metric: TrendKey; card?: TrendCard }) {
     ? {
         value: EFFORT_RATIO_BREACH,
         label: `Breach at ${formatRatio(EFFORT_RATIO_BREACH, { locale })} (R-EFF-01)`,
-        // On a phone's narrow plot one line is crossed by the data wherever it stands (JO-14); two lines are not.
+        // On a phone's narrow plot one line is crossed by the data wherever it stands; two lines are not.
         lines: [`Breach at ${formatRatio(EFFORT_RATIO_BREACH, { locale })}`, "(R-EFF-01)"],
         tone: "breach",
       }
@@ -143,11 +143,6 @@ function TrendChart({ metric, card }: { metric: TrendKey; card?: TrendCard }) {
   );
 }
 
-/**
- * Which way the process is moving: four weekly figures over twelve weeks,
- * each with its change since last week judged by which way is better, and
- * the effort ratio against the line where R-EFF-01 breaches.
- */
 export function Trends({ data, className }: { data?: Overview; className?: string }) {
   // Nothing finished in twelve weeks (a board just synced, a small one): one line, not four empty charts (SQA).
   const none = data !== undefined && TREND_KEYS.every((metric) => data.trend_cards[metric].points.every((point) => point.value === null));

@@ -3,15 +3,6 @@ import { expect, test, type APIRequestContext, type Locator, type Page } from "@
 
 import { expectQuestion, questionBox, questionText } from "./question";
 
-/*
- * Asking about people with @ (the product owner's decision of 11 Nov 2026),
- * end to end on the sample server. Sign-in is off there, so Ask answers at
- * people level, as it does for an admin (the sign-in suite holds a user to
- * team level). The people come from the API, never copied here: the sample's
- * fictional people, two of them with an abstract picture, and the board's
- * three members who hold none of its tickets (JO-10).
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 interface Person {
@@ -69,8 +60,6 @@ function watchAsks(page: Page): unknown[] {
 
 async function shellReady(page: Page) {
   await expect(page.getByRole("banner").getByRole("button", { name: /Sample data/ })).toBeVisible();
-  // The sync time is drawn once the page is live (it reads the viewer's clock): typing waits for it, or hydration
-  // could take back what was typed into the server's markup.
   await expect(page.getByRole("banner").locator("[data-sync-now]").filter({ hasText: / ago/ })).toBeVisible();
 }
 
@@ -156,8 +145,6 @@ for (const colorScheme of ["light", "dark"] as const) {
       await expect(answer(page, question)).toBeVisible();
       expect(asks).toEqual([{ question, mentions: [lead.id] }]);
       await expect(page).toHaveURL(new RegExp(`[?&]m=${lead.id}(&|$)`));
-      // The answer names them, marked: their picture and their name, which opens their card (JO-13), as a mention
-      // does in Jira; the card leads on to their open findings.
       const mark = answer(page, question).locator("[data-answer-prose]").locator(`[data-person-mention="${lead.id}"]`).first();
       await expect(mark).toHaveText(lead.name);
       await expect(mark).toHaveAttribute("aria-haspopup", "dialog");
@@ -172,7 +159,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     });
 
     test("@ lists everyone on the board in two groups, says when it scrolls, and a member with no tickets gets one marked sentence", async ({ page }) => {
-      // The list, its scrolling, axe and two answers: 20 to 23 s alone in WebKit, past 30 s under load (the JO-12 check).
+      // The list, its scrolling, axe and two answers: 20 to 23 s alone in WebKit, past 30 s under load.
       test.slow();
       const problems = watchConsole(page);
       const asks = watchAsks(page);
@@ -206,8 +193,6 @@ for (const colorScheme of ["light", "dark"] as const) {
         }, where);
       expect(await fade("::after")).toEqual({ opacity: "1", transition: "none" });
       expect(await fade("::before")).toEqual({ opacity: "0", transition: "none" });
-      // The clipped edge cuts a row in half, never the gap between the groups: with every holder on show, the
-      // "No tickets" heading is seen whole, and half its first row says there is more.
       const cut = await list(page).evaluate((element) => {
         const bottom = element.getBoundingClientRect().bottom;
         const second = element.querySelectorAll('[role="group"]')[1];
@@ -250,7 +235,7 @@ for (const colorScheme of ["light", "dark"] as const) {
       await expect(prose).toHaveText(`${noor.name} has no tickets on this board.`);
       const mark = prose.locator(`[data-person-mention="${noor.id}"]`);
       await expect(mark).toHaveText(noor.name);
-      // The same pill, opening their card (JO-13), which says they hold no tickets here; no link to an empty Findings.
+      // The same pill, opening their card, which says they hold no tickets here; no link to an empty Findings.
       await expect(mark).toHaveAttribute("aria-haspopup", "dialog");
       await expect(prose.getByRole("link")).toHaveCount(0);
       await expect(answer(page, question).locator("footer")).not.toContainText("scripted");
@@ -375,8 +360,6 @@ test("↑ brings the last question back with its chip, and so does its address",
   await expectQuestion(field(page), question);
   await expect(field(page).locator(`[data-chip][data-mentioned="${lead.id}"]`)).toBeVisible();
 
-  // The address holds the question and the id. Opened in a new tab, with the service failing so it stays in the box:
-  // the chip is rebuilt from the two, and Try again asks about the same person.
   const fresh = await context.newPage();
   await fresh.clock.setFixedTime(new Date("2026-11-04T14:32:00Z"));
   await fresh.route("**/api/oversight/ask", (route) =>
@@ -538,10 +521,6 @@ test("on a 390 px phone the list fits, a tap chooses, and nothing scrolls sidewa
   expect(await axeBlocking(page)).toEqual([]);
 });
 
-/**
- * The hint line under the question, as it is laid out: one line, nothing past its edge, and the hints it shows: those
- * on its first row (a hint with no room wraps whole onto a second row the line never shows).
- */
 async function hintLine(page: Page) {
   return page.locator("form[aria-label='Ask a question'] [data-hint-line]").evaluate((line) => {
     const holder = line.parentElement!;
@@ -558,7 +537,7 @@ async function hintLine(page: Page) {
   });
 }
 
-// One test per width (the JO-12 check): the three in one test ran past the 30 s limit under a full run's load.
+// One test per width: the three in one test ran past the 30 s limit under a full run's load.
 for (const width of [1280, 1440, 1512]) {
   test(`the hint line stays one line at ${width} px: a hint steps aside whole, never word by word, and @ stays (the JO-09 item, D)`, async ({ page }) => {
     // An answer and 420 characters typed in WebKit: about 9 s alone, and well past that under a full run's load.
@@ -568,8 +547,6 @@ for (const width of [1280, 1440, 1512]) {
     await page.goto("/ask");
     await shellReady(page);
     for (const moment of ["before an answer", "after one", "with the counter"]) {
-      // The box is focused rather than clicked: this is about the hint line, and under load WebKit's frames can come too
-      // slowly for a click's wait for a still box (the box itself never moves: measured over 180 frames).
       if (moment === "after one") {
         await field(page).focus();
         await page.keyboard.type("Where do tickets get stuck most?");
@@ -717,8 +694,6 @@ test("a question that judges someone is answered with figures, never refused (JO
   await expect(answer(page, question)).toBeVisible();
   await expect(answer(page, question).getByText("I can show facts about someone's tickets and findings, but not judge their performance.")).toHaveCount(0);
   if (comparison === "on") {
-    // Everyone by how closely they follow the process, next to the board, the slowest asked for: further from the
-    // process first, the fewest measures closer (the JO-14 review), never called the slowest. The admin decides.
     await expect(answer(page, question).getByText(/^Measures closer to the process than the board, last 90.*days, fewest first: /)).toBeVisible();
   } else {
     await expect(answer(page, question).getByText("Comparing people side by side is turned off. Ask about one person at a time instead.", { exact: true })).toBeVisible();

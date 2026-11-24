@@ -27,11 +27,6 @@ export interface TooltipProps {
   className?: string;
 }
 
-/**
- * A short label on hover and keyboard focus (Radix Tooltip, so it opens on
- * focus, closes on Escape and is announced as the trigger's description).
- * Every icon-only control in the product carries one.
- */
 export function Tooltip({
   content,
   shortcut,

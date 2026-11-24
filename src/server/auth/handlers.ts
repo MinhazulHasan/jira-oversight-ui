@@ -34,17 +34,7 @@ import { logFailure, logRejection } from "./log";
 import { adminAtSignIn, asciiLower, emailHash } from "./roles";
 import { randomToken } from "./seal";
 
-/*
- * The three sign-in routes under /api/auth (thin route files call these):
- *
- *   GET  /api/auth/login?next=/path  remember a random state, then off to Atlassian
- *   GET  /api/auth/callback          back from Atlassian: check, judge, start the session
- *   POST /api/auth/logout            end the session
- *
- * Every redirect is absolute from APP_URL, never from the request's own Host
- * or X-Forwarded-* headers. When sign-in is off or not set up there is no
- * APP_URL to trust, so those few redirects are relative instead.
- */
+/** The three sign-in routes under /api/auth (thin route files call these): */
 
 /** Far longer than any code Atlassian issues; anything longer is not one. */
 const MAX_CODE_LENGTH = 4096;
@@ -85,12 +75,7 @@ export async function startSignIn(request: NextRequest): Promise<Response> {
 
 /* --------------------------------------------------------------- callback -- */
 
-/**
- * Where a sign-in lands. Back where the reader was going, as always; but a
- * sign-in that was going nowhere in particular (the dashboard's root) takes
- * an admin to the Portfolio, every board at once, their home (JO-12). Anyone
- * else lands on the Overview, as before.
- */
+/** Where a sign-in lands. Back where the reader was going, as always; but a */
 export function landingFor(next: string, admin: boolean): string {
   return admin && next === "/" ? PORTFOLIO_PATH : next;
 }
@@ -136,8 +121,6 @@ async function completeSignIn(request: NextRequest, config: AtlassianAuthConfig)
   const code = query.get("code");
   if (!code || code.length > MAX_CODE_LENGTH) return failed("atlassian", "callback");
 
-  // The access token is used for the calls below (who signed in, which sites, which boards) and dropped with this
-  // request: never stored, logged or sent on.
   const token = await exchangeCode(config, code);
   if (!token.ok) return failed(token.reason, token.step, token.status);
   const [profile, resources] = await Promise.all([
@@ -158,16 +141,11 @@ async function completeSignIn(request: NextRequest, config: AtlassianAuthConfig)
   const verdict = judge(profile.profile, resources.resources, config);
   if (!verdict.ok) return refuse(verdict.reason, verdict.domain);
 
-  // An admin (everyone, unless ACCESS_MODE is admin-list: then ADMIN_EMAILS) reads every board; anyone else needs at
-  // least one board their Jira opens. roles.ts decides. With admin-list only an address Atlassian says is verified
-  // can be an admin's: an unverified one is kept as a hash that can match no address on the list.
   const email = asciiLower(profile.profile.email ?? "");
   const verified = profile.profile.emailVerified === true;
   const admin = adminAtSignIn(email, verified, config);
   const hashed = verified ? email : `unverified:${profile.profile.accountId}`;
 
-  // The boards this person's Jira account can open, of the dashboard's. Worked out at every sign-in, so a
-  // change of permissions in Jira applies from the next one.
   const served = await boardsServed();
   if (served === null) return failed("service", "boards");
   const access = await fetchBoardAccess(config, token.accessToken, verdict.cloudId, served);
@@ -175,8 +153,6 @@ async function completeSignIn(request: NextRequest, config: AtlassianAuthConfig)
   const boards = served.filter((key) => access.keys.has(key)).slice(0, MAX_SESSION_BOARDS);
   if (boards.length === 0 && !admin) return refuse("boards", verdict.domain);
 
-  // Sealed for the configured site as well (cookies.ts): pointing the dashboard at another site signs everyone out.
-  // The display name goes with it, for the access log to name this person's reads by (viewer.ts); never the address.
   const session = await sealSession(
     {
       sub: profile.profile.accountId,
@@ -190,8 +166,6 @@ async function completeSignIn(request: NextRequest, config: AtlassianAuthConfig)
   );
   const response = seeOther(landingFor(flow.next, admin), config.appOrigin);
   response.cookies.set(sessionCookie(session, config.secureCookies));
-  // A board picked in this browser that this person cannot open (someone else's pick, or a permission since
-  // taken away) is forgotten, so the dashboard opens on one of theirs.
   const picked = boardFromCookie(request.cookies.get(BOARD_COOKIE)?.value);
   if (!admin && picked !== null && !boards.includes(picked)) {
     response.cookies.set({ name: BOARD_COOKIE, value: "", path: "/", sameSite: "lax", maxAge: 0, expires: new Date(0) });

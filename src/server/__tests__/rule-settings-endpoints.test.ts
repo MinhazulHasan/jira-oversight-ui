@@ -5,12 +5,6 @@ vi.mock("server-only", () => ({}));
 
 import { resolveGet, resolvePost, RULE_SETTINGS_REFUSED, ruleSettingsPost, settingsProblemPath, type Resolution } from "../endpoints";
 
-/*
- * Rule settings (JO-15) in the allowlist: one GET and two POSTs, nothing taken
- * from the browser's address, and a body checked against the contract before
- * anything is forwarded, then rebuilt from what was checked.
- */
-
 const none = new URLSearchParams();
 
 function accepted(resolution: Resolution) {

@@ -9,11 +9,7 @@ import { notify } from "@/lib/notify";
 import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
 
-/**
- * Where the figures come from. Sample data is always labelled as sample data,
- * in the top bar, at the foot of the rail and on paper: nobody should ever
- * mistake the DEMO project for real work.
- */
+/** Where the figures come from. */
 
 export function sourceLabel(health: Health): string {
   return health.data_mode === "sample" ? "Sample data" : `Live · ${health.projects.join(", ")}`;
@@ -53,7 +49,7 @@ export function DataSourcePill({ className }: { className?: string }) {
     );
   }
 
-  // A board that has never synced, on a service with none synced yet (JO-17): reachable, and nothing to say yet.
+  // A board that has never synced, on a service with none synced yet: reachable, and nothing to say yet.
   if (health.isError && health.error.code === "board_not_synced") {
     return (
       <span
@@ -130,8 +126,6 @@ export function DataSourcePill({ className }: { className?: string }) {
 function DataSourceDetails({ health }: { health: Health }) {
   const hydrated = useHydrated();
   const sample = health.data_mode === "sample";
-  // No time zone is named on screen: every time here is in the reader's own. "Board", as the rest of the dashboard
-  // says, and nothing a developer reads, such as the API's version (SQA).
   const rows: [string, string][] = [
     ["Board", health.projects.join(", ")],
     ["Access", health.read_only ? "Read-only" : "Read and write"],
@@ -179,7 +173,7 @@ export function DataSourceSummary({ collapsed }: { collapsed: boolean }) {
     );
   }
 
-  // A board that has never synced, on a service with none synced yet (JO-17): reachable, and nothing more to say.
+  // A board that has never synced, on a service with none synced yet: reachable, and nothing more to say.
   if (health.isError && health.error.code === "board_not_synced") {
     return collapsed ? (
       <span className="mx-auto flex size-9 items-center justify-center">

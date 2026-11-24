@@ -24,12 +24,6 @@ import {
 import { traceRow } from "./narrative";
 import { FindingsLink, IssueKeys, candidateAnchor, useFindingsTarget } from "./trace-links";
 
-/*
- * The ranked problems the briefing was written from: what code found, in the
- * order it scored them. Each shows what it counts and which way it is moving,
- * and the figures the sentences were allowed to quote, formatted by kind.
- */
-
 function SeverityLabel({ severity }: { severity: CandidateSeverity }) {
   if (severity === "info") {
     return (

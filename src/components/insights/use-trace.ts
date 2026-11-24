@@ -5,20 +5,6 @@ import { useEffect, useState, type RefObject } from "react";
 
 import { isTypingTarget } from "@/lib/shortcuts";
 
-/*
- * The briefing's rows: each sentence and each candidate. Rows carry data
- * attributes, and the briefing listens once at its root:
- *
- * - data-trace-kind / data-trace-id: what is being looked at, by pointer or
- *   by keyboard focus, so a sentence lights the candidates it was written
- *   from and a candidate lights the sentences that quote it.
- * - data-row-href: where the row leads. A click anywhere on the row goes
- *   there, unless it lands on a link or control of its own, or the reader is
- *   selecting text. The same destination is a real link inside the row
- *   (data-row-primary), so keyboards and screen readers get it natively; j
- *   and k move between those links.
- */
-
 export type TraceKind = "sentence" | "candidate";
 export type TraceTarget = { kind: TraceKind; id: string } | null;
 

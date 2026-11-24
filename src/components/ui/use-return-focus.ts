@@ -7,17 +7,7 @@ export interface ReturnFocus {
   onCloseAutoFocus: (event: Event) => void;
 }
 
-/**
- * Gives the focus back as a dialog closes to the control that held it as the
- * dialog opened. Radix does that only for a Dialog.Trigger of its own; a dialog
- * opened by a page's state (a review, a confirmation, a question before
- * leaving) has none, so its focus fell to the page's body and the next Tab
- * began again at the top (WCAG 2.4.3). Where that control is gone by the time
- * the dialog closes (a bar a save took away, an Undo whose change is no longer
- * the latest), `fallback` names the one that stands for it. A dialog's own
- * close handler that prevents the default has put the focus somewhere itself,
- * and is left to it.
- */
+/** Gives the focus back as a dialog closes to the control that held it as the dialog opened. */
 export function useReturnFocus(fallback?: () => HTMLElement | null | undefined): ReturnFocus {
   const opener = useRef<HTMLElement | null>(null);
   return {

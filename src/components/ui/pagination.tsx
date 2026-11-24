@@ -24,10 +24,7 @@ export function pageCount(total: number, pageSize: number): number {
   return Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
 }
 
-/**
- * Where the reader is in a long list ("26–50 of 214 findings") and the way
- * to the next page. The page belongs in the URL, so the caller owns it.
- */
+/** Where the reader is in a long list ("26–50 of 214 findings") and the way to the next page. */
 export function Pagination({ page, pageSize, total, onPageChange, noun = "rows", className }: PaginationProps) {
   const locale = useFigureLocale();
   const pages = pageCount(total, pageSize);

@@ -3,12 +3,6 @@ import { expect, test, type APIRequestContext, type Page } from "@playwright/tes
 
 import { expectQuestion, questionBox } from "./question";
 
-/*
- * The Ask page against the sample server: a question asked, its figures tied
- * to their rows, the keyboard model, each of the five outcomes in its own calm
- * state, the session rail, the URL, and axe in both themes throughout.
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const EPICS = "Which epics have the most open breaches?";
 const STUCK = "Where do tickets get stuck most?";
@@ -40,8 +34,6 @@ function countAsks(page: Page): { count: number } {
 
 async function shellReady(page: Page) {
   await expect(page.getByRole("banner").getByRole("button", { name: /Sample data/ })).toBeVisible();
-  // The sync time is drawn once the page is live (it reads the viewer's clock): typing waits for it, or hydration
-  // could take back what was typed into the server's markup.
   await expect(page.getByRole("banner").locator("[data-sync-now]").filter({ hasText: / ago/ })).toBeVisible();
 }
 
@@ -49,18 +41,9 @@ async function shellReady(page: Page) {
 const field = (page: Page) => questionBox(page);
 const answer = (page: Page, question: string) => page.getByRole("article", { name: question });
 const ledger = (page: Page) => page.getByRole("complementary", { name: "Sources" });
-/**
- * A cited value by its figure and marker: "57, citation 6". The ", citation 6"
- * is visually hidden, so it is laid out apart from the figure and its name
- * reads "57 , citation 6" in a browser.
- */
 const value = (page: Page, figure: string, marker: number) =>
   page.getByRole("button", { name: new RegExp(`^${figure} ?, citation ${marker}$`) });
 
-/**
- * Put a question in the box as a reader would: focus first, then the words. (WebKit can drop a select-all and
- * insert made in the same frame as the focus the box is still settling, which a reader typing never does.)
- */
 async function fillQuestion(page: Page, question: string) {
   await field(page).click();
   await field(page).fill(question);
@@ -266,7 +249,7 @@ test("a failed question is said inline, and Try again asks it again", async ({ p
   await expect(answer(page, EPICS)).toBeVisible();
 });
 
-/* ---------------------------------------------- guardrails (JO-12) -- */
+/* ---------------------------------------------- guardrails -- */
 
 test("over the service's limit on questions, the box keeps the question and says when to try again; the answer before stays", async ({ page }) => {
   const asks = countAsks(page);
@@ -317,17 +300,7 @@ for (const colorScheme of ["light", "dark"] as const) {
   });
 }
 
-/* ------------------------------------------------- people level (JO-11) -- */
-
-/*
- * At people level (the sample runs with sign-in off, as an admin would see
- * it) nothing about people is declined: a question that evaluates someone is
- * answered with figures next to the whole board's, drawn compact under the
- * words, with the caveat last; a personnel question adds that the decision is
- * the admin's. Where an organisation has turned comparison off, comparing
- * people is the one thing refused, in the contract's words. People in the
- * facts and the plan show by name and picture, never by id.
- */
+/* ------------------------------------------------- people level -- */
 
 interface DirectoryEntry {
   person: { id: string; name: string };
@@ -385,9 +358,6 @@ test("a personnel question is answered with the figures, then the decision is le
   await expect(decision).toBeVisible();
   await expect(figures).toBeVisible();
   await expect(caveat).toBeVisible();
-  // Words, then the figures, then "The figures are above", then the caveat last (the JO-11 review). Where each stands
-  // is read in the page in one go, and again until it holds: a box measured element by element can come back empty in
-  // WebKit while the answer settles (the JO-11 check: boundingBox() was null there).
   await expect
     .poll(() =>
       answer(page, question).evaluate((article) => {
@@ -432,8 +402,6 @@ test("several people side by side, or, with comparison off, the sentence that as
   if (await comparisonOn(request)) {
     const compact = article.getByRole("table", { name: /Ada Brooks, Carmen Ruiz, last 90 days/ });
     await expect(compact.getByRole("columnheader")).toHaveText(["Measure", "Ada Brooks", "Carmen Ruiz", "Whole board"]);
-    // At 1440 px the whole board's figures stay in view beside both people (the JO-11 review: they were cut off), held
-    // at the frame's right edge whenever the people's columns scroll.
     const edges = await compact.evaluate((table) => {
       const right = (name: string) => [...table.querySelectorAll("thead th")].find((cell) => cell.textContent?.includes(name))!.getBoundingClientRect();
       return { frame: table.closest(".jo-scroller")!.getBoundingClientRect().right, board: right("Whole board"), carmen: right("Carmen Ruiz") };
@@ -471,12 +439,10 @@ test("two people asked about one measure: that measure for them beside the board
 });
 
 test("the most and the fewest: everyone in the order asked, said in the first sentence, the table, the plan and the People page's link (JO-14)", async ({ page, request }) => {
-  // Regression (the JO-12 check): "Who has the most reopened tickets?" listed the fewest first.
+  // Regression: "Who has the most reopened tickets?" listed the fewest first.
   const cases = [
     { question: "Who has the most reopened tickets?", opening: /^Reopened after Done, last 90.*days, highest first: /, caption: "Reopened after Done, last 90 days: everyone, highest first", said: "highest first", href: "/people?sort=reopened&order=desc" },
     { question: "Who has the fewest tickets stuck in a status?", opening: /^Open tickets stuck in a status, lowest first: /, caption: "Open tickets stuck in a status, last 90 days: everyone, lowest first", said: "lowest first", href: "/people?sort=stuck_now" },
-    // A count: "fewest first" in the plan too, as the answer and its table say it (the JO-14 review: the plan line
-    // read "lowest first" under "Open tickets, fewest first").
     { question: "Who has the smallest backlog?", opening: /^Open tickets, fewest first: /, caption: "Open tickets: everyone, fewest first", said: "fewest first", notSaid: "lowest first", href: "/people?sort=open_tickets&order=asc" },
   ];
   for (const { question, opening, caption, said, href, notSaid } of cases as { question: string; opening: RegExp; caption: string; said: string; href: string; notSaid?: string }[]) {
@@ -570,7 +536,7 @@ test.describe("on a phone", () => {
     test(`the comparison never moves the page sideways, and one person's scorecard fits its frame, the whole name shown (${colorScheme})`, async ({ page, request }) => {
       await page.emulateMedia({ colorScheme });
       if (await comparisonOn(request)) {
-        // The JO-11 check: a visually hidden count in the overall table widened the page by 73 px.
+        // a visually hidden count in the overall table widened the page by 73 px.
         const everyone = "Who is best on the board? Rank the others.";
         await askAbout(page, everyone);
         await expect(answer(page, everyone).locator("[data-compact-comparison]")).toBeVisible();

@@ -14,13 +14,6 @@ import { figureText, firstOrder, markOf, measureLink, orderLabel, sortPeople, st
 import { PeopleView } from "../people-view";
 import { Scorecard, ScorecardSkeleton } from "../scorecard";
 
-/*
- * The People page's parts against the documented sample responses: the
- * figures in words, the marks (neutral, never a verdict), the order the
- * everyone table sorts in (too few tickets always last), the scorecard in
- * every state, and the page with comparison on and off.
- */
-
 const everyone = peopleScorecardSchema.parse(everyoneJson);
 const onePerson = peopleScorecardSchema.parse(personJson);
 const off = peopleScorecardSchema.parse(offJson);
@@ -78,8 +71,6 @@ describe("the figures in words", () => {
     expect(measureLink(measure("in_progress"), carmen)?.href).toBe(`/ask?q=What+is+%40Carmen+Ruiz+working+on%3F&m=${carmen.id}`);
     // Done in the period opens Ask's list of exactly those tickets, over the scorecard's own period.
     expect(measureLink(measure("done_in_period"), carmen, 30)?.href).toBe(`/ask?q=What+did+%40Carmen+Ruiz+finish+in+the+last+30+days%3F&m=${carmen.id}`);
-    // A list wider than its figure says so in its words: every finding, not the figure's own.
-    // The link opens more than the figure counts (findings on done tickets too), and says so (G10).
     expect(measureLink(measure("open_findings_per_10"), carmen)?.label).toBe("Open findings on all their tickets");
     expect(measureLink(measure("estimated_before_start"), carmen)?.label).toBe("All findings");
     expect(measureLink(measure("estimated_before_start"), carmen, 30)?.description).toMatch(/from any time; this figure counts the last 30 days$/);
@@ -132,7 +123,7 @@ describe("the scorecard", () => {
     const rows = within(table).getAllByRole("row").slice(1);
     expect(rows.map((candidate) => candidate.getAttribute("data-measure"))).toEqual([
       ...everyone.measures.filter((candidate) => candidate.measurable).map((candidate) => candidate.key),
-      // Skipped stages are measured on DEMO, as the rules engine measures them (JO-12, G11); code review is not.
+      // Skipped stages are measured on DEMO, as the rules engine measures them; code review is not.
       "code_review",
     ]);
     const notMeasurable = rows.at(-1)!;

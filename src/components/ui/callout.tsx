@@ -33,15 +33,7 @@ export interface CalloutProps {
   className?: string;
 }
 
-/**
- * A short passage set apart from the page.
- *
- * - info: context the reader should have (how a figure is counted).
- * - not-measurable: the process step exists but Jira holds no evidence for
- *   it. It carries the hatch, calmly: for James that gap is a finding in
- *   itself, not a fault.
- * - warn: something to keep in mind before trusting a figure (stale data).
- */
+/** A short passage set apart from the page. */
 export function Callout({ tone = "info", label, title, children, action, className }: CalloutProps) {
   return (
     <aside className={cn(callout({ tone }), className)}>

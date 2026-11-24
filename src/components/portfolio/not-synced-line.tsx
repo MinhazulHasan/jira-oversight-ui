@@ -4,13 +4,7 @@ import { requestBoardPicker } from "@/components/shell/board-switcher";
 import { useFigureLocale } from "@/components/ui/use-figures";
 import { formatCount } from "@/lib/format";
 
-/**
- * The Portfolio's line about the boards not synced yet (JO-17): it lists the
- * synced boards only, so the rest are counted here, "2 more boards in Jira
- * aren't synced yet.", with the way to them: the board picker, where each can
- * be picked and synced (on a phone, in the navigation sheet, which opens for
- * it). Nothing while every board has synced.
- */
+/** The Portfolio's line about the boards not synced yet. */
 export function NotSyncedLine({ count, synced }: { count: number | undefined; synced: number }) {
   const locale = useFigureLocale();
   if (!count) return null;

@@ -5,12 +5,7 @@ import type { FactColumnKind, FactSet, PlanStep } from "@/lib/api/schemas";
 
 import { KEY, NUM, displayForms, fixed, verify, type Check } from "../sample/verify";
 
-/*
- * The validator is a port of the backend's oversight/ask/validate.py. These
- * are the backend's own cases (tests/test_validate.py) with DEMO keys, so the
- * port is held to the original: a sample answer passes exactly when a live
- * one would.
- */
+/** The validator is a port of the backend's oversight/ask/validate.py. These */
 
 function facts(
   ref: string,
@@ -258,13 +253,6 @@ describe("the validator", () => {
   });
 });
 
-/*
- * Found by the product owner on 13 Nov 2026: asked "Who has the most reopened
- * tickets?", the answer's table tied a 3 in one person's row to the first row
- * of the facts that holds a 3, someone else's. The backend's own cases
- * (tests/test_validate.py), so the sample binds as a live answer binds.
- * Fictional people throughout.
- */
 describe("binding each figure to the place its context points at", () => {
   const [ADA, FINN, CLEO, ELODIE] = ["p00000000000a", "p00000000000b", "p00000000000c", "p00000000000d"];
   const BOARD = facts(

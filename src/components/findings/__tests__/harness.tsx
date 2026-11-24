@@ -10,12 +10,6 @@ import findingsSample from "../../../../docs/sample-responses/findings.json";
 import rulesSample from "../../../../docs/sample-responses/rules.json";
 import { FindingsView } from "../findings-view";
 
-/*
- * The Findings view against the real sample responses (docs/sample-responses),
- * served through a stubbed fetch so the API client parses them exactly as it
- * does in the browser; the URL lives in nuqs's testing adapter.
- */
-
 export const SAMPLE = { findings: findingsSample, finding: findingSample, sprint: sprintSample, rules: rulesSample };
 
 /** DEMO-1098: a breach that W-EST-01 foreshadowed, second on the first page. */

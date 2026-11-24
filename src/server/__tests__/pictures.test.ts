@@ -12,12 +12,7 @@ import { boardPeople, boardPicture, directoryPeople } from "../sample/people";
 import { crc32, pictureOf } from "../sample/pictures";
 import { MEMBERS, personIdFor, TEAM } from "../sample/team";
 
-/*
- * The sample's two pictures are abstract patterns drawn in code, and must be
- * real PNGs a browser shows: the signature, a well-formed header, every
- * chunk's CRC, and image data that inflates to exactly the rows the header
- * promises. And what the dashboard passes on as a picture must be one.
- */
+/** The sample's two pictures are abstract patterns drawn in code, and must be */
 
 const dataset = buildDataset(Date.parse("2026-11-04T14:30:00Z"));
 
@@ -82,7 +77,7 @@ describe("the sample's pictures", () => {
 
   it("are served only for someone on the board: assigned a ticket now, or a member", () => {
     expect(boardPeople(dataset).map((person) => person.name)).toContain("Carmen Ruiz");
-    // The members with no tickets are on the board too (JO-10); none of them has a picture, so none is served.
+    // The members with no tickets are on the board too; none of them has a picture, so none is served.
     const members = MEMBERS.map((member) => personIdFor(member.accountId));
     expect(directoryPeople(dataset).filter((person) => members.includes(person.id)).map((person) => person.avatar)).toEqual([null, null, null]);
     for (const id of members) expect(boardPicture(dataset, id)).toBeNull();

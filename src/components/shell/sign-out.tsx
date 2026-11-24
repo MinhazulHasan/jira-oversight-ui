@@ -17,15 +17,7 @@ export const SIGNED_OUT_PATH = `${LOGIN_PATH}?signed_out=1`;
 /** The way off the page once the session has ended. An object, so a test can watch it. */
 export const leave = { to: (path: string) => window.location.assign(path) };
 
-/**
- * Ends the session: a POST to /api/auth/logout, which accepts only this
- * dashboard's own Origin. The site's Referrer-Policy (no-referrer) makes a
- * browser send a form's own POST with the Origin "null", which the route
- * refuses, so the POST goes as a same-origin fetch with a referrer policy of
- * its own, which carries the real Origin. The route answers with a 303 to
- * /login?signed_out=1; under redirect "manual" that arrives as an opaque
- * redirect, its cookie cleared all the same.
- */
+/** Ends the session. */
 async function endSession(): Promise<boolean> {
   try {
     const response = await fetch(SIGN_OUT_ROUTE, {
@@ -40,13 +32,7 @@ async function endSession(): Promise<boolean> {
   }
 }
 
-/*
- * Asking first (the product owner, 13 Nov 2026: a stray click must never sign
- * anyone out). Every way to sign out (the top bar, the navigation sheet, the
- * command palette) opens one confirmation, mounted once by the (app) layout
- * (SignOutConfirm). Its open state lives here, outside React, so any of them
- * can open it without a provider.
- */
+/* Asking first (the product owner, 13 Nov 2026. */
 let confirmOpen = false;
 const confirmListeners = new Set<() => void>();
 
@@ -70,11 +56,7 @@ export function requestSignOut(): void {
   setConfirmOpen(true);
 }
 
-/**
- * The focus after the reader stays: back on what opened the confirmation, or, when that is gone (the
- * command palette has closed) or never held the focus (a click in Safari), on the top bar's Sign out,
- * else on the page's main region. Never lost on the body.
- */
+/** The focus after the reader stays. */
 function returnFocus(): void {
   const visible = (element: HTMLElement | null): element is HTMLElement =>
     element !== null && element.isConnected && element.getClientRects().length > 0;
@@ -89,19 +71,12 @@ export function cancelSignOut(): void {
   setConfirmOpen(false);
 }
 
-/**
- * Sign out, from the top bar, the navigation sheet or the command palette:
- * asks first (SignOutConfirm). The session ends only from the confirmation.
- */
+/** Sign out, from the top bar, the navigation sheet or the command palette. */
 export function useSignOut(): () => void {
   return requestSignOut;
 }
 
-/**
- * Ends the session now: the confirmation's own action. Goes to the sign-in
- * page, which says so; or stays and says that the dashboard did not answer.
- * A second press while one is under way does nothing.
- */
+/** Ends the session now. */
 function useEndSessionNow(): { leaving: boolean; failed: boolean; signOut: () => void; reset: () => void } {
   const busy = useRef(false);
   const [leaving, setLeaving] = useState(false);
@@ -128,13 +103,7 @@ function useEndSessionNow(): { leaving: boolean; failed: boolean; signOut: () =>
   return { leaving, failed, signOut, reset };
 }
 
-/**
- * The sign-out confirmation: a small alert dialog, centred, that holds focus.
- * "Stay signed in" has the focus when it opens, so Enter, Escape or a second
- * stray click keep the session; only a deliberate press on "Sign out" ends it.
- * While the sign-out is under way it says so and cannot be dismissed; if the
- * dashboard does not answer, it stays open and says that too.
- */
+/** The sign-out confirmation. */
 export function SignOutConfirm() {
   const open = useSyncExternalStore(subscribeConfirm, () => confirmOpen, () => false);
   const { leaving, failed, signOut, reset } = useEndSessionNow();
@@ -196,14 +165,7 @@ export function SignOutConfirm() {
   );
 }
 
-/**
- * The Sign out button. A plain button, never a form and never a link: a
- * link could sign someone out from anywhere that merely loads it, and a form
- * would submit on its own when pressed before the page has hydrated, sending
- * the POST the route refuses. Until the script runs, pressing it does
- * nothing. The (app) layout shows it only when sign-in is on: in the top bar
- * from 768px, in the navigation sheet below that. It names no one.
- */
+/** The Sign out button. */
 export function SignOutButton({ variant, className }: { variant: "bar" | "sheet"; className?: string }) {
   const signOut = useSignOut();
 
@@ -224,12 +186,7 @@ export function SignOutButton({ variant, className }: { variant: "bar" | "sheet"
   );
 }
 
-/**
- * Says the signed-in person is an admin: they read every board the dashboard
- * covers, not only the boards their Jira opens. Shown only with ACCESS_MODE
- * admin-list (ADMIN_EMAILS), where it tells admins apart from users; with
- * everyone-admin everyone is one (auth/roles.ts). A role, never a name.
- */
+/** Says the signed-in person is an admin. */
 export function AdminBadge({ className }: { className?: string }) {
   return (
     <Badge tone="neutral" size="sm" data-role="admin" title="Admin: every board" className={className}>

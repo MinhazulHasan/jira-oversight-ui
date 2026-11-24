@@ -9,31 +9,19 @@ export interface KeyValueItem {
   value: ReactNode;
   /** A figure, an id or a timestamp: set in Plex Mono, aligned right. */
   mono?: boolean;
-  /**
-   * The value the evidence turns on (the field that broke the rule), marked
-   * in the accent as Ask the System marks the cited field.
-   */
   highlight?: boolean;
 }
 
 export interface KeyValueListProps {
   items: readonly KeyValueItem[];
-  /**
-   * boxed: ruled rows in a hairline frame, like a record as it was read.
-   * plain: two columns of label and value without a frame.
-   */
+  /** boxed. */
   variant?: "boxed" | "plain";
   /** Width of the label column, e.g. "minmax(0,42%)". */
   labelWidth?: string;
   className?: string;
 }
 
-/**
- * Facts about one thing, as a description list: what each figure is, and
- * the figure. Values align on the right edge so figures read as a column.
- * A label is never cut short: on a narrow screen it wraps in balanced lines,
- * its value centred beside it.
- */
+/** Facts about one thing, as a description list. */
 export function KeyValueList({ items, variant = "boxed", labelWidth = "minmax(0,46%)", className }: KeyValueListProps) {
   const boxed = variant === "boxed";
   return (

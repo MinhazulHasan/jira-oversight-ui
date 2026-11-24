@@ -16,13 +16,6 @@ import { viewerHash } from "../viewer";
 
 import { APP, SECRET, SESSION_KEYS, stubAuthEnv } from "./fixtures";
 
-/*
- * ACCESS_MODE (JO-16), end to end through the oversight route: with
- * everyone-admin, the default, everyone who signs in gets everything an admin
- * gets (every board, people level, Governance), and the access log still
- * names who read whose figures; with admin-list, exactly what came before.
- */
-
 const NOW = "2026-11-04T14:30:00Z";
 const SAMPLE = { OVERSIGHT_DATA: "sample", SAMPLE_NOW: NOW, SAMPLE_LATENCY: "0" };
 /** Someone not on ADMIN_EMAILS, whose Jira opens DEMO alone. */

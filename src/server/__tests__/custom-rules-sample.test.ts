@@ -33,17 +33,6 @@ import { boardSettings, resetSampleRuleSettings, revisionOf } from "../sample/se
 import { DAY, HOUR, MINUTE } from "../sample/time";
 import { workItems, type Issue } from "../sample/world";
 
-/*
- * A board's own rules (JO-20) in the sample, held to the service's semantics
- * (the spec, sections 1 and 2): a rule added sees the board as of now, its
- * findings first seen when it was added; narrowing it or raising its limit
- * closes what it no longer raises as settings_changed, never cleared; only a
- * severity change gives it new ids; deleting it closes its findings as a rule
- * turned off does, and bringing it back reopens the same findings with their
- * first sighting; ids run across boards and are never given twice; and every
- * view that names a rule names it by its own title.
- */
-
 const NOW = Date.parse("2026-11-04T14:30:00Z");
 const READER = { hash: "b".repeat(32), name: "Morgan Ellis" };
 const DEMO = sampleBoard("DEMO")!;

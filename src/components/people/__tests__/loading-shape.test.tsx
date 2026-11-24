@@ -12,15 +12,6 @@ import everyoneJson from "../../../../docs/sample-responses/people-scorecard.jso
 import personJson from "../../../../docs/sample-responses/people-scorecard-person.json";
 import { PeopleView, PeopleViewFallback } from "../people-view";
 
-/*
- * The JO-11 check's G2: with comparison off, the People page drew the
- * comparison's loading state (the everyone table's heading, its words, the
- * marks' key and the table's skeleton), none of which ever shows in that
- * mode, and jumped about 690 px when the figures arrived. The page now holds
- * the shape the server expects (the sample's setting, or the service's as it
- * last reported it) until the figures say which it is.
- */
-
 vi.mock("@/lib/notify", () => ({ notify: { info: vi.fn(), ok: vi.fn(), warn: vi.fn(), cite: vi.fn(), error: vi.fn() } }));
 
 const everyone = peopleScorecardSchema.parse(everyoneJson);

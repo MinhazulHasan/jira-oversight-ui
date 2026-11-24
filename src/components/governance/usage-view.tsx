@@ -17,15 +17,6 @@ import { useUsage, type ApiError } from "@/lib/api/hooks";
 import type { Usage, UsageDay } from "@/lib/api/schemas";
 import { formatCount } from "@/lib/format";
 
-/*
- * Usage (JO-12): how much Ask is used, as the oversight service counts it
- * from its own records: today's questions, model calls and tokens (UTC, the
- * day the budget resets on), against the daily AI budget where one is set,
- * and the last seven days. Insights' model calls count towards the same
- * budget; a question can take several calls (the analyst plans, queries and
- * writes).
- */
-
 /** At or past this share of the budget the meter turns amber: the day's budget is nearly used. */
 const BUDGET_WARNING = 0.9;
 const ROW = 32;
@@ -63,13 +54,9 @@ function Budget({ data }: { data: Usage }) {
     );
   }
   const share = used / today.budget_tokens;
-  // Used up exactly as the service decides it, by the tokens (at or over the budget), never by a rounded share: at
-  // 99,960 of 100,000 the service still asks the model, though its share rounds to 100.0.
   const spent = used >= today.budget_tokens;
   return (
     <div className="flex max-w-[44rem] flex-col gap-2" data-usage-budget="set">
-      {/* What was used, even past the budget (the last call can take the day over it): the bar stops full, the figures
-          say how far over. */}
       <Meter
         label="Today's AI budget"
         value={used}
@@ -94,11 +81,6 @@ function Budget({ data }: { data: Usage }) {
   );
 }
 
-/**
- * When the service's day ends, as an instant: its days are UTC days (the last of the seven is today), so it resets at
- * the next UTC midnight, which the page says in the reader's own time (SQA: "Today" rolled over in a US evening with
- * nothing to say so). Null before the figures are in.
- */
 export function resetsAt(data: Usage | undefined): string | null {
   const today = data?.last_7_days.at(-1)?.date;
   if (!today) return null;
@@ -129,10 +111,6 @@ function Today({ data }: { data: Usage | undefined }) {
   );
 }
 
-/**
- * What the 7-day list draws: tokens a day while a model is answering; questions a day when no model is set up, or
- * none was used all week (answers built in code use no tokens, so a busy week would read as seven zeros).
- */
 type Plotted = "tokens" | "questions";
 
 function plotted(data: Usage): Plotted {

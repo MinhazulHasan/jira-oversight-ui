@@ -1,15 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-/*
- * The Portfolio (JO-12): every synced board at a glance, against the sample
- * server (two synced boards, DEMO and MOB, and HELP never synced, with sign-in
- * off). Its figures are read from the API and
- * checked against the Overview's, so the two can never disagree; a row opens
- * the board's Overview, a breach its ticket; the sort lives in the address;
- * at 390 px the table becomes cards; axe in both themes.
- */
-
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 interface Board {
@@ -47,11 +38,6 @@ function watchConsole(page: Page): string[] {
 
 const boardsTable = (page: Page) => page.getByRole("table", { name: "Boards" });
 
-/**
- * The Portfolio is live in the browser: its figures are in and read against the reader's clock ("synced 4 min ago"),
- * which only the browser knows, so the page has hydrated. A press before then lands on the server's markup and does
- * nothing (the JO-13 merge check: the Warnings header pressed too early in WebKit under a full run's load).
- */
 async function live(page: Page) {
   await expect(boardsTable(page).getByText(/synced .+ ago/).first()).toBeVisible();
 }
@@ -86,7 +72,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     await expect(page.locator("[data-portfolio-summary]")).toContainText(
       `Across 2 boards: ${total((each) => each.open_breaches)} open breaches and ${total((each) => each.open_warnings)} open warnings; ${total((each) => each.new_findings_7d)} new and ${total((each) => each.resolved_findings_7d)} resolved in the last 7 days.`,
     );
-    // HELP has never synced: counted in one line under the boards, never a row (JO-17).
+    // HELP has never synced: counted in one line under the boards, never a row.
     expect(portfolio.boards_not_synced).toBe(1);
     await expect(page.locator("[data-portfolio-not-synced]")).toHaveText("1 more board in Jira isn\u2019t synced yet. Choose a board");
     await expect(boardsTable(page).getByRole("row").filter({ hasText: "Help desk" })).toHaveCount(0);
@@ -172,8 +158,6 @@ test("the sort lives in the address, and a header changes it", async ({ page }) 
 });
 
 test("a board's staleness is the top bar's: at the sample's own time both say synced 4 min ago, neither Stale (JO-14)", async ({ page }) => {
-  // Regression: the row said "Stale, synced 4 min ago" (the sample read the sync on the server's clock, days later)
-  // and the summary "1 board has not synced in the last 24 hours", beside a top bar saying "4 min ago".
   await page.goto("/portfolio");
   await live(page);
   const row = boardsTable(page).getByRole("row").filter({ hasText: "Demo project" });
@@ -193,8 +177,6 @@ test("days later the board is stale on the Portfolio as in the top bar, and a br
   page,
   request,
 }) => {
-  // Regression: Findings stopped an open finding's age at a stale board's last sync and said so; the Portfolio's
-  // "Seen for" counted on to now, on another clock, with no such words.
   await page.clock.setFixedTime(new Date("2026-11-13T09:00:00Z"));
   await page.goto("/portfolio");
   await live(page);

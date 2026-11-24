@@ -11,15 +11,6 @@ import {
 import { formatCount, formatNumber, formatShare, MISSING } from "@/lib/format";
 import { compareByFoldedName } from "@/lib/names";
 
-/*
- * The People page and the scorecard in words and order: how each figure
- * reads, which mark it carries next to the board, where its tickets are, and
- * how the everyone table sorts. Pure functions, so every phrase and every
- * order is tested without a browser. The marks are facts about tickets next
- * to the board, never a verdict on anyone: they are drawn in the neutral inks,
- * never the status colours.
- */
-
 /** Where a figure stands next to the board's: the service's comparison, or too few tickets to make one. */
 export type Mark = "closer" | "further" | "level" | "too_few";
 
@@ -31,12 +22,6 @@ export const MARK_LABEL: Record<Mark, string> = {
   too_few: "Too few tickets",
 };
 
-/**
- * What each measure counts, in plain words: the table's header tooltips and
- * the scorecard's own. They say exactly what the service counts (contract
- * 4.15): the work on their tickets now, Epics left out as every rule leaves
- * them out.
- */
 export const MEASURE_DEFINITIONS: Record<ScorecardMeasureKey, string> = {
   open_tickets: "Their tickets that are not done now, Epics left out.",
   in_progress: "Their tickets in progress now, Epics left out.",
@@ -93,12 +78,6 @@ export function figureText(measure: Pick<ScorecardMeasure, "kind" | "measurable"
   return { value: shown, detail: counts, spoken: counts ? `${shown}, ${counts}` : shown };
 }
 
-/**
- * The mark a person's figure carries: the service's comparison with the
- * board, or "too few tickets" for a rate or ratio it could not compare. A
- * count carries none (counts are never compared), and nor does a measure the
- * board cannot show.
- */
 export function markOf(measure: Pick<ScorecardMeasure, "kind" | "measurable">, value: ScorecardValue): Mark | null {
   if (!measure.measurable || measure.kind === "count") return null;
   return value.vs_board ?? "too_few";
@@ -158,16 +137,6 @@ function askAbout(question: string, person: Person): string {
   return `/ask?${new URLSearchParams({ q: question.replace("{name}", `@${person.name}`), m: person.id }).toString()}`;
 }
 
-/**
- * Where a measure's tickets are. The counts open Ask's list of exactly the
- * tickets they count (their backlog, what they work on, what they finished in
- * the period), so the figure and the list agree. A figure Findings can list
- * exactly (open tickets stuck now) opens Findings filtered so. Findings has no
- * filter for "done in the period" or "on open tickets", so the other figures
- * open every finding of the person for those rules, said so in the link's
- * words ("All findings"): the list is wider than the figure, never mistaken
- * for it. Null where nothing lists them.
- */
 export function measureLink(
   measure: Pick<ScorecardMeasure, "key" | "rule_ids" | "measurable" | "label">,
   person: Person,
@@ -188,9 +157,6 @@ export function measureLink(
         description: `${person.name}'s tickets done in the last ${days} days, in Ask`,
       };
     case "open_findings_per_10":
-      // The figure counts the findings on their open tickets; Findings cannot be held to open tickets, so the link
-      // opens every open finding of theirs and says so where it is read, on all their tickets (done ones too): the
-      // larger number it lands on is expected, never taken for a wrong figure (the JO-11 check, G10).
       return {
         href: findings([], "open"),
         label: "Open findings on all their tickets",
@@ -223,10 +189,6 @@ export function isSortKey(value: string): value is SortKey {
   return (SORT_KEYS as readonly string[]).includes(value);
 }
 
-/**
- * The order a column sorts in first: names A to Z, counts most first, a rate
- * or ratio closer to the process first (higher first where higher is closer).
- */
 export function firstOrder(key: SortKey): SortOrder {
   if (key === "name") return "asc";
   const measure = SCORECARD_MEASURES.find((candidate) => candidate.key === key)!;
@@ -248,12 +210,6 @@ function orderable(measure: (typeof SCORECARD_MEASURES)[number], value: Scorecar
   return value.value;
 }
 
-/**
- * The everyone table in an order. By a measure: its figure in the order asked
- * for, ties by name; anyone with too few tickets for it (or none) always
- * last, by name, whichever way the column is turned, so a small sample never
- * tops or tails the table.
- */
 export function sortPeople(rows: readonly ScorecardPerson[], key: SortKey, order: SortOrder): ScorecardPerson[] {
   const byName = (a: ScorecardPerson, b: ScorecardPerson) => compareByFoldedName(a.person, b.person);
   if (key === "name") {

@@ -16,11 +16,6 @@ export interface LegendItem {
   hatch?: boolean;
 }
 
-/**
- * The key to a chart with two or more series: always present, so identity
- * never rests on matching colours, even where the lines are also labelled
- * directly.
- */
 export function Legend({ items, className }: { items: readonly LegendItem[]; className?: string }) {
   return (
     <ul className={cn("flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ink-mid", className)}>

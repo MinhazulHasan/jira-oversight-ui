@@ -11,10 +11,7 @@ import { Keys } from "./kbd";
 import { NAV_ICONS } from "./nav-icons";
 import { usePeopleLevel } from "./people-level";
 
-/**
- * The pages, grouped. The current page is marked with ink and a pressed
- * ground, never the accent: teal means "traceable", and a nav highlight is not.
- */
+/** The pages, grouped. */
 export function NavList({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
   const current = pageForPath(pathname);

@@ -7,13 +7,6 @@ import cardSample from "../../../../docs/sample-responses/person-card.json";
 import { oversightKeys, PERSON_CARD_FRESH_MS, usePersonCard } from "../hooks";
 import { normalizePersonCardQuery } from "../params";
 
-/*
- * usePersonCard: one read per person, period and board, fetched only when a
- * card opens, and kept fresh for a minute, so moving back and forth over a
- * name costs nothing; never read again on focus or a reconnect (each read is
- * one the service records).
- */
-
 const ADA = cardSample.person.id;
 
 function wrapper(client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })) {

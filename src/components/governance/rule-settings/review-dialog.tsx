@@ -65,9 +65,9 @@ export interface ReviewDialogProps {
   base: Draft;
   draft: Draft;
   edits: readonly FieldEdit[];
-  /** The rules the draft adds and the custom rules it deletes (JO-20). */
+  /** The rules the draft adds and the custom rules it deletes. */
   extras?: DraftExtras;
-  /** The board's checks: a new rule's check and settings in words (JO-20). */
+  /** The board's checks: a new rule's check and settings in words. */
   checks?: readonly RuleCheck[];
   preview: PreviewState;
   saving: boolean;
@@ -100,7 +100,7 @@ function editWords(rules: readonly RuleSettingsRule[], base: Draft, draft: Draft
     const drafted = from[edit.ruleId];
     if (edit.field === "enabled") return drafted?.enabled;
     if (edit.field === "severity") return drafted?.severity;
-    // A custom rule's own fields (JO-20): its name, description, what it looks at, its choices.
+    // A custom rule's own fields: its name, description, what it looks at, its choices.
     if (edit.field === "title") return drafted?.custom?.title;
     if (edit.field === "description") return drafted?.custom?.description || null;
     if (edit.field === "applies_to") return drafted?.custom ? appliesOf(drafted.custom) : null;
@@ -122,10 +122,6 @@ function newRuleWords(item: NewRule, check: RuleCheck | undefined, locale?: stri
   return settingsWords(item.rule.custom.check, params, check, locale);
 }
 
-/**
- * The preview's impact for each of the draft's new rules (JO-20): the service names a new rule by the id it would
- * be given, after the board's rules, in the order the request lists the new rules; matched to them in that order.
- */
 export function newRuleImpacts(impacts: readonly RuleSettingsImpact[], rules: readonly RuleSettingsRule[], added: readonly NewRule[]): Map<string, NewRule> {
   const known = new Set(rules.map((rule) => rule.rule_id));
   const fresh = impacts.filter((impact) => !known.has(impact.rule_id));
@@ -135,20 +131,6 @@ export function newRuleImpacts(impacts: readonly RuleSettingsImpact[], rules: re
 const characters = (text: string) => [...text].length;
 const EMAIL = /[^\s@]+@[^\s@]+\.[^\s@]+/u;
 
-/**
- * Review and save (JO-15): each change, rule by rule (the field, from and to);
- * what they would do to the board's open findings, from the service's
- * preview (how many would close, open and stay, with tickets to look at,
- * each opening in a new tab so the draft stays here); an optional reason for
- * the history; and "Save and re-check" (⌘↵ from any control in the review).
- * It opens at its top, the dialog itself holding the focus, so the changes
- * are what the reader meets first. What a save comes to when it does not go
- * through (someone else's save overtook it, the service refused a setting,
- * it failed) is said under the title, where it is in view however far the
- * body was scrolled; each refused setting with a way to it. A rule added
- * (JO-20) is listed with its definition and, from the preview, how many
- * findings it would raise now; one deleted, how many it would close.
- */
 export function ReviewDialog(props: ReviewDialogProps) {
   const { open, onOpenChange, project, boardName, rules, base, draft, edits, preview, saving, conflict, saveError, reason, onSave, onReload } = props;
   const extras = props.extras ?? NO_EXTRAS;
@@ -268,16 +250,12 @@ export function ReviewDialog(props: ReviewDialogProps) {
       }
       notice={notice}
       onOpenAutoFocus={(event) => {
-        // The dialog itself takes the focus, its scroll left at the top: a field further down (the reason) would scroll
-        // the changes out of sight in WebKit, and in Chromium hold a focus ring below the fold.
         event.preventDefault();
         if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus({ preventScroll: true });
       }}
       onCloseAutoFocus={props.onCloseAutoFocus}
       fallbackFocus={props.fallbackFocus}
       onKeyDown={(event) => {
-        // ⌘↵ (Ctrl+Enter elsewhere) saves from any control in the review, as the button's key cap says; a plain Enter
-        // is the control's own (a new line in the reason).
         if (event.key !== "Enter" || !(event.metaKey || event.ctrlKey) || event.nativeEvent.isComposing) return;
         event.preventDefault();
         if (!blocked) onSave();
@@ -408,10 +386,6 @@ export function ReviewDialog(props: ReviewDialogProps) {
   );
 }
 
-/**
- * An example's link: a ticket opens in a new tab, so the review and the draft stay as they are; a sprint has no page.
- * Each link is a 24 px target (WCAG 2.2, 2.5.8), the list's own words setting nothing smaller beside it.
- */
 function ExampleKey({ subject }: { subject: string }) {
   if (subject.startsWith("sprint:")) return <span className="mono inline-flex min-h-6 items-center text-ink-mid">Sprint {subject.slice("sprint:".length)}</span>;
   return (
@@ -445,12 +419,6 @@ function Examples({ label, subjects, more }: { label: string; subjects: readonly
   );
 }
 
-/**
- * A rule's tickets to look at, as the preview names them: at most five each way, so a full list whose findings
- * outnumber it says "and more" (never how many more: the counts are of findings, and a ticket can hold more than
- * one). A rule whose severity changes re-files its open findings: each closes and opens again under the new
- * severity, so a ticket named both ways is listed once, as re-filed.
- */
 function ImpactExamples({ impact, refiled }: { impact: RuleSettingsImpact; refiled: boolean }) {
   const { examples } = impact;
   const moreClosing = examples.close.length >= RULE_SETTINGS_EXAMPLES_MAX && impact.would_close > examples.close.length;
@@ -489,7 +457,7 @@ function Impact({
   ruleIds: readonly string[];
   /** The rules whose severity the changes change (and that stay on), by the severity they would be reported at. */
   refiled: ReadonlyMap<string, Severity>;
-  /** The rules the draft adds, and the custom rules it deletes (JO-20). */
+  /** The rules the draft adds, and the custom rules it deletes. */
   added: readonly NewRule[];
   deleted: ReadonlySet<string>;
 }) {

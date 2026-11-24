@@ -7,16 +7,6 @@ import { duration, enteredEvidence, fixed1, fixed2, hours, intervalAt, metric, s
 import { DAY, HOUR, iso, spelledDay } from "./time";
 import { loggedHoursAt, type Issue, type Sprint, type World } from "./world";
 
-/*
- * Every check a board's own rule may use (JO-20), for the sample, read as of
- * the board's last sync: what the live engine sees when it first runs a rule
- * an admin has just added. The four general checks are new (rules/checks.py:
- * time in a status over a limit, open too long, no update for a while, a
- * missing field); the others are the catalogue's checks with a custom rule's
- * own params and scope. A finding's evidence key never holds a limit, so
- * moving one keeps every ticket still over it the same finding.
- */
-
 /** A condition a custom rule found on a ticket (or the active sprint), and what it says about it. */
 export interface CustomHit {
   issue: Issue | null;
@@ -41,11 +31,6 @@ function namesParam(params: Params, name: string): string[] {
 /** A status as an evidence key reads it: "in-progress". */
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-/**
- * The issues a rule looks at now, as the service's engine selects them (engine.py `_applies`): the types it names
- * (every type but Epic when it names none), in the status categories it names, and finished work only while it is
- * within the look-back.
- */
 function inScope(world: World, rule: BoardRule): Issue[] {
   const { statusCategory, issueType } = rule.def.appliesTo;
   const types = issueType === null ? null : new Set(issueType.map((type) => type.toLowerCase()));
@@ -196,8 +181,6 @@ export function customHits(world: World, rule: BoardRule): CustomHit[] {
         break;
       }
       case "entered_stage_without_evidence": {
-        // The sample's boards record no evidence of any stage, so a rule of this check cannot be measured on them and
-        // the engine never runs it; read here as the service reads it, for a board that maps the stage.
         const stage = String(params.stage);
         const entered = issue.intervals.find((candidate) => statusesOfStage(stage).includes(candidate.status) && candidate.enteredAt <= at);
         if (entered) hit(issue, `stage-${slug(stage)}`, `Reached ${stage.replace(/_/g, " ")} with no ${String(params.evidence).replace(/_/g, " ")} recorded before it`, [enteredEvidence(issue, entered)]);

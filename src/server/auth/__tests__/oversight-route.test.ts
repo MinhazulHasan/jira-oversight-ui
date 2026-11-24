@@ -19,11 +19,7 @@ import { viewerHash } from "../viewer";
 
 import { APP, SECRET, SESSION_KEYS, stubAuthEnv } from "./fixtures";
 
-/*
- * /api/oversight/* checks the session again behind the proxy (defence in
- * depth): called directly, as if the proxy were missing or misconfigured, it
- * still serves no one without a session.
- */
+/** /api/oversight/* checks the session again behind the proxy (defence in */
 
 const IDENTITY = { sub: "557058:account", dom: "stellainternational.com", site: "cloud-id", eh: "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", boards: ["DEMO"] };
 
@@ -106,8 +102,6 @@ describe("the oversight route's own check", () => {
   });
 
   it("reads two cookies of the same name as the proxy and the pages do: the last one counts", async () => {
-    // A stray jo-session (another path, or a parent domain) comes first in the header; Next.js's parser keeps
-    // the last. The route must decide as the proxy did, or a page and its API calls would disagree and loop.
     const session = await sealSession(IDENTITY, SESSION_KEYS);
     expect((await call("GET", "health", { cookie: `jo-session=garbage; jo-session=${session}` })).status).toBe(200);
     await expectProblem(await call("GET", "health", { cookie: `jo-session=${session}; jo-session=garbage` }), 401, "unauthenticated");
@@ -153,8 +147,6 @@ describe("the oversight route's own check", () => {
     const response = await call("GET", "refresh", { cookie: `jo-session=${session}` });
     expect(response.status).toBe(200);
     const headers = new Headers(upstream.mock.calls[0][1]?.headers);
-    // Who is reading, for the service's access log (JO-12): a keyed hash of the account, never the account id, and
-    // (a session from before the name was kept) "Signed-in user".
     expect([...headers.keys()].sort()).toEqual(["accept", "x-oversight-viewer", "x-oversight-viewer-name", "x-service-key"]);
     expect(headers.get("x-oversight-viewer")).toBe(viewerHash(IDENTITY.sub, SECRET));
     expect(headers.get("x-oversight-viewer")).toMatch(/^[0-9a-f]{32}$/);

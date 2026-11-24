@@ -66,17 +66,10 @@ export function sortSummary(sorting: SortingState): string {
 
 /* ------------------------------------------------------------ columns --- */
 
-/**
- * A rule an admin turned off on the board (JO-15) reads muted across its row, not in its title alone: its kind,
- * severity, threshold and measurability in the quiet ink, so no one scanning a column takes it for one in force.
- */
+/** A rule an admin turned off on the board reads muted across its row, not in its title alone. */
 const inkFor = (rule: Rule, ink: string) => (rule.enabled ? ink : "text-ink-low");
 
-/**
- * A rule's title, and how the board runs it where that is not the catalogue's way (JO-15): muted, "Off on this
- * board", for a rule an admin turned off there; "Customised" (the neutral badge, as the rule settings page marks it)
- * for one whose settings they changed; and (JO-20) "Custom" with its check's label for a rule an admin added.
- */
+/** A rule's title, and how the board runs it where that is not the catalogue's way. */
 function TitleCell({ rule }: { rule: Rule }) {
   // The title as it always was, a line of text in the cell; the badges, when there are any, a block of their own under it.
   const title = <span className={rule.enabled ? "text-ink" : "text-ink-low"}>{rule.title}</span>;
@@ -130,8 +123,6 @@ function MeasurableCell({ rule, stages }: { rule: Rule; stages: readonly Process
   const missing = missingEvidenceText(rule, stages);
   // Each kind of evidence kept on one line ("code review" never split), so a long list breaks between them.
   const list = rule.missing_evidence.map((key) => inSentence(stageLabel(key, stages)).replace(/ /g, " ")).join(", ");
-  // What Jira lacks reads whole: a long list wraps under its first line, the mark centred on that line (JO-14: an
-  // ellipsis cut "testing" short at 1440 px, with no title).
   return (
     <span className="flex items-start gap-1.5">
       <span className="flex h-[1lh] shrink-0 items-center">
@@ -182,8 +173,6 @@ function catalogueColumns(stages: readonly ProcessStage[]) {
     col.accessor("title", {
       header: "Title",
       cell: (info) => <TitleCell rule={info.row.original} />,
-      // A rule's name is read whole, as its threshold is: a long one wraps, and a word longer than the column (the
-      // table at its narrowest, scrolled sideways on a phone) is hyphenated where the language allows, never clipped.
       meta: { cellClassName: "whitespace-normal break-words hyphens-auto py-2 leading-snug" },
     }),
     col.accessor("kind", {
@@ -228,8 +217,6 @@ function catalogueColumns(stages: readonly ProcessStage[]) {
       cell: (info) => <OpenCell rule={info.row.original} />,
       meta: { numeric: true, width: "5.5rem", label: "Open findings" },
     }),
-    // No version column (SQA): every rule carries the catalogue's one version, which tells a reader nothing. The
-    // rule's drawer and the CSV still say it.
   ]);
 }
 
@@ -302,8 +289,6 @@ export function RuleCatalogue({ rules, stages, openRuleId, onOpenRule, onOrderCh
       onRowOpen={(rule) => onOpenRule(rule.rule_id)}
       keyboardScope="page"
       minWidth="62rem"
-      // Scrolled sideways on a phone anyway: the titles get room to read in a line or two, rather than the 80 px left
-      // at 62rem, where they ran to five lines and split a word with no hyphen (JO-14).
       scrollWidth="68rem"
       empty={
         <EmptyState

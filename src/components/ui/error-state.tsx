@@ -22,11 +22,7 @@ export interface ErrorStateProps {
   className?: string;
 }
 
-/**
- * A data region that failed to load, inline where the data would be: an
- * amber rule, a plain sentence, the detail, and Retry. The rest of the page
- * keeps working; this is never a full-page error.
- */
+/** A data region that failed to load, inline where the data would be. */
 export function ErrorState({
   title,
   description,

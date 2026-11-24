@@ -8,11 +8,7 @@ import { authStatus, normaliseSiteUrl, readAuthConfig, resolveAuth } from "../co
 
 import { AUTH_ENV, CLIENT_SECRET, SECRET } from "./fixtures";
 
-/*
- * Sign-in's configuration: on by default wherever the data is live, off for
- * the sample, and closed (nobody in, the variable named, never its value)
- * whenever something it needs is missing or wrong.
- */
+/** Sign-in's configuration: on by default wherever the data is live, off for */
 
 const env = (overrides: Record<string, string | undefined> = {}) => ({ ...AUTH_ENV, ...overrides });
 

@@ -1,30 +1,3 @@
-/**
- * A stand-in for Atlassian, for the sign-in end-to-end tests only
- * (playwright.auth.config.ts starts it). It speaks just enough OAuth 2.0
- * (3LO) for the dashboard's sign-in: the consent screen, the code exchange,
- * the User Identity API's /me, the sites a token can reach and Jira's project
- * search. Nothing here talks to Atlassian. Codes and tokens live in memory and
- * end with the process.
- *
- *   GET  /authorize                           the consent screen: one button per test account, and Cancel
- *   GET  /decide                              what a button does: back to the dashboard with a code, or an error
- *   POST /oauth/token                         a code for an access token (single use, ten minutes)
- *   GET  /me                                  who the token belongs to
- *   GET  /oauth/token/accessible-resources    the sites the token reaches
- *   GET  /ex/jira/{cloudId}/rest/api/3/project/search?keys=...
- *                                             which of those projects the account can open on the site
- *   GET  /health                              for the test runner, to know it is up
- *
- * Settings (playwright.auth.config.ts passes them; the defaults suit a run by hand):
- *   MOCK_ATLASSIAN_PORT   the port, on 127.0.0.1 only (default 3404)
- *   MOCK_CLIENT_ID        the client id and secret the dashboard must present
- *   MOCK_CLIENT_SECRET
- *   MOCK_SITE_URL         the Jira site the admitted accounts can reach
- *
- * It sends people back only to a callback on this machine (localhost or
- * 127.0.0.1), always with the state it was given. Test accounts have
- * generic names and .test addresses: no real person, no real domain.
- */
 import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 
@@ -46,10 +19,6 @@ const OTHER_SITE = {
   scopes: ["read:jira-work"],
 };
 
-/**
- * One per button on the consent screen. Keep the labels in step with ACCOUNTS in e2e-auth/settings.ts.
- * `boards` are the Jira projects the account may browse on its sites; the dashboard's sample serves DEMO.
- */
 const ACCOUNTS = [
   {
     key: "allowed",

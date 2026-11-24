@@ -4,35 +4,7 @@ import { safeNextPath } from "@/lib/sign-in";
 
 import { seal, unseal } from "./seal";
 
-/*
- * The two cookies sign-in uses, both sealed (./seal.ts), HttpOnly and
- * SameSite=Lax, and Secure whenever the dashboard is served over https.
- *
- * jo-session: who signed in, for twelve hours from the moment they did, and
- * no longer however busy they are. It holds an Atlassian account id, the
- * email address's domain, a keyed hash of the address (so ./roles.ts can tell
- * an admin on every request without the address itself), the Jira site's
- * cloud id, the keys of the boards their Jira account can open, worked out
- * at sign-in, and (since JO-12) their Atlassian display name, which the
- * access log records them by (./viewer.ts): no email address, no token. A
- * session from before the name was kept still opens, and reads as a
- * "Signed-in user" there. A change of
- * permissions in Jira therefore applies from the next sign-in. A session from
- * before boards were kept (version 1) reads as signed out, so everyone signs
- * in once more and gets their boards. It is sealed for the Jira site this dashboard watches
- * (OVERSIGHT_JIRA_BASE_URL), so pointing the dashboard at another site ends
- * every session, as a new AUTH_SECRET does. Anything unreadable, expired, for
- * a domain no longer admitted or for another site means "signed out".
- *
- * A session lives only in its cookie; the server keeps no list of them.
- * Signing out clears the cookie in that browser. A copy of it taken
- * elsewhere would still open until it expires, unless AUTH_SECRET or the
- * site changes first.
- *
- * jo-auth-state: one sign-in in flight, for ten minutes, sent only to
- * /api/auth/*. It carries the random state the callback must see again, and
- * the page to return to.
- */
+/** The two cookies sign-in uses, both sealed (./seal.ts), HttpOnly and */
 
 export const SESSION_COOKIE = "jo-session";
 export const STATE_COOKIE = "jo-auth-state";
@@ -43,10 +15,6 @@ const STATE_COOKIE_PATH = "/api/auth";
 const CLOCK_SKEW_S = 60;
 /** The most boards one session lists: far more than any dashboard serves, and well inside a cookie. */
 export const MAX_SESSION_BOARDS = 50;
-/**
- * A Jira project key, as PROJECT_KEY_PATTERN in src/lib/api/schemas.ts has it (a test keeps the two equal).
- * Repeated here so the proxy, which opens every session, does not load the whole API contract.
- */
 export const BOARD_KEY_PATTERN = /^[A-Z][A-Z0-9_]{1,19}$/;
 
 export interface Session {
@@ -59,15 +27,7 @@ export interface Session {
   site: string;
   /** The email address's keyed hash (./roles.ts), to tell an admin by ADMIN_EMAILS as it is now. */
   eh: string;
-  /**
-   * The boards their Jira account can open, the dashboard's default first when it is one of them. Empty only
-   * for an admin whose Jira opens none: an admin reads every board anyway.
-   */
   boards: string[];
-  /**
-   * Their Atlassian display name, from the /me call signing in makes (JO-12): what the access log names them by.
-   * Absent from a session sealed before it was kept, or when Atlassian gave none fit to keep (sessionName).
-   */
   name?: string;
   /** Issued and expires, in seconds since the epoch. */
   iat: number;
@@ -124,11 +84,7 @@ const EMAIL_IN_NAME = /[^\s@]+@[^\s@]+\.[^\s@]+/u;
 /** Control characters (C0, DEL, C1): never part of a name a page or a log line shows. */
 const CONTROL = /[\u0000-\u001f\u007f-\u009f]/u;
 
-/**
- * A display name fit to keep in a session, trimmed, or null: 1 to 128
- * characters, no control character, and no email address in it (an address
- * is never kept, even where Atlassian gives one as a name).
- */
+/** A display name fit to keep in a session, trimmed, or null: 1 to 128 */
 export function sessionName(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const name = value.trim();
@@ -143,8 +99,6 @@ export async function sealSession(
   keys: SessionKeys,
   now = Date.now(),
 ): Promise<string> {
-  // What openSession would refuse is refused here, so a bad session fails loudly at sign-in (the callback
-  // reports it) instead of sealing a cookie that can never open.
   if (!text(identity.sub, 128) || !text(identity.dom, 253) || !text(identity.site, 128)) {
     throw new Error("session identity out of shape");
   }
@@ -166,11 +120,7 @@ export async function sealSession(
   return seal(session, keys.secret, "session", keys.jiraSite);
 }
 
-/**
- * The session in a jo-session cookie, or null: missing, tampered with,
- * expired, sealed for another Jira site, for a domain no longer admitted, or
- * from before boards were kept.
- */
+/** The session in a jo-session cookie, or null: missing, tampered with, */
 export async function openSession(
   value: string | null | undefined,
   config: SessionKeys & { allowedDomains: readonly string[] },
@@ -188,7 +138,7 @@ export async function openSession(
   if (exp <= at || iat > at + CLOCK_SKEW_S || exp - iat > SESSION_TTL_S) return null;
   // Taking a domain off ALLOWED_EMAIL_DOMAINS signs its people out at once, not twelve hours later.
   if (!config.allowedDomains.includes(session.dom)) return null;
-  // The name is optional (sessions from before JO-12 have none), and one not fit to keep is dropped, never trusted.
+  // The name is optional (sessions from before have none), and one not fit to keep is dropped, never trusted.
   const name = sessionName(session.name);
   return {
     v: 2,

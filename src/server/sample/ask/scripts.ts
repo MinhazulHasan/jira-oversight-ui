@@ -21,11 +21,7 @@ import {
   trendFacts,
 } from "./tools";
 
-/**
- * The questions the sample project can answer, each the way the live service
- * would: a plan of catalogue calls, the facts they return, and an answer that
- * quotes only those facts. Between them they reach all five outcomes.
- */
+/** The questions the sample project can answer, each the way the live service */
 
 export type ScriptResult =
   | { outcome: "answered"; facts: FactSet[]; pieces: Piece[] }
@@ -522,8 +518,6 @@ const cycleTime: Script = {
   run(dataset) {
     const facts = trendFacts(dataset, "F1", "median_cycle_time_h", 12);
     const weekly = numbered(facts, "value").map(({ value }) => value);
-    // A quarter's median is not the average of weekly medians, and the facts hold no quarterly figure:
-    // what a model writes here is a number the facts cannot vouch for, so the answer is withheld.
     const average = mean(weekly) ?? 0;
     return {
       outcome: "not_verified",
@@ -539,12 +533,6 @@ const cycleTime: Script = {
 /** How many sample keys a count lists (the service's SAMPLE_KEYS). */
 const COUNT_SAMPLE_KEYS = 5;
 
-/**
- * "How many open tickets are there?" (or in progress): the board's work by
- * status category, Epics left out, as the Overview's where work sits and the
- * Portfolio count it, as the service's oversight_count_issues with `state`
- * answers it: one meaning of open tickets everywhere.
- */
 export function countAnswer(dataset: Dataset, state: "open" | "in_progress"): ScriptResult {
   const counted = dataset.world.issues
     .filter((issue) => isWork(issue) && (state === "open" ? STATUS[issue.status].category !== "done" : STATUS[issue.status].category === "indeterminate"))

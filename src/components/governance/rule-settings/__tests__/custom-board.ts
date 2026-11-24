@@ -2,19 +2,9 @@ import { ruleSettingsSchema, type CustomRuleDefinition, type RuleSettings } from
 
 import settingsJson from "../../../../../docs/sample-responses/rule-settings.json";
 
-/*
- * A board with rules of its own (JO-20), as the service sends one: the rule
- * settings tests build it from these, so the page, the model and the review
- * read the same custom rules.
- */
-
 export const AT = "2026-11-04T14:31:00.000Z";
 export const ADMIN = { hash: "b".repeat(32), name: "Morgan Ellis" };
 
-/**
- * The rule the AI drafts from "Bugs in progress for more than 3 days" (docs/sample-responses/rule-settings-draft.json),
- * under a name an admin gave it.
- */
 export const BUGS: CustomRuleDefinition = {
   title: "Bugs in progress over 3 days",
   description: null,

@@ -33,14 +33,6 @@ import everyoneJson from "../../../../docs/sample-responses/people-scorecard.jso
 import findingsJson from "../../../../docs/sample-responses/findings.json";
 import { closePersonCards, HOVER_INTENT_MS } from "../person-card-trigger";
 
-/*
- * Every place a person is named at people level opens their card (JO-13):
- * Ask's answer pills, facts and question chips; Findings' Assignee column and
- * Person filter; the Overview's open findings by person; the People page's
- * table and scorecard heading. A reader at team level gets each name exactly
- * as before. And a card's "Ask about" puts the person in the question box.
- */
-
 vi.mock("next/link", () => ({
   default: ({ href, children, prefetch: _prefetch, ...rest }: { href: string; children: ReactNode; prefetch?: boolean }) => (
     <a href={href} {...rest}>

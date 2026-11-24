@@ -17,17 +17,6 @@ import { Ledger } from "../ledger";
 import { AskPeopleProvider, peopleIndex } from "../people-in-facts";
 import { TraceProvider } from "../trace";
 
-/*
- * The JO-11 review's findings on Ask's scorecard and comparison answers, each
- * with the test that would have caught it (12 Nov 2026): the figures sit
- * between the words and the closing sentences; someone compared on no measure
- * is labelled, never "0 of 0"; nobody is numbered; a ratio on too few tickets
- * carries the mark; a count is put in order without marks; the key shows only
- * where marks do; the links keep the answer's period and order; each person's
- * one-line summary is there; the board's column stays beside the measure; and
- * a decline reads as one in the foot and the ledger.
- */
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), back: vi.fn() }),
   usePathname: () => "/ask",

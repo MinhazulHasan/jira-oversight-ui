@@ -60,11 +60,7 @@ export interface DataTableColumnMeta {
   cellClassName?: string;
 }
 
-/**
- * The features every table in the product uses: client sorting with the
- * built-in comparators, column visibility, and the meta above. Registered
- * once at module scope, as TanStack Table v9 requires a stable object.
- */
+/** The features every table in the product uses. */
 export const dataTableFeatures = tableFeatures({
   rowSortingFeature,
   sortedRowModel: createSortedRowModel(),
@@ -78,11 +74,7 @@ export type DataTableFeatures = typeof dataTableFeatures;
 /** A column definition for a DataTable of TRow. */
 export type DataTableColumn<TRow extends RowData> = ColumnDef<DataTableFeatures, TRow, unknown>;
 
-/**
- * The typed column helper for a DataTable: `const col = dataTableColumns<Finding>()`,
- * then `col.columns([col.accessor("key", { header: "Issue" }), ...])`. Keep the
- * resulting array at module scope or in useMemo.
- */
+/** The typed column helper for a DataTable. */
 export function dataTableColumns<TRow extends RowData>() {
   return createColumnHelper<DataTableFeatures, TRow>();
 }
@@ -98,11 +90,7 @@ type ToolbarSlot<TRow> = ReactNode | ((view: DataTableView<TRow>) => ReactNode);
 
 /* ---------------------------------------------------------------- props */
 
-/**
- * The table's least width: `minWidth`, or where its frame (the scroller, a container) is narrower than that, so it
- * scrolls anyway, `scrollWidth`. A step at the frame's width, without a script: below it the middle term is far past
- * `scrollWidth` and is clamped down to it; at or above it, the term is at most `minWidth` and is clamped up to that.
- */
+/** The table's least width. */
 export function tableMinWidth(minWidth: string, scrollWidth?: string): string {
   if (!scrollWidth) return minWidth;
   return `clamp(${minWidth}, calc(${minWidth} + (${minWidth} - 100cqw) * 1000), ${scrollWidth})`;
@@ -118,10 +106,7 @@ export interface DataTableProps<TRow extends RowData> {
   caption: string;
   /** Open a row (click, Enter): usually sets the drawer's id in the URL. */
   onRowOpen?: (row: TRow) => void;
-  /**
-   * Whether this row opens (every row does when omitted). One that does not has no pointer, hover, chevron or
-   * Enter, and says why in its tooltip (closedRowTitle).
-   */
+  /** Whether this row opens (every row does when omitted). */
   canOpenRow?: (row: TRow) => boolean;
   /** The tooltip of a row that cannot open: why it does not. */
   closedRowTitle?: (row: TRow) => string | undefined;
@@ -139,20 +124,12 @@ export interface DataTableProps<TRow extends RowData> {
   loadingRows?: number;
   /** What to say when there are no rows (an EmptyState that says what was looked at). */
   empty?: ReactNode;
-  /**
-   * Where j and k work: only while a row has focus ("table"), or anywhere on
-   * the page that is not a field or a dialog ("page", for the page's main table).
-   */
+  /** Where j and k work. */
   keyboardScope?: "table" | "page";
   /** Scroll inside the table under a sticky head, e.g. "28rem". Without it the page scrolls. */
   maxHeight?: string;
   /** Below this width the table scrolls sideways rather than squeezing, e.g. "56rem". */
   minWidth?: string;
-  /**
-   * The table's width once its frame is narrower than `minWidth` (a phone), so it scrolls sideways anyway: room for
-   * the columns that wrap, e.g. a rule's title, rather than the least they can take at `minWidth`. A frame at least
-   * `minWidth` wide still holds the whole table, so nothing scrolls on a desktop that did not before (JO-14).
-   */
   scrollWidth?: string;
   density?: "regular" | "compact";
   /** Left of the bar above the table: a count, a sort summary. A function receives the rows as shown. */
@@ -176,20 +153,7 @@ function ignoresRowClick(target: EventTarget | null): boolean {
   );
 }
 
-/**
- * The product's table: TanStack Table v9 for the model, plain semantic
- * <table> markup for everything a reader and a screen reader meet.
- *
- * - Sortable headers are buttons; the header cell carries aria-sort.
- * - The head sticks while the body scrolls; figures align right in Plex Mono.
- * - Rows open on click or Enter (onRowOpen). j and k (or the arrow keys) move
- *   between rows with one tab stop for the whole table (roving focus); Home,
- *   End, Page Up and Page Down jump.
- * - The open row is marked as current, with the accent's 2 px bar.
- * - Loading shows placeholder rows under the real head; no rows shows an
- *   empty state that says what was looked at.
- * - A column menu shows and hides columns.
- */
+/** The product's table. */
 export function DataTable<TRow extends RowData>({
   data,
   columns,
@@ -224,9 +188,6 @@ export function DataTable<TRow extends RowData>({
   const sortingState = sorting ?? ownSorting;
   const visibilityState = columnVisibility ?? ownVisibility;
 
-  // Figures read best largest first, so a numeric column's first click sorts
-  // descending; a missing value (an accessor returning undefined) sorts last
-  // in both directions, so the rows that answer the question stay on top.
   const resolvedColumns = useMemo(
     () =>
       columns.map((column) => ({
@@ -301,9 +262,6 @@ export function DataTable<TRow extends RowData>({
     focusIndex(next);
   };
 
-  // On the page's main table, j and k work without first tabbing into it. A
-  // row's own handler takes the keys once focus is in the table, so here the
-  // first press only lands on the current row (the open one, or the first).
   const onPageKeyDown = useEffectEvent((event: globalThis.KeyboardEvent) => {
     if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key !== "j" && event.key !== "k") return;
@@ -368,12 +326,8 @@ export function DataTable<TRow extends RowData>({
 
       <ScrollArea
         axis="x"
-        // While it loads or is empty no row takes focus: the frame itself must be reachable to scroll by keyboard when
-        // the table is wider than it (a phone, a zoomed window). With rows, the roving row is the table's one stop.
         label={showRows ? undefined : caption}
         frameClassName="overflow-hidden rounded-md border border-rule-weak bg-sheet"
-        // Empty, the frame measures itself (a container) so the empty state can be exactly as wide as what shows of it.
-        // A table with a scrollWidth measures its frame (a container) to know when it scrolls anyway.
         className={cn(maxHeight && "overflow-y-auto", (emptyShown || (minWidth && scrollWidth)) && "@container")}
         style={maxHeight ? { maxHeight } : undefined}
       >
@@ -469,9 +423,6 @@ export function DataTable<TRow extends RowData>({
 
             {emptyShown ? (
               <tr>
-                {/* A wide table scrolls sideways, so the one cell would centre its message out of sight on a
-                    narrow screen. The message keeps to the visible width and stays there however far the head
-                    is scrolled (the cell's overflow is let go, or it would hold the sticky part in place). */}
                 <td
                   colSpan={visibleColumns.length + (interactive ? 1 : 0)}
                   className="!h-auto !overflow-visible !px-0 whitespace-normal"

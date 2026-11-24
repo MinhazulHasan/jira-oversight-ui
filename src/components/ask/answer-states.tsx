@@ -23,11 +23,6 @@ function Title({ eyebrow, question }: { eyebrow: ReactNode; question: string }) 
 
 const WIDTHS = ["w-full", "w-[94%]", "w-[97%]", "w-[58%]"];
 
-/**
- * Asking: the answer in its final shape, the question already set as its
- * title, and a thin line sweeping under it while the facts are read and every
- * number is checked. Nothing spins; reduced motion stills the sweep.
- */
 export function AnswerSkeleton({ question }: { question: string }) {
   return (
     <SkeletonGroup label="Asking. Reading the facts and checking every number." className="flex min-w-0 flex-col gap-5">

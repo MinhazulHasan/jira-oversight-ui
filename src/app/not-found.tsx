@@ -5,11 +5,6 @@ import { BrandMark } from "@/components/shell/brand-mark";
 
 export const metadata: Metadata = { title: "Page not found" };
 
-/*
- * Unknown addresses are caught by (missing)/[...missing] and shown inside the
- * shell. This page covers the rest: a not-found raised outside both route
- * groups, where there is no rail or top bar to lean on.
- */
 export default function RootNotFound() {
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">

@@ -13,17 +13,9 @@ const page = pageByKey("people");
 
 export const metadata: Metadata = { title: page.label };
 
-/**
- * People (JO-11): how tickets are handled, person by person, next to the
- * whole board, for the people level alone (an admin, or anyone with sign-in
- * off). Anyone else gets the app's not-found page, as if there were no such
- * page, and the oversight route refuses them the figures all the same. The
- * period, the person and the sort live in the address, so Copy link shares
- * the view.
- */
 export default async function PeoplePage() {
   if ((await currentAskLevel()) !== "people") notFound();
-  // The shape to hold while the figures load: the comparison's table, or one person at a time (the JO-11 check, G2).
+  // The shape to hold while the figures load: the comparison's table, or one person at a time.
   const expected = expectedComparison();
   return (
     <PageSheet>

@@ -15,22 +15,6 @@ import { personIdFor, personOf } from "./team";
 import { iso } from "./time";
 import type { Issue } from "./world";
 
-/*
- * GET /people/{id}/card in the sample (JO-13): what the person card shows,
- * worked out from the very figures the pages it leads to show, as the
- * service works it out (oversight/api/routes/person_card.py): the counts are
- * the person's scorecard over the period, the findings their GET /people
- * row, the process meter their scorecard's marks, so a card never disagrees
- * with the People page or with Findings filtered to them.
- *
- * The card's last line names the other boards someone holds open tickets on:
- * the sample's other synced boards (its eight people work on DEMO and MOB
- * alike), counted from those boards' own scorecards, and then, so that a board
- * the top bar cannot open is seen too, two made-up boards, OPS and WEB, which
- * the sample does not serve: the card names them, never as a way to switch to
- * a board the top bar cannot open.
- */
-
 /** The made-up boards, by the fictional account that holds open tickets there (team.ts), in the service's order. */
 export const SAMPLE_OTHER_BOARDS: Readonly<Record<string, readonly PersonCardBoard[]>> = {
   // Ada Brooks holds work on both.
@@ -50,11 +34,6 @@ export const PERSON_CARD_NOT_ON_BOARD = "This person is not on this board.";
 
 const inProgress = (status: Issue["status"]) => STATUS[status].category === "indeterminate";
 
-/**
- * When a ticket in progress now last went into progress: the start of the
- * unbroken run of in-progress statuses that ends with the one it is in now
- * (DEMO has one, In Progress; a ticket reopened from Done starts again).
- */
 export function inProgressSince(issue: Issue): number {
   const intervals = issue.intervals;
   if (intervals.length === 0) return issue.createdAt;
@@ -98,10 +77,6 @@ function servedElsewhere(others: readonly Dataset[], personId: string, days: Sco
 
 export type PersonCardAnswer = { found: true; body: PersonCard } | { found: false; message: string };
 
-/**
- * The card for someone on the board (a ticket holder or a member), over the
- * period; not found for anyone else, as the picture route answers.
- */
 export function personCardView(dataset: Dataset, personId: string, days: ScorecardDays, others: readonly Dataset[] = []): PersonCardAnswer {
   const set = scorecards(dataset, days);
   const row = set.byId.get(personId);

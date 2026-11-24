@@ -41,11 +41,6 @@ export interface ChangeDrawerProps {
   onOpenChange: (changelogId: string | null) => void;
 }
 
-/**
- * One changelog entry in full: what changed and when, what it meant for the
- * issue (the time spent in the status it left, a reopen, a skipped stage, an
- * estimate set after work began), and the findings that cite it.
- */
 export function ChangeDrawer({ data, rows, openId, onOpenChange }: ChangeDrawerProps) {
   const locale = useFigureLocale();
   const ids = [...new Set(rows.map((row) => row.changelog_id))];

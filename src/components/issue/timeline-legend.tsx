@@ -1,10 +1,5 @@
 import type { CSSProperties } from "react";
 
-/**
- * The key under the issue's swimlane, in the kit's StatusTimeline style: the
- * stage ramp, then only the marks this chart draws. Decorative, like the
- * kit's: the chart's summary, footnote and table view say the same in words.
- */
 export function TimelineLegend({
   skips,
   events,

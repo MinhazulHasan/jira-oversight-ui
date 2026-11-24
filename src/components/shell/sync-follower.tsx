@@ -8,15 +8,7 @@ import { notify } from "@/lib/notify";
 
 import { useCurrentBoard } from "./current-board";
 
-/*
- * Sync (JO-18) syncs the board on screen. However it was started (the top
- * bar's Sync, a page offering a board's first sync, another tab, someone
- * else), its end is said once, here: the shell's SyncFollower watches the
- * board's sync while it is queued or running, and when it ends, every figure
- * on screen is read afresh (and the board list, so a board's first sync shows
- * its pages) and the reader is told; a failure says why, in the service's
- * plain words.
- */
+/* Sync syncs the board on screen. */
 
 /** Each end said once: a press answered "just finished" and the follower can both see the same one. */
 const announced = new Set<string>();
@@ -36,14 +28,10 @@ export async function announceSync(queryClient: QueryClient, state: Refresh, nam
   }
 }
 
-/** What a press that never reached the service is told: plain words, never an HTTP status (SQA). */
+/** What a press that never reached the service is told: plain words, never an HTTP status. */
 export const SYNC_UNREACHABLE = "Couldn't reach the service. Try again.";
 
-/**
- * Why a press failed, in words fit for the toast: a refusal this dashboard's server explains (the board is not
- * the reader's, the session has ended) in its own words; anything else (no answer, a gateway's error page, the
- * service down) as the service being out of reach.
- */
+/** Why a press failed, in words fit for the toast. */
 export function pressFailure(error: unknown): string {
   return isApiError(error) && error.status >= 400 && error.status < 500 && error.code !== "http_error" ? error.message : SYNC_UNREACHABLE;
 }
@@ -62,13 +50,7 @@ export interface SyncPress extends Omit<BoardSync, "start"> {
   failedToStart: boolean;
 }
 
-/**
- * Sync for the board on screen, `key` and `name` as the top bar shows them: a
- * press starts it (queued behind another board's, if one runs); a press while
- * it is under way does nothing more. An answer that it had just ended (the
- * service's cooldown) is said at once; the end of one under way is
- * SyncFollower's to say.
- */
+/** Sync for the board on screen, `key` and `name` as the top bar shows them. */
 export function useSyncPress(key: string | null, name: string | null): SyncPress {
   const queryClient = useQueryClient();
   const sync = useBoardSync(key);
@@ -97,11 +79,7 @@ export function useSyncPress(key: string | null, name: string | null): SyncPress
   return { state: sync.state, starting: sync.starting, press, underWay, failedToStart: key !== null && failedFor === key };
 }
 
-/**
- * Mounted once, in the (app) layout: follows the sync of the board on screen
- * while it is queued or running, and says how it ended (announceSync). It reads
- * what the top bar's Sync reads, so it starts nothing of its own.
- */
+/** Mounted once, in the (app) layout. */
 export function SyncFollower() {
   const queryClient = useQueryClient();
   const { key, name } = useCurrentBoard();

@@ -24,27 +24,13 @@ export interface QuestionSeed {
   id: string;
 }
 
-/**
- * How a seed went: their chip added at the end of the question; already in it (no second chip: the caret goes just
- * after theirs); no room left for it (the box has said so); or no one by that id on the board.
- */
 export type SeedOutcome = "added" | "already" | "no-room" | "not-on-board";
 
 /** Where the @ list's people come from: given only to a reader Ask answers about people. */
 export interface MentionSource {
-  /**
-   * Everyone on the board (GET /people/directory), each with the tickets
-   * assigned to them now: the @ list shows those with tickets, then the
-   * members with none. Undefined until they arrive.
-   */
   people: readonly DirectoryEntry[] | undefined;
   state: MentionMenuState;
   retry: () => void;
-  /**
-   * The people the question in the field mentions, by id, when the text came
-   * from elsewhere (the address while it is asked, the last question ↑ brings
-   * back): their "@Name" in it is their chip again.
-   */
   ids: readonly string[];
 }
 
@@ -60,17 +46,7 @@ export interface QuestionBoxProps {
   recall?: string;
   /** The @ list's people. Left out, @ is just a character (a team-level reader). */
   mention?: MentionSource;
-  /**
-   * A line under the field about the question just sent, which the field still holds: today only the service's
-   * limit on questions ("You've asked a lot of questions in a short time. Try again in 5 minutes."), JO-12.
-   */
   notice?: ReactNode;
-  /**
-   * Someone to put in the question as a chip: a person card's "Ask about" (JO-13). Each request (a new object) is
-   * done once: the chip goes at the end of what the field holds, the caret after it and focus in the field, and
-   * nothing is asked; someone the question already names gets no second chip, the caret going just after theirs.
-   * `onSeeded` says how it went, with the person (null when no one by that id is on the board).
-   */
   seed?: QuestionSeed | null;
   onSeeded?: (person: Person | null, outcome: SeedOutcome) => void;
 }
@@ -99,26 +75,8 @@ function Hint({ keys, after = false, dotClassName, className, children, ...rest 
 /** The keyboard's hints: from a small tablet up, where a keyboard is likely. */
 const KEYBOARD_HINT = "hidden sm:inline-flex";
 
-/**
- * Where a question is asked. Enter sends and Shift+Enter starts a new line
- * (never mid-composition, so Japanese and Chinese input work); the field grows
- * with the question to six lines, then scrolls, and stops at the service's 500
- * characters. `/` focuses it from anywhere on the page.
- *
- * For a reader Ask answers about people, @ opens everyone on the board, as in
- * Jira and Confluence (those with tickets, then the members with none, in two
- * groups of one list), the field driving the listbox through
- * aria-activedescendant. Typing filters it, the arrows move, Enter or Tab
- * chooses, Esc closes. Choosing puts the person in the question where the @
- * was, as a chip (their picture and name) and a space: one piece, removed
- * whole by one Backspace and stepped over by one arrow press. The question is
- * sent with each chip written "@Name", and the chips' people go with it by
- * id. A team-level reader gets the same field with no @ list.
- */
 export function QuestionBox({ value, onChange, onSubmit, busy, placeholder, recall, mention, notice, seed = null, onSeeded }: QuestionBoxProps) {
   const editor = useRef<EditorHandle>(null);
-  // When the answer arrives the box takes the focus back, so the next question can be typed at once; never from
-  // elsewhere on the page the reader has moved to meanwhile.
   const wasBusy = useRef(busy);
   useEffect(() => {
     if (wasBusy.current && !busy) {
@@ -225,12 +183,6 @@ export function QuestionBox({ value, onChange, onSubmit, busy, placeholder, reca
     setSaid(`${person.name} mentioned.`);
   };
 
-  /**
-   * The row at `index` scrolled into view, as the keyboard moves to it: the
-   * first takes the list to its very top and the last to its very end (no
-   * fade left over either), and the first row of a group brings its heading
-   * into view with it. The pointer never scrolls the list.
-   */
   const reveal = (index: number) => {
     const list = document.getElementById(listId);
     const option = document.getElementById(optionId(index));
@@ -280,12 +232,9 @@ export function QuestionBox({ value, onChange, onSubmit, busy, placeholder, reca
     }
     editor.current?.apply({ draft: draftOf(text, people, ids), caret: text.length });
     onSeeded?.(person, "added");
-    // Once per request: the draft and the handlers it reads are those of the render that saw it arrive.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seed, people, loaded]);
 
-  // A new search starts on its first row, so the list starts at its top: WebKit keeps the old scroll of a list
-  // the search narrowed, which would leave the highlighted row out of sight.
   const query = search?.query;
   useLayoutEffect(() => {
     const list = document.getElementById(listId);
@@ -403,12 +352,6 @@ export function QuestionBox({ value, onChange, onSubmit, busy, placeholder, reca
         textRow
       )}
       <div className="flex min-h-11 items-center gap-3 py-2 pr-2.5 pl-4">
-        {/* The hint line keeps each hint whole on one line, in order of what matters most: Enter to ask, @ to
-            mention someone, Shift and Enter for a new line, ↑ for the last question. A hint the line has no room for
-            wraps whole onto a second line that is never shown, so the ones that matter least step aside, at any
-            width and in any keyboard's key names, and none breaks word by word. "@ mention someone" stays wherever
-            the box can show it, the counter beside it or not, and is the only hint on a phone, where Enter and
-            Shift are no keyboard's (all of them are in the screen-reader text). */}
         <p id={hintId} className="flex min-w-0 flex-1 items-center text-xs text-ink-low">
           <span aria-hidden className="flex h-5 min-w-0 flex-wrap items-center gap-x-1.5 overflow-hidden" data-hint-line>
             <Hint keys={[mac ? "↵" : "Enter"]} className={KEYBOARD_HINT}>

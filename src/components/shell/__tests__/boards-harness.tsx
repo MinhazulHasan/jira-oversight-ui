@@ -6,13 +6,6 @@ import { renderKit } from "@/components/ui/__tests__/kit";
 import type { Health, ProjectSummary, Projects, Refresh } from "@/lib/api/schemas";
 import { BOARD_COOKIE, boardFromCookieHeader } from "@/lib/board";
 
-/*
- * The board picker, Sync and the state a board not synced yet shows (JO-17,
- * JO-18), rendered against a stand-in for /api/oversight: the board list, each
- * board's health and each board's sync, as the route answers them, for the
- * board picked in the cookie. Made-up keys and names throughout.
- */
-
 /** Four minutes before the test runs: a fresh sync, by the reader's own clock. */
 export const SYNCED_AT = new Date(Date.now() - 4 * 60_000).toISOString();
 

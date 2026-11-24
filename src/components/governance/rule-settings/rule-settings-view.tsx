@@ -49,7 +49,7 @@ interface Editing extends DraftExtras {
   base: Draft;
   baseRevision: number;
   draft: Draft;
-  /** The rules it adds (JO-20), in the order added; the board's own rules it deletes. */
+  /** The rules it adds, in the order added; the board's own rules it deletes. */
   added: readonly NewRule[];
   deleted: readonly string[];
 }
@@ -82,10 +82,6 @@ interface SheetState {
   from: HTMLElement | null;
 }
 
-/**
- * The control a problem's place names, to put it right: a threshold's own field; for the severity, its chosen
- * option; for anything else of the rule (on or off, the rule as a whole), its switch.
- */
 function controlFor(path: string): HTMLElement | null {
   const [ruleId, field] = path.split(".");
   return (
@@ -95,10 +91,6 @@ function controlFor(path: string): HTMLElement | null {
   );
 }
 
-/**
- * A refusal's places in the page's terms: a new rule (JO-20) is named by the service, and by this interface's
- * route, as "new-0" for the first the request added; the page knows it by its own key.
- */
 function pagePath(path: string, added: readonly NewRule[]): string {
   const match = /^new-(\d+)(\..*)?$/.exec(path);
   const item = match ? added[Number(match[1])] : undefined;
@@ -122,10 +114,6 @@ function splitProblems(error: ApiError, settings: RuleSettings, added: readonly 
   return { fields, reason, general };
 }
 
-/**
- * Whether the board picked in the top bar is no longer this page's: picked in another tab since (the pick is a
- * cookie every tab shares). A save now would reach that board, so nothing is sent until the page is loaded again.
- */
 function pickedElsewhere(project: string): boolean {
   const picked = boardFromCookieHeader(document.cookie);
   return picked !== null && picked !== project;
@@ -133,27 +121,6 @@ function pickedElsewhere(project: string): boolean {
 
 const SAVE_TOAST = "rule-settings";
 
-/**
- * The rule settings page (JO-15): a board's rules, grouped as the catalogue
- * groups them, each with its switch, severity and thresholds, edited as a
- * draft; a bar that counts the unsaved changes; the review (with the
- * service's preview) that saves them; the board's history, the latest with
- * Undo; and whether the findings reflect the settings yet, read every two
- * seconds while the service re-checks the board (and, once the page is left,
- * by the shell's RecheckFollower, which reads every figure the rules decide
- * afresh when the re-check ends).
- *
- * The board's own rules (JO-20) have a group of their own, "Custom rules",
- * with the same controls and Edit and Delete; "Add rule" (the page header's,
- * add-rule.tsx) opens the "New rule" sheet, whose rule joins the draft as
- * "New" until it is saved. A rule added or deleted counts in the bar, shows
- * in the review with what it would do, and can be taken back before saving.
- *
- * The focus never falls to the page's body: a dialog or the sheet gives it
- * back to the control that opened it, and an action that takes its own
- * button away (Discard, a save, an undo) leaves it on the status card, which
- * says where things stand; a refused setting's Edit leaves it on the setting.
- */
 export function RuleSettingsView() {
   const query = useRuleSettings();
   const projects = useProjects();
@@ -249,8 +216,6 @@ export function RuleSettingsView() {
     }
     setSheet((current) => ({ target, session: (current?.session ?? 0) + 1, initial, refused, from }));
     setSheetOpen(true);
-    // The sheet rises where a toast stands: what a toast says is said elsewhere too, so it steps aside rather than lie
-    // over the sheet's "Add to changes", as it does for a person card's sheet.
     notify.dismiss();
   };
 
@@ -379,12 +344,6 @@ export function RuleSettingsView() {
     preview.mutate({ changes }, { onError: (error) => onRefused(error, false) });
   };
 
-  /**
-   * A refusal of the settings: beside each rule's field, and in the review each refused setting with a way to it,
-   * the reason's problem and what belongs to no field. A save whose every problem has its field on the page closes
-   * the review on the first of them, there to be put right; a new rule's (JO-20) is put right in its sheet, from
-   * the review.
-   */
   const onRefused = (error: ApiError, saving: boolean) => {
     if (!settings || error.code !== "rule_settings_invalid") return false;
     const { fields, reason: aboutReason, general } = splitProblems(error, settings, extras.added);
@@ -436,8 +395,6 @@ export function RuleSettingsView() {
           if (error.code === "rule_settings_conflict") {
             setConflict(true);
           } else if (!onRefused(error, true)) {
-            // Said in the review, under its title, in view however far its body was scrolled. Not as a toast too: at a
-            // laptop's width one would lie over "Save and re-check", the very button a reader tries again with.
             setReview({ ...NO_PROBLEMS, failure: error.message });
           }
         },
@@ -475,8 +432,6 @@ export function RuleSettingsView() {
     );
   };
 
-  // Review and save from anywhere on the page: ⌘↵ (Ctrl+Enter elsewhere), as the bar's key cap says; not while the
-  // "New rule" sheet is open, which takes ⌘↵ for itself.
   useEffect(() => {
     if (!dirty || sheetOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -644,8 +599,6 @@ export function RuleSettingsView() {
         />
       </Section>
 
-      {/* The bar's room is kept whether it shows or not, so nothing on the page moves when it appears. While it shows,
-          the page keeps a control the keyboard reaches clear of it (data-unsaved-bar, globals.css). */}
       <div className="sticky bottom-4 z-[var(--z-sticky)] -mt-4 flex h-12 justify-center" data-print="hide">
         {dirty ? (
           <div

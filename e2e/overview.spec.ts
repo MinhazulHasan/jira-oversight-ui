@@ -4,13 +4,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { readableClipboard } from "./clipboard";
 import { cutText } from "./cut-text";
 
-/*
- * The Overview: the first screen says where the work stands, every figure
- * opens the findings behind it (and is their count), and each region has
- * its four states. Sample mode, pinned to SAMPLE_NOW (playwright.config.ts),
- * with the browser clock frozen at the same moment.
- */
-
 const NOW = new Date("2026-11-04T14:30:00Z");
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const OVERVIEW_API = "**/api/oversight/overview";
@@ -61,8 +54,6 @@ for (const colorScheme of ["light", "dark"] as const) {
 
       await expect(page.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible();
       await expect(tiles(page)).toHaveCount(4);
-      // Whole, to WebKit's subpixel: four columns split the grid's width into quarter pixels, and WebKit's clip reads a
-      // tile a third of a pixel short (0.999), though it stands well inside the first screen.
       for (const index of [0, 1, 2, 3]) await expect(tiles(page).nth(index)).toBeInViewport({ ratio: 0.99 });
       await expect(tiles(page).first()).toContainText("Open breaches");
       await expect(tiles(page).first()).toContainText("523");
@@ -101,8 +92,6 @@ test("each region shows its figures: rules, coverage, trends, where work sits, t
   await expect(insight.getByText("Week of 2 Nov 2026")).toBeVisible();
 });
 
-// The sample is built so that this holds (docs/API_CONTRACT.md section 7); a failure here is a
-// disagreement between the overview and the findings it links to, not a layout problem.
 test("every headline figure, hot spot and rule is the count of the findings it opens", async ({ page, request }) => {
   const overview = await (await request.get("/api/oversight/overview")).json();
   const total = async (query: string) => (await (await request.get(`/api/oversight/findings?${query}`)).json()).total;
@@ -240,8 +229,6 @@ test.describe("acknowledgement", () => {
 
 for (const width of [1024, 1280, 1366, 1440]) {
   test(`the headline figures stand level at ${width} px, whichever label takes a second line (the JO-14 review)`, async ({ page }) => {
-    // Regression: from 1024 to about 1368 px "Rules not measurable" took a second line and pushed its figure below the
-    // other four, on the Overview's most-read row.
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
     await figuresReady(page);
@@ -266,8 +253,6 @@ test.describe("on a phone", () => {
   test("each rule's title and each status's stage read whole on a phone, and the effort ratio's limit stands clear of its line (JO-14)", async ({
     page,
   }) => {
-    // Regression: at 390 px "Work started withou…" and "Developm…" were cut, with no way to read them on a phone (no
-    // hover), and the effort ratio's line ran through its limit's name, "Breach at 1.50× (R-EFF-01)".
     await page.goto("/");
     await figuresReady(page);
     await expect(ruleRows(page).first()).toBeVisible();
@@ -296,8 +281,6 @@ test.describe("on a phone", () => {
   });
 
   test("an epic's title reads whole in Hot spots on a phone, however long (the JO-14 review)", async ({ page, request }) => {
-    // Regression: "Open findings by epic" cut an epic's title past about 22 characters at 390 px, and its only full
-    // text was a tooltip, which a touch screen cannot open. The sample's titles are short, so one is made long here.
     const overview = await (await request.get("/api/oversight/overview")).json();
     const long = "Notification preferences and delivery schedules for every channel";
     overview.hot_spots[0].epic_title = long;

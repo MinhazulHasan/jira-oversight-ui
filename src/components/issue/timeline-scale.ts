@@ -1,11 +1,3 @@
-/*
- * The time axis of the issue's swimlane chart. It is the kit's StatusTimeline
- * axis (a 2% margin after now) with one addition: when the issue has been
- * still for far longer than it was moving (finished work, Done a year ago),
- * the quiet stretch is cut out of the axis and drawn as a short stub that
- * ends at now. The story keeps the width; the cut is marked on the chart,
- * in the legend and in a footnote, and every readout keeps its true times.
- */
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
@@ -37,10 +29,6 @@ export interface ScaleInput {
   clock: number;
   /** The plot's width in px. */
   width: number;
-  /**
-   * Allow the cut. Only for finished work: a long open spell in To Do or In
-   * Progress is the evidence (work waiting, work stuck), never to be shortened.
-   */
   allowCut?: boolean;
 }
 

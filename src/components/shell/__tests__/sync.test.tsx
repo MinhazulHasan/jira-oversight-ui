@@ -21,14 +21,7 @@ import { PeopleLevelProvider } from "../people-level";
 import { forgetAnnouncedSyncs, SyncFollower } from "../sync-follower";
 import { board, calls, idle, pick, renderWithQueries, serve, SYNCED_AT, type Service } from "./boards-harness";
 
-/*
- * Sync syncs the board on screen and no other (JO-18): the top bar's Sync
- * says which board, in its name and tooltip; a press starts that board's
- * sync, queued behind another board's while one runs; it says "Syncing",
- * then reads every figure again and says so; a failure says why. A board not
- * synced yet (JO-17) shows, on every page that reads it, the state that offers
- * its first sync, with its progress, and the page itself once it has synced.
- */
+/* Sync syncs the board on screen and no other. */
 
 const NOW = () => new Date().toISOString();
 

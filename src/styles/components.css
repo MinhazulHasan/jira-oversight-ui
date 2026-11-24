@@ -1,13 +1,4 @@
-/* ============================================================================
-   UI kit styles for src/components/ui, owned by the UI-kit build. Tokens and
-   the shared primitives (.sheet, .raised, .hatch, .kbd, .skeleton, .micro,
-   .mono) live in src/app/globals.css; what is here is what utilities express
-   badly: tables, scroll edges, fields and the drawer's motion.
-   ========================================================================= */
-
 @layer components {
-  /* A button that is the mark of a wider control (Sync in the top bar, last-synced.tsx): stretched over its nearest
-     positioned ancestor, so the whole control presses, and rung by the focus ring as a whole. */
   .jo-stretch::after {
     content: "";
     position: absolute;
@@ -22,10 +13,6 @@
     outline-offset: var(--focus-offset);
   }
 
-  /* ------------------------------------------------------------- fields ---
-     A text field has to be findable without its placeholder, so its edge is
-     --rule-control (3:1). The container draws the focus ring for the whole
-     control, so the input inside must not draw a second one. */
   .jo-field {
     display: flex;
     align-items: center;
@@ -69,12 +56,6 @@
     appearance: none;
   }
 
-  /* ------------------------------------------------------------ numbers ---
-     A threshold's field (number-field.tsx, JO-15): compact, its unit inside,
-     its figure in Plex Mono. The edge is the 3:1 field edge and the container
-     draws the focus ring, as .jo-field does; a value that cannot be saved
-     turns the edge to the breach ink, and the words beside it say why (never
-     the colour alone). */
   .jo-number {
     display: inline-flex;
     align-items: center;
@@ -115,12 +96,6 @@
     outline: none;
   }
 
-  /* ------------------------------------------------------ rule settings ---
-     A rule's row on the rule settings page (JO-15): the rule, its switch, its
-     severity, its thresholds and its open findings in one line where the list
-     is wide (a MacBook's sheet), stacked where it is not (a tablet's column, a
-     phone), decided by the list's own width, as the process map is. The head
-     row above the list shares the columns. */
   .jo-rule-row,
   .jo-rule-head {
     display: grid;
@@ -136,8 +111,6 @@
   .jo-rule-head {
     display: none;
   }
-  /* The switch's and the severity's columns are as wide as their heads and controls need, no wider, so a threshold's
-     sentence keeps to one line at a 13-inch MacBook's width. */
   @container rules (min-width: 56rem) {
     .jo-rule-row,
     .jo-rule-head {
@@ -150,10 +123,6 @@
     }
   }
 
-  /* -------------------------------------------------------- scroll edges ---
-     macOS hides scrollbars until you scroll, so a region with more to see
-     says so: a soft fade at the edge it can still scroll towards. The frame
-     sets data-more-* from the scroll position. */
   .jo-scroll-frame {
     position: relative;
     min-width: 0;
@@ -201,18 +170,12 @@
     opacity: 1;
   }
   .jo-scroller {
-    /* The containing block of anything placed absolutely inside (a visually hidden label in a cell, say), so the
-       scroller clips it: otherwise it is laid out against the frame and can widen the page on a phone. */
     position: relative;
     overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color: var(--rule) transparent;
   }
 
-  /* -------------------------------------------------------------- table ---
-     Hairline rows on the sheet, a rail-coloured head that stays put, figures
-     right-aligned. Row focus is drawn on the cells: WebKit does not paint an
-     outline on a table row. */
   .jo-table {
     width: 100%;
     border-collapse: separate;
@@ -257,8 +220,6 @@
   .jo-table[data-density="compact"] td {
     height: var(--row-table-dense);
   }
-  /* A table whose columns size to their content (a chart's table view): the
-     figures take only the width they need and the name column the rest. */
   .jo-table[data-layout="auto"] {
     table-layout: auto;
   }
@@ -320,10 +281,6 @@
   .jo-table tbody tr[aria-current="true"] .jo-row-affordance {
     opacity: 1;
   }
-  /* Scrolled under the head: the head lifts. Only a head that stays put (a sticky one) in the frame that scrolls it:
-     a table in a drawer whose body scrolls has a head that scrolls with it, with nothing under it (JO-14). The lift
-     is one soft edge under the whole row, each cell's part of it reaching edge to edge: a cell's own shadow, inset
-     at both ends, broke at every column. */
   .jo-scroll-frame[data-scrolled="true"] > .jo-scroller > .jo-table:not([data-sticky="false"]) th {
     box-shadow: inset 0 -1px 0 var(--rule);
   }
@@ -338,15 +295,6 @@
     pointer-events: none;
   }
 
-  /* ------------------------------------------------------------- avatar ---
-     A person's Jira picture beside their name, as Jira and Confluence show
-     it (src/components/ui/person-avatar.tsx); their initials on the pressed
-     ground when there is no picture or it fails to load; for nobody, the
-     same ground with a generic figure. Round, a fixed size so nothing
-     shifts, decorative: the name always sits beside it. The initials come
-     from data-initials, so they stay out of the text a reader copies; a
-     picture covers the ground. A hairline edge keeps a pale picture round
-     on the sheet, and the ground prints as it shows. */
   .jo-avatar {
     position: relative;
     display: inline-flex;
@@ -370,13 +318,9 @@
   .jo-avatar::before {
     content: attr(data-initials);
   }
-  /* In the 20 px round, micro less 2 px (8.5 px): two wide letters (MW, WW) then clear the
-     edge where the round is narrowest across their capitals, as they do at micro size in 24 px. */
   .jo-avatar[data-size="20"] {
     font-size: calc(var(--t-micro) - 2px);
   }
-  /* Heading a person card (JO-13), 48 px: the initials at --t-xl (21 px), in the 24 px round's proportion
-     (micro, 10.5 px), set a little tighter at this size. */
   .jo-avatar[data-size="48"] {
     font-size: var(--t-xl);
     letter-spacing: -0.03em;
@@ -414,10 +358,6 @@
     animation: jo-sheet-sink 160ms ease both;
   }
 
-  /* --------------------------------------------------------- person card ---
-     The card a name opens (src/components/person-card/): it fades in as it
-     rises 4 px, in 120 ms, and fades out; nothing moves with reduced motion
-     (globals.css stops every animation). */
   .jo-person-card[data-state="open"] {
     animation: jo-card-in var(--dur-fast) var(--ease-out) both;
   }
@@ -425,11 +365,6 @@
     animation: jo-fade-out 100ms ease both;
   }
 
-  /* ------------------------------------------------------------- people ---
-     The scorecard (src/components/people/scorecard.tsx): a measure a row, the
-     figures right-aligned in Plex Mono, a hairline between rows. A row holds
-     two lines (the figure and the counts behind it), so every row, and every
-     loading row, is one height: nothing moves when the figures arrive. */
   .jo-scorecard th,
   .jo-scorecard td {
     padding: 7px 8px;
@@ -469,8 +404,6 @@
     border-bottom: 0;
   }
 
-  /* The compact scorecard in an Ask answer: 32 px rows, the measure's name
-     held in place while several people's figures scroll beside it. */
   .jo-compact-scorecard th,
   .jo-compact-scorecard td {
     height: var(--row-table-dense);
@@ -502,8 +435,6 @@
   .jo-compact-scorecard thead tr > :first-child {
     background: var(--paper-100);
   }
-  /* The whole board's figures are held at the right while several people's scroll beside them: every mark is set
-     against them, so they are always in view. */
   .jo-compact-scorecard [data-board-cell] {
     position: sticky;
     right: 0;
@@ -517,8 +448,6 @@
   .jo-compact-scorecard tr[data-measurable="false"] td {
     white-space: normal;
   }
-  /* On a phone, one person's figures and the board's fit beside the measure's name, inside the frame: tighter cells,
-     and a narrower name column whose names wrap. Several people still scroll sideways, the name and the board held. */
   @media (max-width: 39.99rem) {
     .jo-compact-scorecard th,
     .jo-compact-scorecard td {
@@ -529,10 +458,6 @@
     }
   }
 
-  /* The everyone table on the People page: the person held in place at the
-     left while the measures scroll, so each row is still somebody's. The
-     held cell's ground is opaque (a tint over the sheet), or the figures
-     passing under it would show through. */
   .jo-people-table th[data-sticky],
   .jo-people-table td[data-sticky] {
     position: sticky;
@@ -650,8 +575,6 @@
   }
 }
 
-/* High contrast mode removes shadows and tints, which carry the focused and
-   current row, the checked segment and the drawer's edge. Give each a line. */
 @media (forced-colors: active) {
   .jo-table tbody tr:focus-visible td {
     outline: 2px solid Highlight;
@@ -660,8 +583,6 @@
   .jo-table tbody tr[aria-current="true"] td {
     border-bottom: 2px solid Highlight;
   }
-  /* The chosen person in the People page's narrow list, and the open finding in Findings' phone list: the tint and
-     the bar are gone, so a line. */
   [data-comparison="list"] button[aria-current="true"],
   [data-findings-list] button[aria-current="true"] {
     outline: 2px solid Highlight;

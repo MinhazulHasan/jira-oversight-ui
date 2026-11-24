@@ -17,12 +17,7 @@ import { rulesView } from "../sample/rules";
 import { trendPoints } from "../sample/series";
 import { personOf } from "../sample/team";
 
-/*
- * Every view must agree with every other: a figure on the Overview is the
- * total behind the Findings filter it clicks through to, the open count in
- * the rule catalogue, the last point of its trend, the number the weekly
- * briefing quotes and the fact an answer cites.
- */
+/** Every view must agree with every other: a figure on the Overview is the */
 
 const NOW = Date.parse("2026-11-04T14:30:00Z");
 
@@ -192,7 +187,7 @@ for (const at of [NOW, Date.parse("2027-01-15T12:00:00Z")]) {
       });
 
       it("give every ticket on the board to exactly one row, by its assignee now", () => {
-        // The board's work: an Epic is a container, so no one's tickets count it (JO-12, G5).
+        // The board's work: an Epic is a container, so no one's tickets count it.
         const issues = dataset.world.issues.filter((issue) => issue.type !== "Epic");
         expect(people.reduce((sum, row) => sum + row.tickets, 0)).toBe(issues.length);
         for (const row of people) {

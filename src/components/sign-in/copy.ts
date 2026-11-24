@@ -1,11 +1,6 @@
 import type { LoginError, NoAccessReason } from "@/lib/sign-in";
 
-/*
- * What the sign-in pages say. A code in the address (?error=, ?reason=,
- * ?signed_out=1) only picks one of these messages: nothing from the address
- * is ever shown back. Calm and plain, because none of it is the reader's
- * fault, and every message says what to do next.
- */
+/* What the sign-in pages say. */
 
 export interface Notice {
   /** The small label above the title. */

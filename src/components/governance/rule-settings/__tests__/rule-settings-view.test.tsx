@@ -23,14 +23,6 @@ import settingsJson from "../../../../../docs/sample-responses/rule-settings.jso
 import { pageReload } from "../leave-guard";
 import { RuleSettingsView } from "../rule-settings-view";
 
-/*
- * The rule settings page (JO-15) against a stand-in for the service that
- * answers as the contract says: the draft and its bar, what is wrong said
- * beside the field, the review with the preview, a save and its re-check, a
- * save someone else's overtook, the service's refusals, the history and its
- * undo, and leaving with unsaved changes.
- */
-
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 
 vi.mock("next/navigation", () => ({
@@ -84,7 +76,7 @@ afterEach(() => {
 function applied(settings: RuleSettings, body: RuleSettingsSaveRequest, state: "running" | "applied" = "running"): RuleSettings {
   const fields: RuleSettingsFieldChange[] = [];
   const rules = settings.rules.map((rule) => {
-    // A rule's settings changed (JO-15's shape); a custom rule's own changes (JO-20) are custom-rules.test.tsx's.
+    // A rule's settings changed; a custom rule's own changes are custom-rules.test.tsx's.
     const change = body.changes.filter(isSettingChange).find((candidate) => candidate.rule_id === rule.rule_id);
     if (!change) return rule;
     const enabled = change.reset ? rule.default_enabled : (change.enabled ?? rule.enabled);
