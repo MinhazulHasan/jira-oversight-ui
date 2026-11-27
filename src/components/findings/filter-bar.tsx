@@ -23,6 +23,7 @@ import { notify } from "@/lib/notify";
 
 import { FacetSegments, type FacetSegment } from "./facet-segments";
 import { NO_EPIC_LABEL, personFilterName } from "./model";
+import { TicketFilter } from "./ticket-filter";
 import {
   CLEARED_FILTERS,
   SEARCH_MAX,
@@ -167,6 +168,7 @@ export function FilterBar({ filters, setFilters, facets }: FilterBarProps) {
   const warnings = countOf(facets?.severity, "warning");
   const open = countOf(facets?.state, "open");
   const resolved = countOf(facets?.state, "resolved");
+  const ignored = countOf(facets?.state, "ignored");
 
   const severityOptions: FacetSegment<"all" | SeverityFilter>[] = [
     { value: "all", label: "All", count: sum(breaches, warnings) },
@@ -176,7 +178,8 @@ export function FilterBar({ filters, setFilters, facets }: FilterBarProps) {
   const stateOptions: FacetSegment<StateFilter>[] = [
     { value: "open", label: "Open", count: open },
     { value: "resolved", label: "Resolved", count: resolved },
-    { value: "all", label: "All", count: sum(open, resolved) },
+    { value: "ignored", label: "Ignored", count: ignored },
+    { value: "all", label: "All", count: sum(open, resolved, ignored) },
   ];
 
   const epicName = (value: string) => epicOptions.find((option) => option.value === value)?.label ?? value;
@@ -211,7 +214,7 @@ export function FilterBar({ filters, setFilters, facets }: FilterBarProps) {
           pending={pending}
           onValueChange={(next) => {
             void setFilters({ state: next === "open" ? null : next, page: null });
-            acknowledge(next === "all" ? "State: open and resolved" : `State: ${next}`);
+            acknowledge(next === "all" ? "State: open, resolved and ignored" : `State: ${next}`);
           }}
         />
       </div>
@@ -285,6 +288,13 @@ export function FilterBar({ filters, setFilters, facets }: FilterBarProps) {
             void setFilters({ first_seen: next === "all" ? null : next, page: null });
             const preset = DATE_RANGE_PRESETS.find((option) => option.value === next);
             acknowledge(`First seen: ${preset?.label.toLowerCase() ?? next}`);
+          }}
+        />
+        <TicketFilter
+          value={filters.ticket ?? null}
+          onValueChange={(next) => {
+            void setFilters({ ticket: next, page: null });
+            acknowledge(next === null ? "Ticket: any" : `Ticket: ${next}`);
           }}
         />
         {active ? (

@@ -253,7 +253,7 @@ test.describe("on a desktop", () => {
       await route.continue();
     });
     await page.goto(`/people?person=${lead.id}`);
-    await page.locator("[data-scorecard]").getByRole("button", { name: lead.name }).click();
+    await page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name }).click();
     const card = cardOf(page, lead.name);
     await expect(card.locator("[data-person-card]")).toHaveAttribute("data-card-state", "loading");
     await placed(card);
@@ -282,11 +282,11 @@ test.describe("on a desktop", () => {
       const problems = watchConsole(page);
       const [lead] = await holders(request);
       await page.goto(`/people?person=${lead.id}`);
-      await page.locator("[data-scorecard]").getByRole("button", { name: lead.name }).click();
+      await page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name }).click();
       const card = cardOf(page, lead.name);
       await ready(card);
-      await expect(card.locator("[data-card-line]")).toHaveText(/^(Holds [\d,]+ open tickets? on Demo project|No open tickets on Demo project)$/);
-      await expect(card.getByRole("heading", { name: "Open findings on all their tickets" })).toBeVisible();
+      await expect(card.locator("[data-card-line]")).toHaveText(/^([\d,]+ open tickets? on Demo project|No open tickets on Demo project)$/);
+      await expect(card.getByRole("heading", { name: "Open findings on their tickets" })).toBeVisible();
       await expect(card.locator("[data-tile]")).toHaveCount(3);
       await expect(card.getByText("Process, last 90 days")).toBeVisible();
       await expect(card.getByRole("link", { name: "View scorecard" })).toHaveAttribute("href", `/people?person=${lead.id}`);
@@ -344,7 +344,7 @@ test.describe("on a desktop", () => {
       if (sent.method() === "POST" && sent.url().endsWith("/api/oversight/ask")) asks.push(sent.url());
     });
     await page.goto(`/people?person=${lead.id}`);
-    await page.locator("[data-scorecard]").getByRole("button", { name: lead.name }).click();
+    await page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name }).click();
     const card = cardOf(page, lead.name);
     await ready(card);
     await card.getByRole("link", { name: `Ask about ${lead.name.split(" ")[0]}` }).click();
@@ -640,7 +640,7 @@ test.describe("every surface that names someone opens their card", () => {
     await page.keyboard.press("Escape");
     await table.getByRole("row").filter({ hasText: lead.name }).locator("td").nth(2).click();
     await expect(page).toHaveURL(new RegExp(`person=${lead.id}`));
-    await page.locator("[data-scorecard]").getByRole("button", { name: lead.name }).hover();
+    await page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name }).hover();
     await ready(cardOf(page, lead.name));
   });
 
@@ -737,7 +737,7 @@ test.describe("on a phone", () => {
       const problems = watchConsole(page);
       const [lead] = await holders(request);
       await page.goto(`/people?person=${lead.id}`);
-      const name = page.locator("[data-scorecard]").getByRole("button", { name: lead.name });
+      const name = page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name });
       await name.tap();
       const sheet = cardOf(page, lead.name);
       await expect(sheet).toBeVisible();
@@ -939,7 +939,7 @@ test.describe("reaching a card, leaving it, and its failures (on a desktop)", ()
   }) => {
     const [lead] = await holders(request);
     await page.goto(`/people?person=${lead.id}`);
-    const name = page.locator("[data-scorecard]").getByRole("button", { name: lead.name });
+    const name = page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name });
     await name.focus();
     await page.keyboard.press("Enter");
     const card = cardOf(page, lead.name);
@@ -999,7 +999,7 @@ test.describe("reaching a card, leaving it, and its failures (on a desktop)", ()
     const [lead] = await holders(request);
     await page.route(CARD, (route) => route.fulfill({ status: 503, json: { error: "upstream_unavailable", message: "The oversight service is busy or starting up. Try again in a moment." } }));
     await page.goto(`/people?person=${lead.id}`);
-    await page.locator("[data-scorecard]").getByRole("button", { name: lead.name }).click();
+    await page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name }).click();
     const card = cardOf(page, lead.name);
     // A recorded read: a 5xx is shown at once, never retried (the card's skeleton never waits out retries).
     await expect(card.locator("[data-person-card]")).toHaveAttribute("data-card-state", "error");
@@ -1027,7 +1027,7 @@ test.describe("reaching a card, leaving it, and its failures (on a desktop)", ()
       await route.fulfill({ response, json: { ...body, projects: [...body.projects, ...synced] } });
     });
     await page.goto(`/people?person=${lead.id}`);
-    await page.locator("[data-scorecard]").getByRole("button", { name: lead.name }).click();
+    await page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name }).click();
     const card = cardOf(page, lead.name);
     await ready(card);
     const line = card.locator("[data-card-boards]");
@@ -1053,7 +1053,7 @@ test.describe("on a short phone screen", () => {
       test("the sheet's body scrolls inside it: every way on can be tapped, and the other boards' line reached", async ({ page, request }) => {
         const [lead] = await holders(request);
         await page.goto(`/people?person=${lead.id}`);
-        const name = page.locator("[data-scorecard]").getByRole("button", { name: lead.name });
+        const name = page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name });
         await name.tap();
         const sheet = cardOf(page, lead.name);
         await expect(sheet).toHaveClass(/jo-sheet-bottom/);
@@ -1090,7 +1090,7 @@ test.describe("on a tablet", () => {
   test("the sheet is the screen's width up to 40rem, centred", async ({ page, request }) => {
     const [lead] = await holders(request);
     await page.goto(`/people?person=${lead.id}`);
-    await page.locator("[data-scorecard]").getByRole("button", { name: lead.name }).tap();
+    await page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name }).tap();
     const sheet = cardOf(page, lead.name);
     await expect(sheet).toHaveClass(/jo-sheet-bottom/);
     await ready(sheet);
@@ -1106,7 +1106,7 @@ test.describe("on a phone, more", () => {
   test("closing the sheet gives focus back to the name that opened it (Safari focuses nothing on a tap)", async ({ page, request }) => {
     const [lead] = await holders(request);
     await page.goto(`/people?person=${lead.id}`);
-    const name = page.locator("[data-scorecard]").getByRole("button", { name: lead.name });
+    const name = page.locator("[data-scorecard]").getByRole("heading", { name: lead.name }).getByRole("button", { name: lead.name });
     await name.tap();
     const sheet = cardOf(page, lead.name);
     await ready(sheet);

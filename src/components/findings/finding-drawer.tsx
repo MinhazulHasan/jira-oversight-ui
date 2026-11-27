@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, ChevronLeft, ChevronRight, Link2 } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, EyeOff, Link2, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useEffectEvent, useState, type ReactNode } from "react";
 
@@ -18,6 +18,7 @@ import type { DataMode, Finding } from "@/lib/api/schemas";
 import { formatCount } from "@/lib/format";
 
 import { FindingEvidence } from "./finding-evidence";
+import { useIgnoreActions } from "./ignore-actions";
 import { OpenInJira } from "./open-in-jira";
 import { findingStatus } from "./model";
 import { normaliseFindingId } from "./url-state";
@@ -46,6 +47,7 @@ function isTextField(target: EventTarget | null): boolean {
 
 export function FindingDrawer({ urlId, onOpen, onClose, items, dataMode, lastSyncedAt }: FindingDrawerProps) {
   const locale = useFigureLocale();
+  const ignoring = useIgnoreActions();
   const open = urlId !== null;
   const id = normaliseFindingId(urlId);
 
@@ -172,7 +174,7 @@ export function FindingDrawer({ urlId, onOpen, onClose, items, dataMode, lastSyn
         finding ? (
           <>
             <SeverityBadge severity={finding.severity} size="sm" className="tracking-normal normal-case" />
-            <span className="mono tracking-normal">{finding.rule_id}</span>
+            <span className="mono shrink-0 tracking-normal whitespace-nowrap">{finding.rule_id}</span>
             {status === "resolved" ? (
               <SeverityBadge severity="resolved" size="sm" className="tracking-normal normal-case" />
             ) : status === "superseded" ? (
@@ -182,6 +184,10 @@ export function FindingDrawer({ urlId, onOpen, onClose, items, dataMode, lastSyn
             ) : status === "settings_changed" ? (
               <Badge tone="muted" size="sm" className="tracking-normal normal-case" data-state="settings_changed">
                 Closed: rule settings changed
+              </Badge>
+            ) : status === "ignored" ? (
+              <Badge tone="muted" size="sm" className="tracking-normal normal-case" data-state="ignored">
+                Ignored
               </Badge>
             ) : null}
           </>
@@ -193,6 +199,29 @@ export function FindingDrawer({ urlId, onOpen, onClose, items, dataMode, lastSyn
       description={description}
       actions={
         <>
+          {finding && ignoring.enabled && finding.issue_key !== null && (status === "open" || status === "ignored") ? (
+            // One button for both, so the focus stays on it as an ignore or a restore turns it into the other.
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={status === "ignored" ? RotateCcw : EyeOff}
+              disabled={ignoring.busy}
+              data-drawer-ignore={status}
+              onClick={() =>
+                status === "ignored"
+                  ? ignoring.askRestore([finding])
+                  : ignoring.askIgnore({
+                      target: { finding_ids: [finding.finding_id] },
+                      scope: "finding",
+                      choose: true,
+                      ticket: finding.issue_key,
+                      ruleId: finding.rule_id,
+                    })
+              }
+            >
+              {status === "ignored" ? "Restore" : "Ignore"}
+            </Button>
+          ) : null}
           <IconButton label="Copy link to this finding" icon={Link2} size="sm" onClick={copyLink} disabled={!shownId} />
           {finding?.issue_key ? (
             <>

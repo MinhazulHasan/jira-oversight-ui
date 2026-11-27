@@ -180,7 +180,7 @@ export function listFindingsFacts(dataset: Dataset, ref: string, params: ListFin
     page_size: 100,
   });
   const ordered = [...matching].sort(
-    (a, b) => Number(a.state === "resolved") - Number(b.state === "resolved"),
+    (a, b) => Number(a.state !== "open") - Number(b.state !== "open"),
   );
   const described = [`${params.state} findings`];
   // The board's rule by its own title; a rule the board does not run, by its id alone.

@@ -11,13 +11,14 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
 import { useFigureLocale } from "@/components/ui/use-figures";
-import { usePeopleDirectory, usePeopleScorecard, type ApiError } from "@/lib/api/hooks";
+import { usePeopleCredit, usePeopleDirectory, usePeopleScorecard, type ApiError } from "@/lib/api/hooks";
 import {
+  CODE_REVIEW_CAVEAT,
   PERSON_ID_PATTERN,
   recordsCodeReview,
   SCORECARD_DAYS,
   SCORECARD_DEFAULT_DAYS,
-  scorecardCaveat,
+  type PeopleCredit,
   type PeopleScorecard,
   type ScorecardDays,
   type ScorecardPerson,
@@ -27,6 +28,9 @@ import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
 import { Comparison, ComparisonSkeleton } from "./comparison";
+import { CreditProvider } from "./credit/context";
+import { CreditControl } from "./credit/credit-control";
+import { creditNote } from "./credit/model";
 import { firstOrder, SORT_KEYS, type SortOrder } from "./model";
 import { PersonPicker } from "./person-picker";
 import { CaveatSkeleton, MarkKey, Scorecard, ScorecardSkeleton } from "./scorecard";
@@ -56,11 +60,16 @@ const PERIODS = SCORECARD_DAYS.map((days) => ({ value: String(days) as `${Scorec
 const EVERYONE_DESCRIPTION =
   "Each person beside the whole board. Choose someone to open their scorecard.";
 
-/** The caveat under the everyone table, as at the foot of every scorecard: what the figures can and cannot show. */
-function TableCaveat({ data }: { data: PeopleScorecard }) {
+/** The note under the everyone table: whom the tickets count for, as the board's credit setting has it, and what they cannot show. */
+function TableCaveat({ data, credit }: { data: PeopleScorecard; credit: PeopleCredit | undefined | null }) {
+  // Until the setting is read the note keeps its lines' room, so nothing below moves when it arrives.
+  if (credit === undefined) return <CaveatSkeleton lines={2} />;
   return (
     <div className="border-t border-rule-weak pt-3">
-      <p className="max-w-[76ch] text-xs leading-relaxed text-ink-low">{scorecardCaveat(data.period.days, recordsCodeReview(data.measures))}</p>
+      <p className="max-w-[76ch] text-xs leading-relaxed text-ink-low max-sm:min-h-[6.5em]" data-credit-note>
+        {creditNote(credit)}
+        {recordsCodeReview(data.measures) ? "" : CODE_REVIEW_CAVEAT}
+      </p>
     </div>
   );
 }
@@ -87,7 +96,18 @@ const OFF_NOTE = "Comparing people is off. One person at a time.";
 /** The prompt with no one chosen, comparison off: the Person control above. */
 const OFF_PROMPT = "Choose someone above to see their scorecard.";
 
+/** The People page, its figures and words following the board's credit setting over the period on screen. */
 export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["comparison"] }) {
+  const [{ days }] = useQueryStates(peopleUrlParsers, { history: "push", scroll: false });
+  const credit = usePeopleCredit({ days });
+  return (
+    <CreditProvider credit={credit.data ?? null}>
+      <PeopleBody expected={expected} />
+    </CreditProvider>
+  );
+}
+
+function PeopleBody({ expected }: { expected: PeopleScorecard["comparison"] }) {
   const locale = useFigureLocale();
   const [url, setUrl] = useQueryStates(peopleUrlParsers, { history: "push", scroll: false });
   const { days, person, sort } = url;
@@ -101,6 +121,10 @@ export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["co
   const needsOne = person !== null && data !== undefined && fromEveryone === null;
   const one = usePeopleScorecard({ days, person: person ? [person] : [] }, { enabled: needsOne });
   const directory = usePeopleDirectory({ enabled: shape === "off" });
+  // Whom tickets count for on the board: the toolbar's control, the note under the table and each column's words.
+  const credit = usePeopleCredit({ days });
+  const creditFailed = credit.isError && !credit.data;
+  const noteCredit = credit.data ?? (creditFailed ? null : undefined);
 
   const select = useCallback(
     (row: ScorecardPerson) => {
@@ -156,6 +180,7 @@ export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["co
             }}
           />
         ) : null}
+        <CreditControl credit={credit.data} failed={creditFailed} retrying={credit.isFetching} onRetry={() => void credit.refetch()} />
         <p className="text-xs text-ink-low sm:ml-auto">
           {data ? (
             <>
@@ -191,7 +216,7 @@ export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["co
           <Section id="everyone" title="Everyone with tickets" description={EVERYONE_DESCRIPTION}>
             <MarkKey className="text-xs" />
             <ComparisonSkeleton />
-            <CaveatSkeleton />
+            <CaveatSkeleton lines={2} />
           </Section>
           <ScorecardRegion person={person} source={null} loading error={null} onRetry={() => undefined} retrying={false} prompt={ON_PROMPT} />
         </>
@@ -201,8 +226,8 @@ export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["co
             {data.people.length === 0 ? (
               <EmptyState
                 icon={UserRoundSearch}
-                title="No one holds a ticket on this board"
-                description={"No ticket is assigned to anyone."}
+                title="No one has tickets on this board"
+                description="No ticket counts for anyone."
               />
             ) : (
               <>
@@ -219,7 +244,7 @@ export function PeopleView({ expected = "on" }: { expected?: PeopleScorecard["co
                   }
                   stale={stalePeriod}
                 />
-                <TableCaveat data={data} />
+                <TableCaveat data={data} credit={noteCredit} />
               </>
             )}
           </Section>
@@ -330,6 +355,7 @@ export function PeopleViewFallback({ expected = "on" }: { expected?: PeopleScore
       <div className="flex items-center gap-4">
         <Skeleton className="h-8 w-56" still />
         {expected === "off" ? <Skeleton className="h-8 w-44" still /> : null}
+        <Skeleton className="h-8 w-52" still />
         <Skeleton className="ml-auto h-3 w-48" still />
       </div>
       {expected === "off" ? <ScorecardSkeleton /> : <ComparisonSkeleton />}

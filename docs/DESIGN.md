@@ -161,12 +161,31 @@ finding in itself, so it gets a calm, deliberate look, not an error look.
    under its name ("at last sync", the sync's time in its tooltip), as the
    drawer does beside the figure. The export keeps the rules runs' own span
    (first seen to last seen), which its two columns beside it check.
+   At the people level an admin ignores findings without changing a rule
+   (contract 4.26 to 4.28): a box opens each row an admin can act on and the
+   head's box takes the page; a selection raises a bar at the foot, its room
+   kept ("3 selected · Ignore · Clear", Restore for ignored rows, "Select all
+   412 matching" once the page is whole); each row's menu offers Ignore,
+   Ignore every rule on this ticket, or Restore; a focused row takes x or
+   Space and Shift+F10, and Escape lets go. State gains Ignored, a Ticket
+   filter (Any, Open, Finished) sits beside First seen, and "Ignore findings
+   on finished tickets…" beside the export. The dialog says what the ignore
+   takes now from the service's preview, by rule, offers the scope as two
+   cards where it can be chosen and an optional reason, and its one primary
+   action carries the count; the toast after it has Undo. Finished tickets
+   have their own dialog: every rule on the board with its severity, breaches
+   first, ticked where it is ignored there (greyed where it has none), tick
+   to ignore and untick to count again, one Save for both. An ignored row
+   reads "Ignored", a neutral chip (never a status colour), who, when and why
+   in its tooltip; the drawer has Ignore or Restore and, ignored, a note of
+   who, when, why and what it covers.
 3. **Issue** `/issues/[key]` — the assignee by name beside the status and epic
    (leading to their open findings), or Unassigned; facts (points, time
    logged, effort ratio against its threshold, cycle time, reopens, when the
    estimate was set), the status timeline as a swimlane coloured by stage with
    skipped stages marked, the changelog, worklog totals (never names) and the
-   issue's findings.
+   issue's findings (an ignored one with the Ignored chip, and for an admin
+   "Ignore all on this ticket" beside them while any is open).
 4. **Ask** `/ask` — the Ask the System pattern: question, answer prose with
    bound values and citation markers, a facts ledger, and a tick-and-tie line
    from each cited value to its row. The **five outcomes** each get their own
@@ -212,10 +231,22 @@ finding in itself, so it gets a calm, deliberate look, not an error look.
    default), the everyone table: the marks' key above it, the person (20 px
    picture and name) held at the left while a column per measure scrolls,
    sortable by any column (a measure sorts closer to the process first, too
-   few tickets always last), each header's tooltip saying what it counts, the
-   whole board as the last row set apart by a rule and the rail's ground, the
-   caveat under it, and a row's choice opening its scorecard below (and saying
-   so); at 390 px it is a list with the sort above it, where someone compared
+   few tickets always last), each header's tooltip saying what it counts,
+   which way is closer and whom it counts for (the note's words), the whole
+   board as the last row set apart by a rule and the rail's ground, the note
+   under it in plain words following the board's credit setting ("Tickets
+   count for their Programmer in Jira; tickets without one count for no
+   one."), and a row's choice opening its scorecard below (and saying so).
+   The setting decides whom every ticket counts for, open or finished, in
+   every figure here. Beside the period, a quiet control, "Counts for:
+   Automatic", opens "Whom tickets count for": the
+   choices as cards in a radio group (Automatic, Assignee, each people field
+   the board fills), each with one plain line on what it does and its
+   coverage over the period on screen as one slim bar (the share that counts
+   for someone) and one line ("471 of 475 finished tickets count for
+   someone"), the one in force marked "In use", Automatic "Recommended" where
+   the board fills its field, the one chosen ringed in ink (never the
+   accent); Save applies it at once with a toast; at 390 px it is a list with the sort above it, where someone compared
    on no measure reads "Too few tickets". A link to someone's scorecard lands
    on it. With comparison off, a person picker (the @ list's
    two groups, "With tickets" first) and one scorecard. The scorecard: the
@@ -231,7 +262,7 @@ finding in itself, so it gets a calm, deliberate look, not an error look.
    ring with a dot, an empty ring, two bars, one bar), and a link to the
    tickets behind it in the accent (a list wider than its figure says so:
    "All findings", and for open findings per 10 open tickets, which counts
-   those on open tickets, "Open findings on all their tickets"); a
+   those on open tickets, "Open findings on tickets they hold"); a
    measure's name opens its definition with a press; the
    measures the board cannot show last, muted, with the hatch and the reason;
    the caveat at the foot. Loading keeps the final shape, sections and
@@ -494,8 +525,8 @@ under one scale drawn above them all.
   the other. It lists everyone
   Jira lets you assign the board's tickets to (`GET /people/directory`), in
   two groups of one listbox, each a `group` named by its heading: "With
-  tickets" (assigned one of the board's tickets now), then "No tickets" (the
-  board's members who hold none). A heading is the menu's group label: micro
+  tickets" (some of the board's tickets count for them), then "No tickets"
+  (everyone else on the board). A heading is the menu's group label: micro
   caps in `--text-low`, 28 px tall, its text in line with the avatars; the
   second group opens on a hairline in `--rule-weak`. A search filters both
   groups as one list, and a group it empties goes, heading and all; the
@@ -646,15 +677,15 @@ under one scale drawn above them all.
   sit centred on the picture; a two-line name grows it): the 48 px
   picture (the initials at `--t-xl` where there is none) with a 2 px ring of
   the sheet, the name in 17 px semibold, wrapping, never cut, and one plain
-  line in 12 px ("Holds 13 open tickets on Demo project", the count in Plex
+  line in 12 px ("13 open tickets on Demo project", the count in Plex
   Mono, the board by its name as the top bar names it, its key in the
   tooltip). Then, 16 px in and 12 px apart: three figures in one ruled frame,
   as the Overview's tiles (Open, In progress, Done in 90 days; 21 px Plex
   Mono, a nought in `--text-low`), the third a little wider so its period is
-  said whole; "Open findings on all their tickets" in micro caps (they are the
-  open findings on every ticket the person holds, done ones too, as Findings
-  filtered to them lists them, so they can outnumber the open tickets; the
-  label says so where everyone sees it, the tooltip in full) over the
+  said whole; "Open findings on their tickets" in micro caps (they are the
+  open findings on every ticket that counts for the person, done ones too,
+  so they can outnumber the open tickets; the label says so where everyone
+  sees it, the tooltip in full) over the
   breaches and warnings with their severity marks; "Process, last 90 days"
   in micro caps over the scorecard's sentence on two lines ("Closer to the
   process than the board / on 5 of 8 measures.", the figures in Plex Mono),

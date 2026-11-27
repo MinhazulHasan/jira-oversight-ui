@@ -3,14 +3,32 @@ import type { z } from "zod";
 import { LEAVE_GUARD_MS, sendToSignIn } from "@/lib/sign-in";
 
 import {
+  ignoredPageSchema,
+  ignorePreviewSchema,
+  ignoreResultSchema,
+  restoreResultSchema,
+  type IgnoredPage,
+  type IgnorePreview,
+  type IgnorePreviewRequest,
+  type IgnoreRequest,
+  type IgnoreResult,
+  type RestoreResult,
+} from "./ignores";
+import {
   accessLogSearchParams,
+  creditSearchParams,
   findingsSearchParams,
+  ignoredSearchParams,
   personCardSearchParams,
+  proofSearchParams,
   scorecardSearchParams,
   trendSearchParams,
   type AccessLogQueryInput,
+  type CreditQueryInput,
   type FindingsQueryInput,
+  type IgnoredQueryInput,
   type PersonCardQueryInput,
+  type ProofQueryInput,
   type ScorecardQueryInput,
   type TrendQueryInput,
 } from "./params";
@@ -25,7 +43,9 @@ import {
   insightsSchema,
   issueTimelineSchema,
   overviewSchema,
+  peopleCreditSchema,
   peopleDirectorySchema,
+  peopleProofSchema,
   peopleSchema,
   peopleScorecardSchema,
   personCardSchema,
@@ -48,7 +68,10 @@ import {
   type IssueTimeline,
   type Overview,
   type People,
+  type PeopleCredit,
+  type PeopleCreditSaveRequest,
   type PeopleDirectory,
+  type PeopleProof,
   type PeopleScorecard,
   type PersonCard,
   type Portfolio,
@@ -223,6 +246,21 @@ export function getPeopleScorecard(query: ScorecardQueryInput = {}, options: Req
   return request(withQuery("people/scorecard", scorecardSearchParams(query)), peopleScorecardSchema, options);
 }
 
+/** The tickets behind one figure on the People page (people level only): a person's, or the whole board's. */
+export function getPeopleProof(query: ProofQueryInput, options: RequestOptions = {}): Promise<PeopleProof> {
+  return request(withQuery("people/scorecard/tickets", proofSearchParams(query)), peopleProofSchema, options);
+}
+
+/** Whom the board's tickets count for, and each choice's coverage over the period (people level only). */
+export function getPeopleCredit(query: CreditQueryInput = {}, options: RequestOptions = {}): Promise<PeopleCredit> {
+  return request(withQuery("people/credit", creditSearchParams(query)), peopleCreditSchema, options);
+}
+
+/** Changes whom the board's tickets count for, from the revision the page read. */
+export function putPeopleCredit(body: PeopleCreditSaveRequest, options: RequestOptions = {}): Promise<PeopleCredit> {
+  return request("people/credit", peopleCreditSchema, { ...postRequest(body, options), method: "PUT" });
+}
+
 export function getPersonCard(personId: string, query: PersonCardQueryInput = {}, options: RequestOptions = {}): Promise<PersonCard> {
   return request(withQuery(`people/${encodeURIComponent(personId)}/card`, personCardSearchParams(query)), personCardSchema, options);
 }
@@ -237,6 +275,25 @@ export function getFinding(findingId: string, options: RequestOptions = {}): Pro
 
 export function getIssueTimeline(issueKey: string, options: RequestOptions = {}): Promise<IssueTimeline> {
   return request(`issues/${encodeURIComponent(issueKey)}/timeline`, issueTimelineSchema, options);
+}
+
+/** What an ignore would do now (people level only): the open findings it would resolve, by rule; nothing is written. */
+export function postIgnorePreview(body: IgnorePreviewRequest, options: RequestOptions = {}): Promise<IgnorePreview> {
+  return request("findings/ignore/preview", ignorePreviewSchema, postRequest(body, options));
+}
+
+export function postIgnore(body: IgnoreRequest, options: RequestOptions = {}): Promise<IgnoreResult> {
+  return request("findings/ignore", ignoreResultSchema, postRequest(body, options));
+}
+
+/** Removes ignores; the board's findings are re-checked, so those the rules still hold reopen. */
+export function postRestore(ignoreIds: readonly string[], options: RequestOptions = {}): Promise<RestoreResult> {
+  return request("findings/restore", restoreResultSchema, postRequest({ ignore_ids: ignoreIds }, options));
+}
+
+/** The board's standing ignores, a page at a time (people level only). */
+export function getIgnored(query: IgnoredQueryInput = {}, options: RequestOptions = {}): Promise<IgnoredPage> {
+  return request(withQuery("findings/ignored", ignoredSearchParams(query)), ignoredPageSchema, options);
 }
 
 export function postAsk(question: string, mentions: readonly string[] = [], options: RequestOptions = {}): Promise<AskResponse> {

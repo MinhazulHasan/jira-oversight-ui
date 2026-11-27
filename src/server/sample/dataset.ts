@@ -4,7 +4,8 @@ import { boardRules, NO_OVERRIDES, settingsKey, type BoardOverrides, type BoardR
 import type { CustomRuleRecord } from "./custom-rules";
 import { DEFAULT_BOARD, SAMPLE_BOARDS, type SampleBoard } from "./boards";
 import { REPORT_TIMEZONE, PROCESS_VERSION, RULES_VERSION } from "./catalogue";
-import { lastRun, runEngine, type Engine } from "./engine";
+import { lastRun, runEngine, type Engine, type FindingRecord } from "./engine";
+import { activeIgnores, ignoresGeneration, NO_IGNORES, withIgnores, type Ignores } from "./ignores";
 import { recheck, type RecheckOutcome } from "./recheck";
 import { boardSettings, revisionOf, settingsGeneration, type BoardSettings } from "./settings-store";
 import { floorToMinute, iso } from "./time";
@@ -16,7 +17,12 @@ export interface Dataset {
   board: SampleBoard;
   now: number;
   world: World;
+  /** The findings every view reads: the board's ignores resolve theirs as ignored. */
   engine: Engine;
+  /** The findings as the rules alone leave them, before any ignore: what a rule settings re-check starts from. */
+  baseEngine: Engine;
+  /** The board's ignores as they stand. */
+  ignores: Ignores;
   memo: Map<string, unknown>;
   /** Every catalogue rule as the board's settings make it, in catalogue order, then its own rules that stand. */
   rules: readonly BoardRule[];
@@ -105,18 +111,25 @@ function settle(build: Build, now: number, history: SettingsHistory): { engine: 
   return { engine, rules };
 }
 
-function assemble(board: SampleBoard, now: number, history: SettingsHistory, cached: boolean): Dataset {
+function assemble(board: SampleBoard, now: number, history: SettingsHistory, cached: boolean, ignores: Ignores): Dataset {
   const minute = floorToMinute(now);
   const worldKey = `${board.key}|${minute}`;
   const world = cached
     ? (worlds.get(worldKey) ?? remember(worlds, worldKey, buildWorld(minute, board), 2 * SAMPLE_BOARD_COUNT))
     : buildWorld(minute, board);
-  const { engine, rules } = settle({ board, minute, world, cached, generation: settingsGeneration() }, minute, history);
-  return { board, now: minute, world, engine, memo: new Map(), rules, revision: history.revisions.length };
+  const { engine: baseEngine, rules } = settle({ board, minute, world, cached, generation: settingsGeneration() }, minute, history);
+  // An ignore holds from when it was made, read as a re-check reads a save: never before the last rules run.
+  const engine = withIgnores(baseEngine, ignores, (at) => recheckTime(world, minute, at));
+  return { board, now: minute, world, engine, baseEngine, ignores, memo: new Map(), rules, revision: history.revisions.length };
 }
 
-export function buildDataset(now: number, history: SettingsHistory = CATALOGUE_SETTINGS, board: SampleBoard = DEFAULT_BOARD): Dataset {
-  return assemble(board, now, history, false);
+export function buildDataset(
+  now: number,
+  history: SettingsHistory = CATALOGUE_SETTINGS,
+  board: SampleBoard = DEFAULT_BOARD,
+  ignores: Ignores = NO_IGNORES,
+): Dataset {
+  return assemble(board, now, history, false, ignores);
 }
 
 export function historyOf(settings: BoardSettings): SettingsHistory {
@@ -126,15 +139,21 @@ export function historyOf(settings: BoardSettings): SettingsHistory {
 /** A sample board (DEMO unless another is named) at `now`, under its rule settings as they stand (settings-store.ts). */
 export function sampleDataset(now: number, board: SampleBoard = DEFAULT_BOARD): Dataset {
   const settings = boardSettings(board.key);
-  const key = `${board.key}|${floorToMinute(now)}|${settingsGeneration()}|${revisionOf(settings)}`;
-  return datasets.get(key) ?? remember(datasets, key, assemble(board, now, historyOf(settings), true), KEEP * SAMPLE_BOARD_COUNT);
+  const key = `${board.key}|${floorToMinute(now)}|${settingsGeneration()}|${revisionOf(settings)}|${ignoresGeneration()}`;
+  return (
+    datasets.get(key) ??
+    remember(datasets, key, assemble(board, now, historyOf(settings), true, activeIgnores(board.key)), KEEP * SAMPLE_BOARD_COUNT)
+  );
 }
 
 /** What a re-check under `overrides` would do to the dataset's findings at `at`, */
 export function simulateRecheck(dataset: Dataset, state: BoardState, at: number): RecheckOutcome & { rules: BoardRule[] } {
   const build: Build = { board: dataset.board, minute: dataset.now, world: dataset.world, cached: true, generation: settingsGeneration() };
   const rules = boardRules(state.overrides, state.custom);
-  return { ...recheck(dataset.engine, engineFor(build, state), rules, recheckTime(dataset.world, dataset.now, at)), rules };
+  const outcome = recheck(dataset.baseEngine, engineFor(build, state), rules, recheckTime(dataset.world, dataset.now, at));
+  // An ignored ticket and rule stays ignored whatever the settings: its findings neither open nor close with them.
+  const judged = (finding: FindingRecord) => finding.issue === null || dataset.ignores.covers(finding.issue.key, [finding.rule.id]) === null;
+  return { ...outcome, opened: outcome.opened.filter(judged), closed: outcome.closed.filter(judged), rules };
 }
 
 /** A view computed once per dataset. */

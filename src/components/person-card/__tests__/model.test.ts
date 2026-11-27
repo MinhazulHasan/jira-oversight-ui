@@ -29,11 +29,11 @@ const ada = cardSample as PersonCard;
 const noor = memberSample as PersonCard;
 
 describe("the header's plain line", () => {
-  it("says how many open tickets they hold on the board, or that they are a member who holds none", () => {
-    expect(headerLine(ada, "en-GB").text).toBe(`Holds ${ada.work.open_tickets} open tickets on Demo project`);
-    expect(headerLine({ ...ada, work: { ...ada.work, open_tickets: 1 } }, "en-GB").text).toBe("Holds 1 open ticket on Demo project");
-    expect(headerLine({ ...ada, work: { ...ada.work, open_tickets: 1234, in_progress: 0 } }, "en-GB").text).toBe("Holds 1,234 open tickets on Demo project");
-    // Holds tickets, all of them finished: nothing open, but not a member who holds none.
+  it("says how many open tickets they have on the board, or that they are a member with none", () => {
+    expect(headerLine(ada, "en-GB").text).toBe(`${ada.work.open_tickets} open tickets on Demo project`);
+    expect(headerLine({ ...ada, work: { ...ada.work, open_tickets: 1 } }, "en-GB").text).toBe("1 open ticket on Demo project");
+    expect(headerLine({ ...ada, work: { ...ada.work, open_tickets: 1234, in_progress: 0 } }, "en-GB").text).toBe("1,234 open tickets on Demo project");
+    // Tickets, all of them finished: nothing open, but not a member with none.
     expect(headerLine({ ...ada, work: { ...ada.work, open_tickets: 0, in_progress: 0 } }, "en-GB").text).toBe("No open tickets on Demo project");
     expect(headerLine(noor, "en-GB").text).toBe("Member of Demo project · no tickets");
   });
@@ -41,13 +41,13 @@ describe("the header's plain line", () => {
   it("names the board as the top bar does, by its name (the brief's 'on AILED'), its key in the tooltip", () => {
     const ailed = { ...ada, board: { key: "AIL", name: "AILED" }, work: { ...ada.work, open_tickets: 8 } };
     const line = headerLine(ailed, "en-GB");
-    expect(line.text).toBe("Holds 8 open tickets on AILED");
+    expect(line.text).toBe("8 open tickets on AILED");
     expect(line.board).toBe("AILED");
-    expect(line.title).toBe("Holds 8 open tickets on AILED (AIL)");
+    expect(line.title).toBe("8 open tickets on AILED (AIL)");
     expect(headerLine({ ...noor, board: { key: "AIL", name: "AILED" } }, "en-GB").text).toBe("Member of AILED · no tickets");
     // A board with no name of its own goes by its key, said once.
     const bare = headerLine({ ...ada, board: { key: "AIL", name: "AIL" } }, "en-GB");
-    expect([bare.text, bare.title]).toEqual([`Holds ${ada.work.open_tickets} open tickets on AIL`, `Holds ${ada.work.open_tickets} open tickets on AIL`]);
+    expect([bare.text, bare.title]).toEqual([`${ada.work.open_tickets} open tickets on AIL`, `${ada.work.open_tickets} open tickets on AIL`]);
   });
 });
 
@@ -98,7 +98,7 @@ describe("the rest of the card's words", () => {
     expect(moreText(0)).toBeNull();
     expect(moreText(4, "en-GB")).toBe("and 4 more");
     // Under a label that says they are open, and on every ticket they hold, done ones too (the scorecard's words).
-    expect(FINDINGS_LABEL).toBe("Open findings on all their tickets");
+    expect(FINDINGS_LABEL).toBe("Open findings on their tickets");
     expect(findingsText(1, "breach", "en-GB")).toBe("1 breach");
     expect(findingsText(82, "warning", "en-GB")).toBe("82 warnings");
     expect(firstName("Ada Brooks")).toBe("Ada");

@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, ChevronRight, ChevronsUpDown } from "lucide-react";
-import { useRef, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 
 import { NAME_TRIGGER, PersonCardTrigger } from "@/components/person-card/person-card-trigger";
 import { PersonAvatar } from "@/components/ui/person-avatar";
@@ -16,12 +16,13 @@ import type { PeopleScorecard, ScorecardMeasure, ScorecardPerson } from "@/lib/a
 import { formatCount } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { useCredit } from "./credit/context";
 import {
   directionText,
   figureText,
   firstOrder,
   markOf,
-  MEASURE_DEFINITIONS,
+  measureDefinition,
   orderLabel,
   shownMeasures,
   sortPeople,
@@ -29,6 +30,8 @@ import {
   type SortKey,
   type SortOrder,
 } from "./model";
+import { cellName, hasTicketsBehind } from "./proof/model";
+import { ProofButton, useProof } from "./proof/proof-provider";
 import { Figure, MarkLabel } from "./scorecard";
 
 /** A measure's column: the ratio's wider, so its counts ("9 findings on 10 open tickets") stay whole on two lines. */
@@ -66,6 +69,73 @@ function useRowKeys<T extends HTMLElement>(count: number) {
   return { body, onKeyDown };
 }
 
+const figuresIn = (row: Element) => [...row.querySelectorAll<HTMLElement>("[data-proof-col]")];
+const columnOf = (figure: HTMLElement) => Number(figure.dataset.proofCol);
+
+/** The figures as a grid for the arrow keys: along a row (back to the row itself past its first), and down the same column. */
+function moveAmongFigures(event: KeyboardEvent<HTMLElement>, table: HTMLTableElement | null): void {
+  const figure = event.target instanceof HTMLElement && event.target.dataset.proofCol !== undefined ? event.target : null;
+  const row = figure?.closest("tr");
+  if (!figure || !row || !table || event.altKey || event.metaKey || event.ctrlKey) return;
+  const column = columnOf(figure);
+  const along = figuresIn(row);
+  let next: HTMLElement | null | undefined;
+  if (event.key === "ArrowRight") next = along.find((other) => columnOf(other) > column);
+  else if (event.key === "ArrowLeft") next = along.findLast((other) => columnOf(other) < column) ?? (row.dataset.row !== undefined ? row : null);
+  else if (event.key === "Home") next = along[0];
+  else if (event.key === "End") next = along.at(-1);
+  else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    const rows = [...table.querySelectorAll("tbody tr[data-row], tfoot tr")];
+    const step = event.key === "ArrowDown" ? 1 : -1;
+    for (let at = rows.indexOf(row) + step; at >= 0 && at < rows.length && !next; at += step) {
+      // The same column, or the nearest figure where that one has nothing behind it.
+      next = figuresIn(rows[at]).sort((a, b) => Math.abs(columnOf(a) - column) - Math.abs(columnOf(b) - column))[0];
+    }
+  } else return;
+  event.preventDefault();
+  event.stopPropagation();
+  next?.focus();
+}
+
+/** "142 tickets" under a name: the figure opens the tickets behind it where the proof is offered; its name holds what it shows. */
+function TicketsFigure({
+  tickets,
+  who,
+  person,
+  tabIndex,
+  locale,
+  proof,
+  className,
+}: {
+  tickets: number;
+  who: string;
+  person: string | null;
+  tabIndex?: number;
+  locale: string | undefined;
+  proof: boolean;
+  className?: string;
+}) {
+  const figure = formatCount(tickets, { locale });
+  const noun = tickets === 1 ? "ticket" : "tickets";
+  if (!proof || tickets === 0) {
+    return (
+      <span className={className}>
+        <span className="mono">{figure}</span> {noun}
+      </span>
+    );
+  }
+  return (
+    <span className={className}>
+      <ProofButton target={{ measure: "tickets", person }} label={cellName(who, "tickets", figure)} column={0} tabIndex={tabIndex} className="text-left">
+        <span className="mono" data-figure-value>
+          {figure}
+        </span>
+      </ProofButton>{" "}
+      {noun}
+    </span>
+  );
+}
+
 function SortIcon({ active, order }: { active: boolean; order: SortOrder }) {
   const Icon = !active ? ChevronsUpDown : order === "asc" ? ArrowUp : ArrowDown;
   return (
@@ -79,15 +149,11 @@ function SortIcon({ active, order }: { active: boolean; order: SortOrder }) {
 }
 
 function HeaderButton({ measure, active, order, onSort }: { measure: ScorecardMeasure; active: boolean; order: SortOrder; onSort: () => void }) {
-  const direction = directionText(measure);
+  // What it counts, which way is closer, and whom each ticket counts for under the board's credit setting.
+  const definition = measureDefinition(measure, useCredit());
   return (
     <Tooltip
-      content={
-        <span className="block max-w-[18rem] whitespace-normal">
-          {MEASURE_DEFINITIONS[measure.key]}
-          {direction ? ` ${direction}` : ""}
-        </span>
-      }
+      content={<span className="block max-w-[18rem] whitespace-normal">{definition}</span>}
       side="top"
     >
       <button
@@ -111,8 +177,13 @@ function ComparisonTable({ data, selectedId, onSelect, sort, order, onSort, stal
   const measures = shownMeasures(data.measures);
   const rows = sortPeople(data.people, sort, order);
   const { body, onKeyDown } = useRowKeys<HTMLTableSectionElement>(rows.length);
+  const proof = useProof();
+  // One tab stop among the rows (the last one used, else the chosen one), with that row's figures after it.
+  const [usedId, setUsedId] = useState<string | null>(null);
+  const usedIndex = rows.findIndex((row) => row.person.id === usedId);
   const selectedIndex = rows.findIndex((row) => row.person.id === selectedId);
-  const tabbable = selectedIndex >= 0 ? selectedIndex : 0;
+  const tabbable = usedIndex >= 0 ? usedIndex : selectedIndex >= 0 ? selectedIndex : 0;
+  const table = () => body.current?.closest("table") ?? null;
   const toggle = (key: SortKey) => onSort(key, sort === key ? (order === "asc" ? "desc" : "asc") : firstOrder(key));
   const ariaSort = (key: SortKey) => (sort === key ? (order === "asc" ? "ascending" : "descending") : undefined);
 
@@ -159,40 +230,70 @@ function ComparisonTable({ data, selectedId, onSelect, sort, order, onSort, stal
         <tbody ref={body}>
           {rows.map((row, index) => {
             const selected = row.person.id === selectedId;
+            const reach = index === tabbable ? 0 : -1;
             return (
               <tr
                 key={row.person.id}
                 data-row={index}
                 data-person={row.person.id}
                 data-interactive="true"
-                tabIndex={index === tabbable ? 0 : -1}
+                tabIndex={reach}
                 aria-current={selected ? "true" : undefined}
                 onClick={() => onSelect(row)}
-                onKeyDown={(event) => onKeyDown(event, index, () => onSelect(row))}
+                onFocus={() => setUsedId(row.person.id)}
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return moveAmongFigures(event, table());
+                  const first = event.key === "ArrowRight" && !event.altKey && !event.metaKey && !event.ctrlKey ? figuresIn(event.currentTarget)[0] : undefined;
+                  if (first) {
+                    event.preventDefault();
+                    first.focus();
+                    return;
+                  }
+                  onKeyDown(event, index, () => onSelect(row));
+                }}
               >
                 <td data-sticky>
                   <span className="flex min-w-0 items-center gap-2">
-                    <PersonCardTrigger person={row.person} days={data.period.days} inRow tabbable={false} className={cn(NAME_TRIGGER, "gap-2")}>
-                      <PersonAvatar person={row.person} />
-                      <span className="flex min-w-0 flex-col">
+                    <span className="flex min-w-0 flex-col items-start">
+                      <PersonCardTrigger person={row.person} days={data.period.days} inRow tabbable={false} className={cn(NAME_TRIGGER, "max-w-full gap-2")}>
+                        <PersonAvatar person={row.person} />
                         <NameText name={row.person.name} className="truncate text-sm text-ink normal-nums" />
-                        <span className="text-[11px] leading-4 text-ink-low">
-                          <span className="mono">{formatCount(row.tickets, { locale })}</span> {row.tickets === 1 ? "ticket" : "tickets"}
-                        </span>
+                      </PersonCardTrigger>
+                      <span className="max-w-full pl-7 text-[11px] leading-4 text-ink-low">
+                        <TicketsFigure
+                          tickets={row.tickets}
+                          who={row.person.name}
+                          person={row.person.id}
+                          tabIndex={reach}
+                          locale={locale}
+                          proof={proof !== null}
+                        />
                       </span>
-                    </PersonCardTrigger>
+                    </span>
                     <ChevronRight aria-hidden size={13} strokeWidth={1.75} className={cn("ml-auto shrink-0 text-ink-low", selected ? "opacity-100" : "opacity-0")} />
                   </span>
                 </td>
-                {measures.map((measure) => {
+                {measures.map((measure, column) => {
                   const value = row.values[measure.key];
                   const mark = markOf(measure, value);
+                  const figure = <Figure measure={measure} value={value} strong lines={measure.kind === "ratio"} />;
                   return (
                     <td key={measure.key} data-numeric>
                       <span className="flex min-w-0 items-center justify-end gap-2">
                         {mark ? <MarkLabel mark={mark} compact /> : null}
                         <span className="min-w-0">
-                          <Figure measure={measure} value={value} strong lines={measure.kind === "ratio"} />
+                          {proof && hasTicketsBehind(measure, value) ? (
+                            <ProofButton
+                              target={{ measure: measure.key, person: row.person.id }}
+                              label={cellName(row.person.name, measure.key, figureText(measure, value, locale).spoken)}
+                              column={column + 1}
+                              tabIndex={reach}
+                            >
+                              {figure}
+                            </ProofButton>
+                          ) : (
+                            figure
+                          )}
                         </span>
                       </span>
                     </td>
@@ -203,20 +304,34 @@ function ComparisonTable({ data, selectedId, onSelect, sort, order, onSort, stal
           })}
         </tbody>
         <tfoot>
-          <tr data-board>
+          <tr data-board onKeyDown={(event) => moveAmongFigures(event, table())}>
             <th scope="row" data-sticky className="text-left font-normal">
-              <span className="flex flex-col">
+              <span className="flex flex-col items-start">
                 <span className="text-sm text-ink-mid">Whole board</span>
                 <span className="text-[11px] leading-4 text-ink-low">
-                  <span className="mono">{formatCount(data.board.tickets, { locale })}</span> tickets, assigned or not
+                  <TicketsFigure tickets={data.board.tickets} who="Whole board" person={null} locale={locale} proof={proof !== null} />, assigned or not
                 </span>
               </span>
             </th>
-            {measures.map((measure) => (
-              <td key={measure.key} data-numeric>
-                <Figure measure={measure} value={data.board.values[measure.key]} lines={measure.kind === "ratio"} />
-              </td>
-            ))}
+            {measures.map((measure, column) => {
+              const value = data.board.values[measure.key];
+              const figure = <Figure measure={measure} value={value} lines={measure.kind === "ratio"} />;
+              return (
+                <td key={measure.key} data-numeric>
+                  {proof && hasTicketsBehind(measure, value) ? (
+                    <ProofButton
+                      target={{ measure: measure.key, person: null }}
+                      label={cellName("Whole board", measure.key, figureText(measure, value, locale).spoken)}
+                      column={column + 1}
+                    >
+                      {figure}
+                    </ProofButton>
+                  ) : (
+                    figure
+                  )}
+                </td>
+              );
+            })}
           </tr>
         </tfoot>
       </table>
@@ -230,10 +345,17 @@ function ComparisonList({ data, selectedId, onSelect, sort, order, onSort, stale
   const measures = shownMeasures(data.measures);
   const rows = sortPeople(data.people, sort, order);
   const { body, onKeyDown } = useRowKeys<HTMLUListElement>(rows.length);
+  const proof = useProof();
   const measure = sort === "name" ? null : (measures.find((candidate) => candidate.key === sort) ?? null);
   const first = firstOrder(sort);
   const other: SortOrder = first === "asc" ? "desc" : "asc";
   const boardText = measure ? figureText(measure, data.board.values[measure.key], locale) : null;
+  const boardFigure = boardText ? (
+    <span data-figure-value>
+      <span className="mono text-ink-mid">{boardText.value}</span>
+      {boardText.detail ? <span className="mono"> · {boardText.detail}</span> : null}
+    </span>
+  ) : null;
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
@@ -260,9 +382,19 @@ function ComparisonList({ data, selectedId, onSelect, sort, order, onSort, stale
       </div>
       {measure && boardText ? (
         <p className="text-xs text-ink-low">
-          Whole board: <span className="mono text-ink-mid">{boardText.value}</span>
-          {boardText.detail ? <span className="mono"> · {boardText.detail}</span> : null}.
-          {directionText(measure) ? ` ${directionText(measure)}` : ""}
+          Whole board:{" "}
+          {proof && hasTicketsBehind(measure, data.board.values[measure.key]) ? (
+            <ProofButton
+              target={{ measure: measure.key, person: null }}
+              label={cellName("Whole board", measure.key, boardText.spoken)}
+              className="-my-0.5 py-0.5 text-left"
+            >
+              {boardFigure}
+            </ProofButton>
+          ) : (
+            boardFigure
+          )}
+          .{directionText(measure) ? ` ${directionText(measure)}` : ""}
         </p>
       ) : null}
       <ul ref={body} aria-label="Everyone with tickets" className={cn("flex flex-col border-t border-rule-weak", stale && "opacity-60")}>
@@ -271,8 +403,19 @@ function ComparisonList({ data, selectedId, onSelect, sort, order, onSort, stale
           const value = measure ? row.values[measure.key] : null;
           const mark = measure && value ? markOf(measure, value) : null;
           const standing = standingOf(data.measures, row.values);
+          const figure =
+            measure && value ? (
+              <Figure measure={measure} value={value} strong />
+            ) : (
+              <span className="mono text-xs text-ink-low" data-figure-value>
+                {formatCount(row.tickets, { locale })} {row.tickets === 1 ? "ticket" : "tickets"}
+              </span>
+            );
+          const proven = measure && value ? hasTicketsBehind(measure, value) : row.tickets > 0;
+          // The figure's own button, laid over its place in the row, so the row keeps its look and its press.
+          const over = proof !== null && proven;
           return (
-            <li key={row.person.id} className="border-b border-rule-weak">
+            <li key={row.person.id} className="relative border-b border-rule-weak">
               <button
                 type="button"
                 data-row={index}
@@ -301,17 +444,32 @@ function ComparisonList({ data, selectedId, onSelect, sort, order, onSort, stale
                     )}
                   </span>
                 </span>
-                {measure && value ? (
-                  <span className="shrink-0 text-right">
-                    <Figure measure={measure} value={value} strong />
-                  </span>
-                ) : (
-                  <span className="mono shrink-0 text-xs text-ink-low">
-                    {formatCount(row.tickets, { locale })} {row.tickets === 1 ? "ticket" : "tickets"}
-                  </span>
-                )}
+                <span className={cn("shrink-0 text-right", over && "invisible")} aria-hidden={over || undefined}>
+                  {figure}
+                </span>
                 <ChevronRight aria-hidden size={14} strokeWidth={1.75} className="shrink-0 text-ink-low" />
               </button>
+              {over ? (
+                <span className="absolute top-1/2 right-[1.875rem] -translate-y-1/2 text-right">
+                  {measure && value ? (
+                    <ProofButton
+                      target={{ measure: measure.key, person: row.person.id }}
+                      label={cellName(row.person.name, measure.key, figureText(measure, value, locale).spoken)}
+                    >
+                      {figure}
+                    </ProofButton>
+                  ) : (
+                    <TicketsFigure
+                      tickets={row.tickets}
+                      who={row.person.name}
+                      person={row.person.id}
+                      locale={locale}
+                      proof
+                      className="mono text-xs text-ink-low"
+                    />
+                  )}
+                </span>
+              ) : null}
             </li>
           );
         })}

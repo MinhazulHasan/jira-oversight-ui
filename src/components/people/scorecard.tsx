@@ -25,12 +25,15 @@ import {
 import { formatCount } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { useCredit } from "./credit/context";
+import { creditReading } from "./credit/model";
+import { cellName, hasTicketsBehind } from "./proof/model";
+import { ProofButton, useProof } from "./proof/proof-provider";
 import {
-  directionText,
   figureText,
   MARK_LABEL,
   markOf,
-  MEASURE_DEFINITIONS,
+  measureDefinition,
   measureLink,
   standingOf,
   standingText,
@@ -104,9 +107,13 @@ export function Figure({
   return (
     <span className={cn("flex min-w-0", inline ? "items-baseline justify-end gap-1.5" : "flex-col items-end")} data-figure>
       <span className={cn("mono text-sm", strong ? "font-medium text-ink" : "text-ink-mid", value.value === null && "text-ink-low")}>
-        <span aria-hidden={value.value === null || undefined}>{text.value}</span>
+        <span aria-hidden={value.value === null || undefined} data-figure-value>
+          {text.value}
+        </span>
         {value.value === null ? <span className="sr-only">none to show</span> : null}
       </span>
+      {/* A space between the two lines, so a button holding both reads "8.7 59 findings", not "8.759 findings". */}
+      {text.detail ? " " : null}
       {text.detail ? (
         <span
           className={cn(
@@ -135,8 +142,7 @@ function NotMeasurable({ reason }: { reason: string | null }) {
 }
 
 function MeasureName({ measure, muted = false }: { measure: ScorecardMeasure; muted?: boolean }) {
-  const direction = directionText(measure);
-  const definition = `${MEASURE_DEFINITIONS[measure.key]}${direction ? ` ${direction}` : ""}`;
+  const definition = measureDefinition(measure, useCredit());
   return (
     <Popover>
       <Tooltip content={<span className="block max-w-[18rem] whitespace-normal">{definition}</span>} side="top" align="start">
@@ -184,7 +190,21 @@ export function Scorecard({ person, tickets, values, board, measures, days, head
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const standing = standingOf(measures, values);
   const codeReview = recordsCodeReview(measures);
+  const credit = useCredit();
+  const proof = useProof();
   const empty = tickets === 0;
+  /** A figure that opens the tickets behind it where the page offers that, and where it has any. */
+  const proven = (measure: ScorecardMeasure, value: ScorecardValue, whose: Person | null, figure: ReactNode) =>
+    proof && hasTicketsBehind(measure, value) ? (
+      <ProofButton
+        target={{ measure: measure.key, person: whose?.id ?? null }}
+        label={cellName(whose?.name ?? "Whole board", measure.key, figureText(measure, value, locale).spoken)}
+      >
+        {figure}
+      </ProofButton>
+    ) : (
+      figure
+    );
 
   return (
     <section aria-labelledby={headingId} data-scorecard={person.id} className={cn("@container flex min-w-0 flex-col gap-4", className)}>
@@ -199,14 +219,22 @@ export function Scorecard({ person, tickets, values, board, measures, days, head
             </PersonCardTrigger>
           </Heading>
           <span className="shrink-0 text-xs text-ink-low @min-[40rem]:ml-auto">
-            <span className="mono text-ink-mid" data-figure>
-              {formatCount(tickets, { locale })}
-            </span>{" "}
-            {tickets === 1 ? "ticket" : "tickets"} assigned now, any status
+            {proof && tickets > 0 ? (
+              <ProofButton target={{ measure: "tickets", person: person.id }} label={cellName(person.name, "tickets", formatCount(tickets, { locale }))} className="text-left">
+                <span className="mono text-ink-mid" data-figure data-figure-value>
+                  {formatCount(tickets, { locale })}
+                </span>
+              </ProofButton>
+            ) : (
+              <span className="mono text-ink-mid" data-figure>
+                {formatCount(tickets, { locale })}
+              </span>
+            )}{" "}
+            {tickets === 1 ? "ticket" : "tickets"}
           </span>
         </div>
         <p className="text-sm text-ink-mid">
-          {empty ? `${person.name} holds no tickets on this board.` : standingText(standing)}
+          {empty ? `${person.name} has no tickets on this board.` : standingText(standing)}
         </p>
       </header>
 
@@ -264,10 +292,10 @@ export function Scorecard({ person, tickets, values, board, measures, days, head
                   </span>
                 </th>
                 <td className="text-right">
-                  <Figure measure={measure} value={value} strong wrap />
+                  {proven(measure, value, person, <Figure measure={measure} value={value} strong wrap />)}
                 </td>
                 <td className="text-right">
-                  <Figure measure={measure} value={board.values[measure.key]} wrap />
+                  {proven(measure, board.values[measure.key], null, <Figure measure={measure} value={board.values[measure.key]} wrap />)}
                 </td>
                 <td className="hidden @min-[40rem]:table-cell">{mark ? <MarkLabel mark={mark} /> : null}</td>
                 <td className="hidden text-right @min-[40rem]:table-cell">{link ? <MeasureLinkView link={link} /> : null}</td>
@@ -278,7 +306,7 @@ export function Scorecard({ person, tickets, values, board, measures, days, head
       </table>
 
       <div className="border-t border-rule-weak pt-3">
-        <p className="max-w-[76ch] text-xs leading-relaxed text-ink-low">{scorecardCaveat(days, codeReview)}</p>
+        <p className="max-w-[76ch] text-xs leading-relaxed text-ink-low">{scorecardCaveat(days, codeReview, credit && creditReading(credit))}</p>
       </div>
     </section>
   );
@@ -320,7 +348,7 @@ export function ScorecardSkeleton({ className, label = "Loading the scorecard" }
             <Skeleton className="h-4 w-40" />
           </div>
           <span className="flex h-[1.45em] items-center text-xs @min-[40rem]:ml-auto">
-            <Skeleton className="h-3 w-36" />
+            <Skeleton className="h-3 w-16" />
           </span>
         </div>
         <span className="flex h-[1.45em] items-center text-sm">
@@ -354,26 +382,22 @@ export function ScorecardSkeleton({ className, label = "Loading the scorecard" }
         ))}
       </div>
       {/* The caveat's place at the foot, so the card is its final height before its figures arrive. */}
-      <CaveatSkeleton />
+      <CaveatSkeleton phoneLines={5} />
     </SkeletonGroup>
   );
 }
 
-export function CaveatSkeleton() {
+const CAVEAT_WIDTHS = ["w-[34rem]", "w-[30rem]", "w-72", "w-40", "w-24"] as const;
+
+/** A caveat's lines while it loads: `lines` where there is room, `phoneLines` on a phone. */
+export function CaveatSkeleton({ lines = 3, phoneLines = 4 }: { lines?: 2 | 3; phoneLines?: 4 | 5 }) {
   return (
     <div aria-hidden className="border-t border-rule-weak pt-3">
-      <span className="flex h-[1.625em] items-center text-xs">
-        <Skeleton className="h-3 w-[34rem] max-w-full" />
-      </span>
-      <span className="flex h-[1.625em] items-center text-xs">
-        <Skeleton className="h-3 w-72 max-w-full" />
-      </span>
-      <span className="flex h-[1.625em] items-center text-xs sm:hidden">
-        <Skeleton className="h-3 w-64 max-w-full" />
-      </span>
-      <span className="flex h-[1.625em] items-center text-xs sm:hidden">
-        <Skeleton className="h-3 w-40 max-w-full" />
-      </span>
+      {CAVEAT_WIDTHS.slice(0, phoneLines).map((width, index) => (
+        <span key={width} className={cn("flex h-[1.625em] items-center text-xs", index >= lines && "sm:hidden")}>
+          <Skeleton className={cn("h-3 max-w-full", width)} />
+        </span>
+      ))}
     </div>
   );
 }

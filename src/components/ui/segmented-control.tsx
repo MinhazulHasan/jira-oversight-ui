@@ -13,6 +13,8 @@ export interface SegmentedOption<T extends string> {
   /** Show only the icon; the label becomes the accessible name. */
   iconOnly?: boolean;
   disabled?: boolean;
+  /** A figure after the label, in Plex Mono: how many the choice holds. */
+  count?: string;
 }
 
 export interface SegmentedControlProps<T extends string> {
@@ -80,6 +82,14 @@ export function SegmentedControl<T extends string>({
           >
             {Icon ? <Icon aria-hidden strokeWidth={1.75} /> : null}
             {option.iconOnly ? null : option.label}
+            {option.count !== undefined && !option.iconOnly ? (
+              <>
+                {" "}
+                <span className="mono text-ink-low" data-figure>
+                  {option.count}
+                </span>
+              </>
+            ) : null}
           </RadioGroup.Item>
         );
       })}

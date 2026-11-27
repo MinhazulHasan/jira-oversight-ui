@@ -62,3 +62,17 @@ describe("a toast reused by id", () => {
     expect(dismissed.at(-1)).toBeUndefined();
   });
 });
+
+describe("a toast with an action", () => {
+  it("carries it to sonner, and stays long enough to reach it", () => {
+    const undo = vi.fn();
+    notify.ok("Finished work now counts for the assignee", { id: "credit", action: { label: "Undo", onClick: undo } });
+    const options = last() as Shown["options"] & { action?: { label: string; onClick: () => void }; duration?: number };
+    expect(options.action?.label).toBe("Undo");
+    options.action?.onClick();
+    expect(undo).toHaveBeenCalledOnce();
+    expect(options.duration).toBeGreaterThan(5000);
+    notify.ok("Link copied");
+    expect((last() as { action?: unknown }).action).toBeUndefined();
+  });
+});

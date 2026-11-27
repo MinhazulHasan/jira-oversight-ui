@@ -205,7 +205,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "2c137fdcd942189c29aa2b5509afeb7c",
@@ -245,7 +246,8 @@
           "changelog_id": "310131"
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "45834de40a31472113e2898410f13062",
@@ -315,7 +317,8 @@
           "changelog_id": "310135"
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     }
   ]
 }

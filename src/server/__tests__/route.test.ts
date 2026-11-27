@@ -288,7 +288,7 @@ describe("sample mode", () => {
     const answer = askResponseSchema.parse(await json(await call("POST", "ask", { body })));
     expect(answer.outcome).toBe("answered");
     expect(answer.people.map((person) => person.id)).toEqual([CARMEN]);
-    expect(answer.facts.map((fact) => fact.params.sql).join(" ")).toContain(`assignee_id = '${CARMEN}'`);
+    expect(answer.facts.map((fact) => fact.params.sql).join(" ")).toContain(`person_id = '${CARMEN}'`);
     // Someone with no ticket on the board: said in the contract's words, and nothing is looked up.
     const stranger = askResponseSchema.parse(
       await json(await call("POST", "ask", { body: JSON.stringify({ question: "What is @Someone working on?", mentions: ["p000000000000"] }) })),
@@ -437,7 +437,7 @@ describe("live mode", () => {
     expect(response.status).toBe(200);
     expect(upstream).toHaveBeenCalledTimes(1);
     const [url, init] = upstream.mock.calls[0];
-    expect(String(url)).toBe(`${API}/api/v1/findings?rule=R-EST-01`);
+    expect(String(url)).toBe(`${API}/api/v1/findings?rule=R-EST-01&level=people`);
     expect(init?.method).toBe("GET");
     expect(init?.redirect).toBe("error");
     expect(init?.cache).toBe("no-store");
@@ -660,10 +660,10 @@ describe("live mode", () => {
     expect(String(upstream.mock.calls[0][0])).toBe(`${API}/api/v1/findings?person=${id}&person=unassigned&project=AIL&level=people`);
   });
 
-  it("sends no level with findings that name no one but Unassigned: nothing about a person is read", async () => {
+  it("sends the reader's level with findings that name no one but Unassigned: who ignored a finding is named at people level alone", async () => {
     answerWith(live({ name: "findings", query: normalizeFindingsQuery({ person: ["unassigned"] }) }));
     await call("GET", "findings?person=unassigned");
-    expect(String(upstream.mock.calls[0][0])).toBe(`${API}/api/v1/findings?person=unassigned`);
+    expect(String(upstream.mock.calls[0][0])).toBe(`${API}/api/v1/findings?person=unassigned&level=people`);
   });
 
   it("answers a person sent with an account id for an id with 502, naming the field and never its value", async () => {
@@ -786,7 +786,7 @@ describe("live mode", () => {
 
     answerWith(live({ name: "findings", query: normalizeFindingsQuery({ rule: ["R-EST-01"] }) }));
     await call("GET", "findings?rule=R-EST-01", { headers: { cookie } });
-    expect(String(upstream.mock.calls[1][0])).toBe(`${API}/api/v1/findings?rule=R-EST-01&project=AIL`);
+    expect(String(upstream.mock.calls[1][0])).toBe(`${API}/api/v1/findings?rule=R-EST-01&project=AIL&level=people`);
 
     answerWith(live({ name: "ask", question: "How many open breaches?", mentions: [], level: "people" }));
     await call("POST", "ask", { body: JSON.stringify({ question: "How many open breaches?" }), headers: { cookie } });

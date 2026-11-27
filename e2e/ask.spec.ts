@@ -335,7 +335,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     await askAbout(page, question, [carmen.id]);
     const article = answer(page, question);
     await expect(article.getByText(/^Carmen Ruiz, last 90.*days, next to the board/)).toBeVisible();
-    await expect(article.getByText(/^Figures from Jira over the last 90.*days, next to the whole board, by each ticket's current assignee\./)).toBeVisible();
+    await expect(article.getByText(/^Figures from Jira over the last 90.*days, next to the whole board\. Tickets count for their /)).toBeVisible();
     const compact = article.getByRole("table", { name: /Carmen Ruiz, last 90 days, next to the whole board/ });
     await expect(compact).toBeVisible();
     await expect(compact.getByRole("columnheader", { name: "Whole board" })).toBeVisible();
@@ -592,13 +592,13 @@ test.describe("on a phone", () => {
   }
 });
 
-test("someone's backlog: their open tickets, the assignee by name and picture in the facts, never an id", async ({ page, request }) => {
+test("someone's backlog: their open tickets, whom each counts for by name and picture in the facts, never an id", async ({ page, request }) => {
   const carmen = await personNamed(request, "Carmen Ruiz");
   const question = "What is @Carmen Ruiz's backlog?";
   await askAbout(page, question, [carmen.id]);
   await expect(answer(page, question).getByText(/^Carmen Ruiz has \d+.*open tickets?/)).toBeVisible();
   const table = ledger(page).getByRole("table");
-  await expect(table.getByRole("columnheader", { name: "Assignee" })).toBeVisible();
+  await expect(table.getByRole("columnheader", { name: "Counts for" })).toBeVisible();
   await expect(table.getByRole("columnheader", { name: "Person id" })).toHaveCount(0);
   await expect(table.locator("tbody tr").first().locator(".jo-avatar")).toBeVisible();
   // The call, in words, names her with her picture.

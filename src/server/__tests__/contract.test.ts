@@ -211,6 +211,9 @@ const PERSON_PLACES = [
   /(\.items\[\d+\]|\.finding|\.findings\[\d+\]|\.issue)\.assignee$/,
   /^(people|people_directory|people_scorecard)\.people\[\d+\]\.person$/,
   /^(people|people_directory|people_scorecard)\.people$/,
+  // The tickets behind a figure: whose figure, and whom each ticket counts for.
+  /^scorecard_tickets\.person$/,
+  /^scorecard_tickets\.(tickets|left_out)\[\d+\]\.credit\.person$/,
   /\.facets\.people$/,
   /\.(sprint|assignee|person)\.name$/,
   /(\.(assignee|person)|\.facets\.people\[\d+\])\.avatar$/,
@@ -230,6 +233,8 @@ const PERSON_PLACES = [
   // Custom rules: a check and its params by their names (no person).
   /^rule_settings(_save)?\.checks\[\d+\]\.name$/,
   /^rule_settings(_save)?\.checks\[\d+\]\.params\[\d+\]\.name$/,
+  // The credit setting: a Jira people field by its name, such as "Programmer" (no person).
+  /^people_credit(_save)?\.(effective_field|setting\.field|options\[\d+\]\.field|history\[\d+\]\.(from|to)\.field)\.name$/,
 ];
 /** At people level only: a fact row's name and assignee columns (the analyst's people, findings and issues views). */
 const PEOPLE_LEVEL_FIELDS = /^ask\.facts\[\d+\]\.rows\[\d+\]\.(name|assignee)$/;
@@ -490,6 +495,8 @@ const SETTINGS_NEW_RULE: RuleSettingsPreviewRequest = {
 };
 /** What an admin asked the AI to draft. */
 const RULE_DRAFT = { text: "Bugs in progress for more than 3 days" };
+/** What ignoring every open finding on a finished ticket would take: the toolbar's shortcut on Findings. */
+const IGNORE_FINISHED = { target: { query: { ticket: "finished" } }, scope: "finding" };
 
 /** Each file and the request that answers it, as docs/sample-responses/README.md lists them. */
 const DOCUMENTED: Record<
@@ -505,6 +512,7 @@ const DOCUMENTED: Record<
   "finding.json": { route: "finding", path: "findings/0b7b3b0f61c477e61699982f24892735" },
   "finding-sprint.json": { route: "finding", path: "findings/4f4dea9b42b76d4882fbb2db662287c3" },
   "issue-DEMO-1.json": { route: "issue_timeline", path: "issues/DEMO-1/timeline" },
+  "findings-ignore-preview.json": { route: "ignore_preview", path: "findings/ignore/preview", body: IGNORE_FINISHED },
   "ask-answered.json": { route: "ask", path: "ask", question: "Which epics have the most open breaches?" },
   "ask-answered-trend.json": { route: "ask", path: "ask", question: "How is effort against estimate trending?" },
   "ask-not-understood.json": { route: "ask", path: "ask", question: "What is the weather?" },
@@ -517,6 +525,8 @@ const DOCUMENTED: Record<
   "people-scorecard.json": { route: "people_scorecard", path: "people/scorecard" },
   "people-scorecard-person.json": { route: "people_scorecard", path: `people/scorecard?days=30&person=${personIdFor("acc-08")}` },
   "people-scorecard-off.json": { route: "people_scorecard", path: "people/scorecard", env: { SAMPLE_PEOPLE_COMPARISON: "off" } },
+  "people-credit.json": { route: "people_credit", path: "people/credit" },
+  "people-scorecard-tickets.json": { route: "scorecard_tickets", path: `people/scorecard/tickets?measure=stuck_now&person=${personIdFor("acc-03")}` },
   "error-comparison-off.json": {
     route: "error",
     path: `people/scorecard?person=${personIdFor("acc-01")}&person=${personIdFor("acc-03")}`,

@@ -12,6 +12,7 @@ import {
 import { STATUS } from "./catalogue";
 import { memo, meta, type Dataset } from "./dataset";
 import type { FindingRecord } from "./engine";
+import { ignoreBody } from "./ignores";
 import { boardPeople } from "./people";
 import { round4 } from "./stats";
 import { personOf } from "./team";
@@ -50,7 +51,7 @@ function toFinding(dataset: Dataset, record: FindingRecord): Finding {
     rule_version: record.ruleVersion,
     kind: record.rule.kind,
     severity: record.rule.severity,
-    state: record.resolvedAt === null ? "open" : "resolved",
+    state: record.resolvedAt === null ? "open" : record.resolvedWhy === "ignored" ? "ignored" : "resolved",
     message: record.message,
     scope: issue ? "issue" : "sprint",
     issue_key: issue?.key ?? null,
@@ -74,6 +75,7 @@ function toFinding(dataset: Dataset, record: FindingRecord): Finding {
           warned_at: iso(record.warnedBefore.at),
         }
       : null,
+    ignore: record.ignore ? ignoreBody(record.ignore) : null,
   };
 }
 
@@ -101,7 +103,7 @@ export function findingsOfIssue(dataset: Dataset, key: string): Finding[] {
     .map((record) => byId.get(record.id)!.finding)
     .sort(
       (a, b) =>
-        Number(a.state === "resolved") - Number(b.state === "resolved") ||
+        Number(a.state !== "open") - Number(b.state !== "open") ||
         b.first_seen_at.localeCompare(a.first_seen_at) ||
         a.finding_id.localeCompare(b.finding_id),
     );
@@ -121,11 +123,14 @@ function personKey(finding: Finding): string | null {
 const KEY_QUERY = /^[A-Z][A-Z0-9_]+-\d+$/;
 const NUMBER_QUERY = /^#?(\d{1,9})$/;
 
+/** What a search reads of a finding, or of an ignore's ticket. */
+type Searchable = Pick<Finding, "issue_key" | "issue_summary" | "sprint">;
+
 /** Search: an exact key ("DEMO-142", any case), a bare number ("142" or "#142"), */
-function searchMatcher(q: string | undefined): (finding: Finding) => boolean {
+export function searchMatcher(q: string | undefined): (finding: Searchable) => boolean {
   if (!q) return () => true;
   const text = q.trim().toLowerCase();
-  const inText = (finding: Finding) =>
+  const inText = (finding: Searchable) =>
     (finding.issue_summary ?? "").toLowerCase().includes(text) ||
     (finding.issue_key ?? "").toLowerCase().includes(text) ||
     (finding.sprint?.name ?? "").toLowerCase().includes(text);
@@ -139,6 +144,12 @@ function searchMatcher(q: string | undefined): (finding: Finding) => boolean {
     return (finding) => (finding.issue_key ?? "").endsWith(suffix) || inText(finding);
   }
   return inText;
+}
+
+/** Whether a finding is on an open or a finished ticket, by its status category now; a sprint's is on neither. */
+function onTicket(record: FindingRecord, ticket: NonNullable<FindingsQuery["ticket"]>): boolean {
+  if (record.issue === null) return false;
+  return (STATUS[record.issue.status].category === "done") === (ticket === "finished");
 }
 
 /** First seen in the last 7, 30 or 90 days, counted back from now, as the backend's periods are. */
@@ -160,6 +171,7 @@ function predicate(dataset: Dataset, query: FindingsQuery, except?: Facet): (ent
     // An id nobody on the board has matches nothing; a sprint finding never matches anyone.
     if (except !== "person" && people.size > 0 && !people.has(personKey(finding) ?? "")) return false;
     if (since !== null && record.firstSeenAt < since) return false;
+    if (query.ticket !== undefined && !onTicket(record, query.ticket)) return false;
     return search(finding);
   };
 }
@@ -205,7 +217,7 @@ function facets(dataset: Dataset, query: FindingsQuery): FindingsPage["facets"] 
       { ...entry(UNASSIGNED, UNASSIGNED_LABEL, byPerson), avatar: null },
     ],
     severity: [entry("breach", "Breach", bySeverity), entry("warning", "Warning", bySeverity)],
-    state: [entry("open", "Open", byState), entry("resolved", "Resolved", byState)],
+    state: [entry("open", "Open", byState), entry("resolved", "Resolved", byState), entry("ignored", "Ignored", byState)],
   };
 }
 
@@ -268,6 +280,19 @@ export function matchingFindings(dataset: Dataset, query: FindingsQuery): Findin
     .filter(keep)
     .map((entry) => entry.finding)
     .sort(sorter(query));
+}
+
+/** The engine's records the filters match, newest first: what an ignore by query resolves to. */
+export function matchingRecords(dataset: Dataset, query: FindingsQuery): FindingRecord[] {
+  const keep = predicate(dataset, query);
+  return entries(dataset)
+    .filter(keep)
+    .map((entry) => entry.record);
+}
+
+/** The finding as the API sends it, by its record. */
+export function findingOf(dataset: Dataset, record: FindingRecord): Finding {
+  return entryById(dataset).get(record.id)?.finding ?? toFinding(dataset, record);
 }
 
 export function findingsPage(dataset: Dataset, query: FindingsQuery): FindingsPage {

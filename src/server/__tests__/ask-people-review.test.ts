@@ -102,7 +102,7 @@ describe("Ask in sample mode answers every question about people from the figure
     ]) {
       const response = at(question, [ADA]);
       expect(response.plan.map((step) => step.tool), question).toEqual(["oversight_person_scorecard"]);
-      expect(response.answer!.split("\n\n").slice(-2), question).toEqual([SCORECARD_SENTENCES.decision, scorecardCaveat(90, false)]);
+      expect(response.answer!.split("\n\n").slice(-2), question).toEqual([SCORECARD_SENTENCES.decision, scorecardCaveat(90, false, { source: "auto", field: "Programmer" })]);
     }
     for (const plain of ["Who replaced the estimate on DEMO-5?", "Who raised this ticket?", "Which tickets are in dev?"]) {
       expect(asksPersonnel(plain), plain).toBe(false);

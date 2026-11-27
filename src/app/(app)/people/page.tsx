@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { PeopleView, PeopleViewFallback } from "@/components/people/people-view";
+import { ProofProvider } from "@/components/people/proof/proof-provider";
 import { CopyLinkButton } from "@/components/shell/copy-link-button";
 import { PageBody, PageHeader, PageSheet } from "@/components/shell/page";
 import { pageByKey } from "@/lib/nav";
@@ -22,7 +23,9 @@ export default async function PeoplePage() {
       <PageHeader title={page.label} purpose={page.purpose} actions={<CopyLinkButton />} />
       <PageBody>
         <Suspense fallback={<PeopleViewFallback expected={expected} />}>
-          <PeopleView expected={expected} />
+          <ProofProvider>
+            <PeopleView expected={expected} />
+          </ProofProvider>
         </Suspense>
       </PageBody>
     </PageSheet>

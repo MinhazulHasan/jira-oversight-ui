@@ -13,7 +13,7 @@
   "qa_id": "01343f5c9b1aac014623ac18d37e3584",
   "question": "What are @Carmen Ruiz's open findings?",
   "outcome": "answered",
-  "answer": "Carmen Ruiz has 88 open breaches and 36 open warnings, on 117 tickets. The newest are on DEMO-1127, DEMO-1143 and DEMO-1097; the table lists the latest 20. Findings follow the ticket's current assignee.",
+  "answer": "Carmen Ruiz has 88 open breaches and 36 open warnings, on 117 tickets. The newest are on DEMO-1127, DEMO-1143 and DEMO-1097; the table lists the latest 20. A person's findings are those on their tickets.",
   "citations": [
     {
       "marker": 1,
@@ -122,13 +122,13 @@
       ],
       "truncated": false,
       "as_of": "2026-11-04T14:28:00.000Z",
-      "note": "one row for each person asked about, by person id, who is assigned a ticket on this board now, by open breaches, most first, ties by name; a person's tickets are the board's work, Epics left out, as the scorecard counts them; findings follow the ticket's current assignee: a person's findings are those on the tickets they hold now, and a sprint finding is no one's"
+      "note": "one row for each person asked about, by person id, who has tickets on this board, by open breaches, most first, ties by name; a person's tickets, open or finished, are the board's work (Epics left out) that counts for them (the board's credit setting), as the scorecard counts them; a person's findings are those on their tickets, and a sprint finding is no one's"
     },
     {
       "ref": "F2",
       "tool": "oversight_query",
       "params": {
-        "sql": "SELECT finding_id, rule_id, rule_title, severity, issue_key, summary, epic_key, first_seen_at FROM findings WHERE assignee_id = 'p599114b761a6' AND state = 'open' ORDER BY first_seen_at DESC LIMIT 20"
+        "sql": "SELECT finding_id, rule_id, rule_title, severity, issue_key, summary, epic_key, first_seen_at FROM findings WHERE issue_key IN ('DEMO-15', 'DEMO-18', 'DEMO-34', 'DEMO-39', 'DEMO-42', 'DEMO-50', 'DEMO-52', 'DEMO-65', 'DEMO-68', 'DEMO-78', 'DEMO-84', 'DEMO-87', 'DEMO-95', 'DEMO-106', 'DEMO-107', 'DEMO-115', 'DEMO-123', 'DEMO-129', 'DEMO-136', 'DEMO-157', 'DEMO-158', 'DEMO-162', 'DEMO-163', 'DEMO-169', 'DEMO-170', 'DEMO-171', 'DEMO-177', 'DEMO-183', 'DEMO-187', 'DEMO-202', 'DEMO-203', 'DEMO-211', 'DEMO-220', 'DEMO-226', 'DEMO-233', 'DEMO-236', 'DEMO-237', 'DEMO-244', 'DEMO-270', 'DEMO-312', 'DEMO-324', 'DEMO-337', 'DEMO-345', 'DEMO-355', 'DEMO-356', 'DEMO-358', 'DEMO-366', 'DEMO-369', 'DEMO-374', 'DEMO-376', 'DEMO-381', 'DEMO-387', 'DEMO-391', 'DEMO-392', 'DEMO-412', 'DEMO-425', 'DEMO-440', 'DEMO-456', 'DEMO-459', 'DEMO-461', 'DEMO-462', 'DEMO-467', 'DEMO-468', 'DEMO-469', 'DEMO-471', 'DEMO-474', 'DEMO-482', 'DEMO-487', 'DEMO-496', 'DEMO-497', 'DEMO-506', 'DEMO-554', 'DEMO-571', 'DEMO-578', 'DEMO-579', 'DEMO-590', 'DEMO-600', 'DEMO-609', 'DEMO-612', 'DEMO-617', 'DEMO-622', 'DEMO-629', 'DEMO-630', 'DEMO-631', 'DEMO-634', 'DEMO-672', 'DEMO-680', 'DEMO-700', 'DEMO-708', 'DEMO-713', 'DEMO-717', 'DEMO-719', 'DEMO-726', 'DEMO-730', 'DEMO-738', 'DEMO-739', 'DEMO-742', 'DEMO-743', 'DEMO-750', 'DEMO-752', 'DEMO-760', 'DEMO-765', 'DEMO-772', 'DEMO-773', 'DEMO-778', 'DEMO-782', 'DEMO-785', 'DEMO-786', 'DEMO-787', 'DEMO-789', 'DEMO-791', 'DEMO-793', 'DEMO-798', 'DEMO-799', 'DEMO-800', 'DEMO-802', 'DEMO-805', 'DEMO-806', 'DEMO-807', 'DEMO-811', 'DEMO-814', 'DEMO-824', 'DEMO-842', 'DEMO-849', 'DEMO-859', 'DEMO-861', 'DEMO-863', 'DEMO-870', 'DEMO-876', 'DEMO-895', 'DEMO-896', 'DEMO-898', 'DEMO-900', 'DEMO-905', 'DEMO-913', 'DEMO-915', 'DEMO-930', 'DEMO-936', 'DEMO-939', 'DEMO-943', 'DEMO-952', 'DEMO-960', 'DEMO-965', 'DEMO-969', 'DEMO-972', 'DEMO-976', 'DEMO-981', 'DEMO-982', 'DEMO-985', 'DEMO-991', 'DEMO-995', 'DEMO-1006', 'DEMO-1007', 'DEMO-1013', 'DEMO-1018', 'DEMO-1024', 'DEMO-1027', 'DEMO-1028', 'DEMO-1034', 'DEMO-1036', 'DEMO-1063', 'DEMO-1069', 'DEMO-1097', 'DEMO-1099', 'DEMO-1100', 'DEMO-1103', 'DEMO-1127', 'DEMO-1135', 'DEMO-1143') AND state = 'open' ORDER BY first_seen_at DESC LIMIT 20"
       },
       "columns": [
         {
@@ -376,7 +376,7 @@
       ],
       "truncated": true,
       "as_of": "2026-11-04T14:28:00.000Z",
-      "note": "open findings on the tickets assigned to the person now, newest first"
+      "note": "open findings on the tickets that count for the person (the board's credit setting), newest first"
     }
   ],
   "plan": [
@@ -389,7 +389,7 @@
     {
       "tool": "oversight_query",
       "params": {
-        "sql": "SELECT finding_id, rule_id, rule_title, severity, issue_key, summary, epic_key, first_seen_at FROM findings WHERE assignee_id = 'p599114b761a6' AND state = 'open' ORDER BY first_seen_at DESC LIMIT 20"
+        "sql": "SELECT finding_id, rule_id, rule_title, severity, issue_key, summary, epic_key, first_seen_at FROM findings WHERE issue_key IN ('DEMO-15', 'DEMO-18', 'DEMO-34', 'DEMO-39', 'DEMO-42', 'DEMO-50', 'DEMO-52', 'DEMO-65', 'DEMO-68', 'DEMO-78', 'DEMO-84', 'DEMO-87', 'DEMO-95', 'DEMO-106', 'DEMO-107', 'DEMO-115', 'DEMO-123', 'DEMO-129', 'DEMO-136', 'DEMO-157', 'DEMO-158', 'DEMO-162', 'DEMO-163', 'DEMO-169', 'DEMO-170', 'DEMO-171', 'DEMO-177', 'DEMO-183', 'DEMO-187', 'DEMO-202', 'DEMO-203', 'DEMO-211', 'DEMO-220', 'DEMO-226', 'DEMO-233', 'DEMO-236', 'DEMO-237', 'DEMO-244', 'DEMO-270', 'DEMO-312', 'DEMO-324', 'DEMO-337', 'DEMO-345', 'DEMO-355', 'DEMO-356', 'DEMO-358', 'DEMO-366', 'DEMO-369', 'DEMO-374', 'DEMO-376', 'DEMO-381', 'DEMO-387', 'DEMO-391', 'DEMO-392', 'DEMO-412', 'DEMO-425', 'DEMO-440', 'DEMO-456', 'DEMO-459', 'DEMO-461', 'DEMO-462', 'DEMO-467', 'DEMO-468', 'DEMO-469', 'DEMO-471', 'DEMO-474', 'DEMO-482', 'DEMO-487', 'DEMO-496', 'DEMO-497', 'DEMO-506', 'DEMO-554', 'DEMO-571', 'DEMO-578', 'DEMO-579', 'DEMO-590', 'DEMO-600', 'DEMO-609', 'DEMO-612', 'DEMO-617', 'DEMO-622', 'DEMO-629', 'DEMO-630', 'DEMO-631', 'DEMO-634', 'DEMO-672', 'DEMO-680', 'DEMO-700', 'DEMO-708', 'DEMO-713', 'DEMO-717', 'DEMO-719', 'DEMO-726', 'DEMO-730', 'DEMO-738', 'DEMO-739', 'DEMO-742', 'DEMO-743', 'DEMO-750', 'DEMO-752', 'DEMO-760', 'DEMO-765', 'DEMO-772', 'DEMO-773', 'DEMO-778', 'DEMO-782', 'DEMO-785', 'DEMO-786', 'DEMO-787', 'DEMO-789', 'DEMO-791', 'DEMO-793', 'DEMO-798', 'DEMO-799', 'DEMO-800', 'DEMO-802', 'DEMO-805', 'DEMO-806', 'DEMO-807', 'DEMO-811', 'DEMO-814', 'DEMO-824', 'DEMO-842', 'DEMO-849', 'DEMO-859', 'DEMO-861', 'DEMO-863', 'DEMO-870', 'DEMO-876', 'DEMO-895', 'DEMO-896', 'DEMO-898', 'DEMO-900', 'DEMO-905', 'DEMO-913', 'DEMO-915', 'DEMO-930', 'DEMO-936', 'DEMO-939', 'DEMO-943', 'DEMO-952', 'DEMO-960', 'DEMO-965', 'DEMO-969', 'DEMO-972', 'DEMO-976', 'DEMO-981', 'DEMO-982', 'DEMO-985', 'DEMO-991', 'DEMO-995', 'DEMO-1006', 'DEMO-1007', 'DEMO-1013', 'DEMO-1018', 'DEMO-1024', 'DEMO-1027', 'DEMO-1028', 'DEMO-1034', 'DEMO-1036', 'DEMO-1063', 'DEMO-1069', 'DEMO-1097', 'DEMO-1099', 'DEMO-1100', 'DEMO-1103', 'DEMO-1127', 'DEMO-1135', 'DEMO-1143') AND state = 'open' ORDER BY first_seen_at DESC LIMIT 20"
       }
     }
   ],

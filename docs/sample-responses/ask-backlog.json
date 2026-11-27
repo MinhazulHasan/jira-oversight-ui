@@ -94,7 +94,7 @@
         },
         {
           "key": "assignee",
-          "label": "Assignee",
+          "label": "Counts for",
           "kind": "text"
         }
       ],
@@ -165,7 +165,7 @@
       ],
       "truncated": false,
       "as_of": "2026-11-04T14:28:00.000Z",
-      "note": "open tickets (status not done, Epics left out, as the scorecard counts them) assigned to this person now, newest first; 7 in all"
+      "note": "open tickets (status not done, Epics left out, as the scorecard counts them) that count for this person (the board's credit setting), newest first; 7 in all"
     }
   ],
   "plan": [

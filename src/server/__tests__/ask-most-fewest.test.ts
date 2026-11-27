@@ -295,7 +295,7 @@ describe("most and fewest in people comparisons (JO-14)", () => {
     for (const key of ["reopened", "estimated_before_start", "open_findings_per_10", "open_tickets"] as const) {
       const measure = set.measures.find((candidate) => candidate.key === key)!;
       for (const order of ["closer", "most", "fewest"] as const) {
-        const ordered = compareOrder(measure, set.holders, order);
+        const ordered = compareOrder(measure, set.withTickets, order);
         const counted = measure.kind === "count";
         const enough = ordered.filter((row) => counted || (row.values[key].enough && row.values[key].value !== null));
         expect(ordered.slice(0, enough.length)).toEqual(enough);
@@ -306,12 +306,12 @@ describe("most and fewest in people comparisons (JO-14)", () => {
       }
     }
     // Overall, fewest is the exact reverse of the closer order for those compared; those compared on none stay last.
-    const closer = overallOrder(set.measures, set.holders).filter((entry) => entry.compared > 0).map((entry) => entry.row.person.id);
-    const fewest = overallOrder(set.measures, set.holders, "fewest");
+    const closer = overallOrder(set.measures, set.withTickets).filter((entry) => entry.compared > 0).map((entry) => entry.row.person.id);
+    const fewest = overallOrder(set.measures, set.withTickets, "fewest");
     const reversed = fewest.filter((entry) => entry.compared > 0).map((entry) => entry.row.person.id);
     const none = fewest.findIndex((entry) => entry.compared === 0);
     expect(none === -1 || fewest.slice(none).every((entry) => entry.compared === 0)).toBe(true);
-    const closerCounts = overallOrder(set.measures, set.holders).filter((entry) => entry.compared > 0).map((entry) => entry.closer);
+    const closerCounts = overallOrder(set.measures, set.withTickets).filter((entry) => entry.compared > 0).map((entry) => entry.closer);
     expect(fewest.filter((entry) => entry.compared > 0).map((entry) => entry.closer)).toEqual([...closerCounts].reverse());
     expect(new Set(reversed)).toEqual(new Set(closer));
   });

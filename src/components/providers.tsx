@@ -84,6 +84,7 @@ export function Providers({ nonce, children }: { nonce?: string; children: React
                   content: "jo-toast-content",
                   title: "jo-toast-title",
                   description: "jo-toast-description",
+                  actionButton: "jo-toast-action",
                 },
               }}
             />

@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "period": {
+    "days": 90,
+    "from": "2026-08-06T14:28:00.000Z",
+    "to": "2026-11-04T14:28:00.000Z"
+  },
+  "setting": {
+    "source": "auto",
+    "field": null,
+    "revision": 0,
+    "changed_by": null,
+    "changed_at": null
+  },
+  "effective_field": {
+    "key": "programmer",
+    "name": "Programmer"
+  },
+  "finished": 303,
+  "options": [
+    {
+      "source": "auto",
+      "field": null,
+      "source_filled": 0,
+      "credited": 296
+    },
+    {
+      "source": "assignee",
+      "field": null,
+      "source_filled": 296,
+      "credited": 296
+    }
+  ]
+}

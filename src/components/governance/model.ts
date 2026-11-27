@@ -87,7 +87,10 @@ export function zoneName(zone: string, locale?: string): string {
 export function detailWords(entry: AccessLogEntry, locale?: string): string | null {
   const { days, entries } = entry.detail;
   const count = (value: number) => new Intl.NumberFormat(locale ?? "en-GB").format(value);
-  if ((entry.action === "scorecard_view" || entry.action === "people_compare_view" || entry.action === "person_card_view") && days !== null) {
+  if (
+    (entry.action === "scorecard_view" || entry.action === "people_compare_view" || entry.action === "person_card_view" || entry.action === "scorecard_tickets_view") &&
+    days !== null
+  ) {
     return `Last ${count(days)} days`;
   }
   if ((entry.action === "access_log_view" || entry.action === "access_log_export") && entries !== null) {

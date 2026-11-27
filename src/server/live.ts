@@ -5,8 +5,9 @@ import {
   RULE_ID_PATTERN,
   RULE_SETTINGS_CONFLICT,
   SCORECARD_SENTENCES,
-  UNASSIGNED,
   type AccessLog,
+  type PeopleCredit,
+  type PeopleProof,
   type PeopleScorecard,
   type PersonCard,
   type Refresh,
@@ -75,12 +76,20 @@ function upstreamFailure(status: number, resolved: Resolved): Response {
     return problem(404, "not_found", SCORECARD_PERSON_NOT_FOUND);
   }
   if (status === 404 && route.name === "person_card") return problem(404, "not_found", PERSON_CARD_NOT_FOUND);
+  // The tickets behind a figure: someone not on the board, or (asked for the board) a service from before the route.
+  if (status === 404 && route.name === "scorecard_tickets") {
+    return route.query.person !== null ? problem(404, "not_found", PROOF_PERSON_NOT_FOUND) : problem(502, "upstream_error", PROOF_MISSING);
+  }
   // Rule settings on a service from before them: a route it does not have, never the board.
   if (status === 404 && (route.name === "rule_settings" || route.name === "rule_settings_preview" || route.name === "rule_settings_save")) {
     return problem(502, "upstream_error", RULE_SETTINGS_MISSING);
   }
   // An AI draft of a rule on a service from before it: the same, said of the draft.
   if (status === 404 && route.name === "rule_settings_draft") return problem(502, "upstream_error", RULE_DRAFT_MISSING);
+  // The credit setting on a service from before it: the same, said of the setting.
+  if (status === 404 && (route.name === "people_credit" || route.name === "people_credit_save")) return problem(502, "upstream_error", CREDIT_MISSING);
+  // Ignoring findings on a service from before it: the same, said of ignoring.
+  if (status === 404 && IGNORE_ROUTES.has(route.name)) return problem(502, "upstream_error", IGNORE_MISSING);
   // Every other 404 here is a board the service no longer serves: the top bar resets the pick.
   if (status === 404) return unknownBoard(resolved);
   if (status === 401 || status === 403) {
@@ -116,6 +125,22 @@ export const RULE_SETTINGS_MISSING = "The oversight service does not offer rule 
 /** A service from before has no AI draft of a rule: said as what it is. */
 export const RULE_DRAFT_MISSING = "The oversight service does not draft rules yet: it may be an earlier version than this dashboard.";
 export const PERSON_CARD_NOT_FOUND = "This person is not on this board.";
+/** The routes of ignoring findings: the ignored list, an ignore's preview, the ignore, and a restore. */
+const IGNORE_ROUTES: ReadonlySet<Resolved["route"]["name"]> = new Set(["ignored", "ignore_preview", "ignore", "restore"]);
+/** A service from before ignoring answers its routes 404 without a code: said as what it is. */
+export const IGNORE_MISSING = "The oversight service does not ignore findings yet: it may be an earlier version than this dashboard.";
+/** The service's 422 on an ignore or a restore, when it gives no words that can be shown. */
+export const IGNORE_REFUSED = "The oversight service refused this request, so nothing was changed.";
+export const PROOF_PERSON_NOT_FOUND = "This person is not on this board.";
+/** A service from before the tickets behind figures answers their route 404 without a code: said as what it is. */
+export const PROOF_MISSING = "The oversight service does not list the tickets behind figures yet: it may be an earlier version than this dashboard.";
+export const PROOF_NOT_MEASURABLE = "This board can't show that figure, so there are no tickets behind it.";
+/** A service from before the credit setting answers its route 404 without a code: said as what it is. */
+export const CREDIT_MISSING = "The oversight service does not offer the credit setting yet: it may be an earlier version than this dashboard.";
+/** The service's 409 stale_revision on a change of the credit setting, in this interface's words. */
+export const CREDIT_STALE = "Someone changed how finished work is counted on this board since you opened it. Look again, then choose.";
+/** The service's 422 on a change of the credit setting, when it gives no words that can be shown. */
+export const CREDIT_REFUSED = "The oversight service refused this choice for the board.";
 /** A card read on a board the service does not serve (an access log entry's board, since taken off its list). */
 export const PERSON_CARD_UNKNOWN_BOARD = "The board this card is read on is not one the oversight service serves.";
 
@@ -277,6 +302,18 @@ async function settingsRefusal(response: Response, request: unknown): Promise<Re
   return null;
 }
 
+/** The service's own words in a refusal, when they are fit to show (plain text on one line); null otherwise. */
+async function refusalWords(response: Response): Promise<string | null> {
+  if (Number(response.headers.get("content-length")) > MAX_SETTINGS_REFUSAL_CHARS) return null;
+  try {
+    const text = await response.text();
+    if (text.length === 0 || text.length > MAX_SETTINGS_REFUSAL_CHARS) return null;
+    return settingsProblems(JSON.parse(text), null)[0]?.message ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** The service refused an AI draft's words and gave no words of its own that can be shown. */
 export const DRAFT_REFUSED = "The oversight service can't draft from these words. Describe the rule another way.";
 
@@ -377,32 +414,41 @@ export async function forward(
   const settingsBody = route.name === "rule_settings_preview" || route.name === "rule_settings_save" ? route.body : null;
   // An AI draft of a rule: the admin's words as this interface checked them, as plain text.
   const draftBody = route.name === "rule_settings_draft" ? route.body : null;
-  const post = ask || route.name === "refresh_start" || settingsBody !== null || draftBody !== null;
+  // A change of the credit setting: the choice and revision this interface checked and rebuilt.
+  const creditBody = route.name === "people_credit_save" ? route.body : null;
+  // An ignore, its preview or a restore: the body this interface checked and rebuilt.
+  const ignoreBody = route.name === "ignore_preview" || route.name === "ignore" || route.name === "restore" ? route.body : null;
+  const post = ask || route.name === "refresh_start" || settingsBody !== null || draftBody !== null || ignoreBody !== null;
   const headers = new Headers({
     accept: "application/json",
     "x-service-key": config.serviceKey,
     ...(reader ? readerHeaders(reader) : {}),
   });
-  if (ask || settingsBody !== null || draftBody !== null) headers.set("content-type", "application/json");
+  if (ask || settingsBody !== null || draftBody !== null || creditBody !== null || ignoreBody !== null) headers.set("content-type", "application/json");
   const url = new URL(`api/v1/${upstream}`, config.apiUrl);
   if (board && !BOARDLESS_ROUTES.has(route.name)) url.searchParams.set("project", board);
   // The level this interface decided for the reader (handler.ts), as Ask's body carries it: never the browser's.
   if (
     route.name === "people_scorecard" ||
+    route.name === "scorecard_tickets" ||
     route.name === "person_card" ||
     route.name === "access_log" ||
     route.name === "usage" ||
     route.name === "rule_settings" ||
     route.name === "rule_settings_preview" ||
     route.name === "rule_settings_save" ||
-    route.name === "rule_settings_draft"
+    route.name === "rule_settings_draft" ||
+    route.name === "people_credit" ||
+    route.name === "people_credit_save"
   ) {
     url.searchParams.set("level", route.level);
   }
-  // Findings filtered by a person are recorded in the access log, with the level they were read at.
-  if (route.name === "findings" && route.query.person.some((id) => id !== UNASSIGNED)) {
+  // Every read of findings carries the reader's level: who ignored one is named at the people level alone, and findings
+  // filtered by a person are recorded in the access log with the level they were read at.
+  if (route.name === "findings" || route.name === "finding" || route.name === "issue_timeline") {
     url.searchParams.set("level", reader?.level ?? "team");
   }
+  if (IGNORE_ROUTES.has(route.name) && "level" in route) url.searchParams.set("level", route.level);
   // The Portfolio across a reader's own boards (handler.ts): none for an admin, who reads every board.
   if (route.name === "portfolio") for (const key of route.boards ?? []) url.searchParams.append("board", key);
   const bodyLimit = route.name === "access_log" && route.query.export ? MAX_EXPORT_CHARS : MAX_BODY_CHARS;
@@ -411,7 +457,7 @@ export async function forward(
   let text: string;
   try {
     const response = await fetch(url, {
-      method: post ? "POST" : "GET",
+      method: post ? "POST" : creditBody !== null ? "PUT" : "GET",
       headers,
       // The level is this interface's decision (handler.ts); the mentions are ids it has checked.
       body: ask
@@ -420,11 +466,23 @@ export async function forward(
           ? JSON.stringify(settingsBody)
           : draftBody !== null
             ? JSON.stringify(draftBody)
-            : undefined,
+            : creditBody !== null
+              ? JSON.stringify(creditBody)
+              : ignoreBody !== null
+                ? JSON.stringify(ignoreBody)
+              : undefined,
       cache: "no-store",
       // A redirect would carry the key to wherever it points.
       redirect: "error",
-      signal: AbortSignal.timeout(ask ? ASK_TIMEOUT_MS : draftBody !== null ? DRAFT_TIMEOUT_MS : settingsBody !== null ? SETTINGS_TIMEOUT_MS : READ_TIMEOUT_MS),
+      signal: AbortSignal.timeout(
+        ask
+          ? ASK_TIMEOUT_MS
+          : draftBody !== null
+            ? DRAFT_TIMEOUT_MS
+            : settingsBody !== null || creditBody !== null || ignoreBody !== null
+              ? SETTINGS_TIMEOUT_MS
+              : READ_TIMEOUT_MS,
+      ),
     });
     status = response.status;
     if (status === 409 && !BOARDLESS_ROUTES.has(route.name)) {
@@ -435,8 +493,23 @@ export async function forward(
       const text = await response.text();
       const again = () => new Response(text.length > MAX_SETTINGS_REFUSAL_CHARS ? "" : text, { status });
       if ((await refusalCodes(again())).includes("board_not_synced")) return problem(409, "board_not_synced", BOARD_NOT_SYNCED);
+      // A figure the board cannot show has no tickets behind it: said calmly, never as a fault.
+      if (route.name === "scorecard_tickets" && (await refusalCodes(again())).includes("not_measurable")) {
+        return problem(409, "not_measurable", PROOF_NOT_MEASURABLE);
+      }
       if (settingsBody !== null) return (await settingsRefusal(again(), settingsBody)) ?? upstreamFailure(status, resolved);
+      // Someone else changed the board's credit setting since the reader's revision: nothing was written.
+      if (creditBody !== null && (await refusalCodes(again())).includes("stale_revision")) return problem(409, "stale_revision", CREDIT_STALE);
       return upstreamFailure(status, resolved);
+    }
+    if (status === 422 && ignoreBody !== null) {
+      // The service refused the body this interface sent: said in its own words where they can be shown.
+      const said = await refusalWords(response);
+      return problem(400, "bad_request", said ?? IGNORE_REFUSED, [{ path: "(body)", message: said ?? IGNORE_REFUSED }]);
+    }
+    if (status === 422 && creditBody !== null) {
+      const said = await refusalWords(response);
+      return problem(422, "credit_invalid", said ?? CREDIT_REFUSED, [{ path: "field", message: said ?? CREDIT_REFUSED }]);
     }
     if ((status === 409 || status === 422) && settingsBody !== null) {
       // The board moved on since the reader's revision, or the settings cannot be made: said in this interface's words.
@@ -535,6 +608,13 @@ export async function forward(
       return problem(502, "upstream_invalid", "The oversight service sent rule settings for another board than the one asked for.");
     }
   }
+  if ((route.name === "people_credit" || route.name === "people_credit_save") && board !== null) {
+    // The board asked about, and for a read the period asked for: a choice is never shown as another board's.
+    const credit = data as PeopleCredit;
+    if (!credit.meta.projects.includes(board) || (route.name === "people_credit" && credit.period.days !== route.query.days)) {
+      return problem(502, "upstream_invalid", "The oversight service sent another board's credit setting than the one asked for.");
+    }
+  }
   if ((route.name === "refresh" || route.name === "refresh_start") && board !== null && (data as Refresh).project !== board) {
     // The sync asked about and no other: "Sync" says which board it syncs, and must report that board.
     return problem(502, "upstream_invalid", "The oversight service reported the sync of another board than the one asked for.");
@@ -546,6 +626,15 @@ export async function forward(
   if (route.name === "issue_timeline" && "issue" in data) {
     // Links to Jira come from this interface's configuration, so the service never decides where a click goes.
     data.issue.url = jiraLink(config.jiraBaseUrl, data.issue.key);
+  }
+  if (route.name === "scorecard_tickets") {
+    // The figure asked for and no other: its measure, its period, and its person (or the whole board).
+    const proof = data as PeopleProof;
+    const { measure, days, person } = route.query;
+    if (proof.measure.key !== measure || proof.period.days !== days || (proof.person?.id ?? null) !== person) {
+      return problem(502, "upstream_invalid", "The oversight service sent the tickets behind another figure than the one asked for.");
+    }
+    for (const ticket of [...proof.tickets, ...proof.left_out]) ticket.url = jiraLink(config.jiraBaseUrl, ticket.key);
   }
   return json(data);
 }

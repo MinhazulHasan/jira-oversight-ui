@@ -4,11 +4,14 @@ import type { JsonRoute, Route } from "../endpoints";
 import type { PeopleComparison } from "../env";
 import { accessLogView } from "./access-log";
 import { askSample } from "./ask";
+import { creditView, saveCreditView } from "./credit-view";
 import { baselineView } from "./baseline";
 import { DEFAULT_BOARD, type SampleBoard } from "./boards";
 import { REPORT_TIMEZONE, API_VERSION } from "./catalogue";
 import { meta, type Dataset } from "./dataset";
 import { findingDetail, findingsPage } from "./findings";
+import { ignoredView, ignorePreviewView, ignoreView, restoreView } from "./ignore-views";
+import type { IgnoreActor } from "./ignores";
 import { insightsView } from "./insights";
 import { issueTimeline } from "./issues";
 import { overview } from "./overview";
@@ -17,6 +20,7 @@ import { personCardView } from "./person-card";
 import { portfolioView } from "./portfolio";
 import { draftView, previewView, saveView, settingsView, type SettingsAnswer, type SettingsReader } from "./rule-settings";
 import { rulesView } from "./rules";
+import { proofView } from "./proof";
 import { scorecardView } from "./scorecard";
 import { boardsAround, boardsInOrder, type ServedBoards } from "./served";
 import { TREND_DEFINITIONS, trendPoints } from "./series";
@@ -41,6 +45,10 @@ export interface SampleOptions {
   boards?: ServedBoards;
   sync?: { board?: SampleBoard; at: number; readMs: number };
   settings?: { reader: SettingsReader; at: number; recheckMs: number };
+  /** Who changes the credit setting, and when. */
+  credit?: { by: string; at: number };
+  /** Who ignores findings or restores them, and when. */
+  ignores?: { reader: IgnoreActor; at: number };
 }
 
 function settingsAnswer(answer: SettingsAnswer): SampleAnswer {
@@ -130,6 +138,16 @@ export function sampleResponse(
       return found(directoryView(dataset));
     case "people_scorecard":
       return scorecardView(dataset, route.query, options.peopleComparison);
+    case "scorecard_tickets":
+      // One person or the whole board, with comparison on or off alike.
+      return proofView(dataset, route.query);
+    case "people_credit":
+      return found(creditView(dataset, route.query.days));
+    case "people_credit_save": {
+      const { by, at } = options.credit ?? { by: LOCAL_VIEWER_NAME, at: dataset.now };
+      const saved = saveCreditView(dataset, route.body, by, at);
+      return saved.ok ? found(saved.body) : { found: false, status: saved.status, error: saved.error, message: saved.message, issues: saved.issues };
+    }
     case "person_card": {
       const others = syncedAndNot(boards).datasets.filter((other) => other.board.key !== dataset.board.key);
       const card = personCardView(dataset, route.personId, route.query.days, others);
@@ -144,6 +162,15 @@ export function sampleResponse(
     case "issue_timeline": {
       const timeline = issueTimeline(dataset, route.issueKey);
       return timeline ? found(timeline) : { found: false, message: `${route.issueKey} is not in the sample data.` };
+    }
+    case "ignored":
+      return found(ignoredView(dataset, route.query));
+    case "ignore_preview":
+      return found(ignorePreviewView(dataset, route.body));
+    case "ignore":
+    case "restore": {
+      const { reader, at } = options.ignores ?? { reader: LOCAL_SETTINGS_READER, at: dataset.now };
+      return found(route.name === "ignore" ? ignoreView(dataset, route.body, reader, at) : restoreView(dataset, route.body, reader, at));
     }
     case "ask":
       return found(

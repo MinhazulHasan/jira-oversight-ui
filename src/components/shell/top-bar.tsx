@@ -75,10 +75,10 @@ function Whereabouts() {
 
   return (
     <p className="@container flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm">
-      {/* The rule after the board picker (from 768px). Under 3rem there is no room for a name, so both go. */}
+      {/* The rule after the board picker (from 768px). Under 3rem there is no room for a name, so both go; on a phone the board code gives way before the page name does. */}
       <span aria-hidden className="mx-1 hidden h-5 w-px shrink-0 bg-rule md:@min-[3rem]:block" />
       {board ? (
-        <span className="flex shrink-0 items-center gap-2 md:hidden" data-board-in-bar>
+        <span className="flex shrink-0 items-center gap-2 @max-[11rem]:sr-only md:hidden" data-board-in-bar>
           <span className="mono text-ink-mid">
             <span className="sr-only">Board </span>
             {board}

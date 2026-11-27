@@ -144,7 +144,7 @@ function phrase(tool: string, key: string, value: string, measure?: string): Par
     case "order":
       return { key, text: orderPhrase(tool, value, measure) };
     case "holding":
-      // Everyone on the board, or its members who hold no ticket.
+      // Everyone on the board, or its members who have no tickets.
       return { key, text: value === "none" ? "members with no tickets" : "everyone on it" };
     default:
       return { key, lead: humanize(key), text: value };
@@ -326,7 +326,7 @@ export function readyDescription(response: AskResponse): string | undefined {
           return "Jira data cannot answer that.";
       }
     case "no_data":
-      // People mentioned who hold no tickets on the board: the answer is one sentence, and says it all.
+      // People mentioned who have no tickets on the board: the answer is one sentence, and says it all.
       return response.answer?.trim() || "Nothing matched.";
     case "not_measurable":
       return "Jira holds no evidence for this.";

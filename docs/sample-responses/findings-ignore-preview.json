@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "findings": 749,
+  "tickets": 705,
+  "by_rule": [
+    {
+      "rule_id": "R-EST-01",
+      "rule_title": "Work started without an estimate",
+      "findings": 266
+    },
+    {
+      "rule_id": "R-EST-02",
+      "rule_title": "Estimate first set after work started",
+      "findings": 177
+    },
+    {
+      "rule_id": "R-EFF-01",
+      "rule_title": "Effort far beyond the estimate",
+      "findings": 76
+    },
+    {
+      "rule_id": "R-FLOW-02",
+      "rule_title": "Skipped a stage",
+      "findings": 174
+    },
+    {
+      "rule_id": "R-FLOW-03",
+      "rule_title": "Reopened after Done",
+      "findings": 56
+    }
+  ],
+  "already_ignored": 0
+}

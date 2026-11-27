@@ -30,6 +30,8 @@ export function Switch({ checked, onCheckedChange, label, labelledBy, describedB
       aria-describedby={describedBy}
       className={cn(
         "jo-switch pressable relative inline-flex h-[18px] w-8 shrink-0 items-center rounded-pill transition-colors duration-150",
+        // The drawn track stays 18 px; the press reaches 24 px (WCAG 2.2 target size).
+        "after:absolute after:inset-x-0 after:-inset-y-[3px] after:content-['']",
         "bg-rule-control data-[state=checked]:bg-ink disabled:cursor-not-allowed disabled:opacity-45",
         className,
       )}

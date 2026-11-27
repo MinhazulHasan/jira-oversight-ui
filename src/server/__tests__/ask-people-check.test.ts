@@ -54,10 +54,10 @@ describe("Ask in sample mode, the JO-11 check's findings", () => {
     const everyone = at("Who is on this board?");
     const names = [...holders(), ...members()];
     expect(everyone.facts[0].rows.map((row) => row.name)).toEqual(names);
-    // Each name once: the people who hold its tickets, then how many members hold none, and who.
+    // Each name once: the people with its tickets, then how many members have none, and who.
     expect(everyone.answer).toBe(
       `${names.length} people are on this board: ${holders().slice(0, -1).join(", ")} and ${holders().at(-1)}, ` +
-        `and ${members().length} members who hold none of its tickets: ${members().slice(0, -1).join(", ")} and ${members().at(-1)}.`,
+        `and ${members().length} members who have none of its tickets: ${members().slice(0, -1).join(", ")} and ${members().at(-1)}.`,
     );
     expect(everyone.people.map((person) => person.name)).toEqual(names);
     const none = at("Who has no tickets?");
@@ -65,9 +65,9 @@ describe("Ask in sample mode, the JO-11 check's findings", () => {
     expect(none.facts[0].rows.every((row) => row.tickets === 0)).toBe(true);
   });
 
-  it("says everyone holds a ticket where no member is without one, as the service says it", () => {
+  it("says everyone has a ticket where no member is without one, as the service says it", () => {
     const none = boardPeopleFacts(dataset, "F2", "none");
-    expect(boardPeoplePieces({ ...none, rows: [] })).toEqual(["Everyone on this board holds at least one of its tickets."]);
+    expect(boardPeoplePieces({ ...none, rows: [] })).toEqual(["Everyone on this board has at least one of its tickets."]);
   });
 
   it("reads a first name typed in lower case where a name stands, as that person", () => {
@@ -78,7 +78,7 @@ describe("Ask in sample mode, the JO-11 check's findings", () => {
     expect(doing.answer).toMatch(/^Ada Brooks, last 90 days, next to the board/);
     expect(doing.people).toEqual([ada]);
     const working = at("what is ada working on?");
-    expect([working.plan[0].tool, working.people]).toEqual(["oversight_query", [ada]]);
+    expect([working.plan[0].tool, working.people]).toEqual(["oversight_person_tickets", [ada]]);
     const backlog = at("ada's backlog?");
     expect(backlog.plan[0]).toMatchObject({ tool: "oversight_person_tickets", params: { person: ADA, state: "open" } });
     // No name stands where "will" does, and the question asks nothing of anyone: the true message.

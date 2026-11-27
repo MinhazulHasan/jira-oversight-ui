@@ -162,7 +162,7 @@ export function PersonMention({ person, linked = true, tight = false }: { person
   );
 }
 
-/** The sentence the service builds in code for people mentioned who hold none of the board's tickets (contract 4.6). */
+/** The sentence the service builds in code for people mentioned who have none of the board's tickets (contract 4.6). */
 const NO_TICKETS_SENTENCE = /^(.+) (?:has|have) no tickets on this board\.$/u;
 
 export function withoutTickets(answer: string | null | undefined, people: readonly Person[]): ReadonlySet<string> {
@@ -325,7 +325,7 @@ export function AnswerProse({
   describe: (marker: number) => string;
   /** The people the answer names, as the response lists them. */
   people?: readonly Person[];
-  /** The ids of the people marked without a link: those who hold none of the board's tickets (withoutTickets). */
+  /** The ids of the people marked without a link: those who have none of the board's tickets (withoutTickets). */
   unlinked?: ReadonlySet<string>;
 }) {
   const markdown = segments.map((segment, index) => (segment.kind === "text" ? segment.text : `${OPEN}${index}${CLOSE}`)).join("");

@@ -5,6 +5,7 @@ import {
   SCORECARD_SENTENCES,
   scorecardCaveat,
   UNASSIGNED_LABEL,
+  type CreditReading,
   type FactCell,
   type FactColumnKind,
   type FactSet,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/api/schemas";
 
 import { STATUS } from "../catalogue";
+import { ticketsOf } from "../credit";
 import type { Dataset } from "../dataset";
 import { isWork, MIN_TICKETS, scorecards, within, type ScorecardSet } from "../scorecard";
 import { personOf } from "../team";
@@ -93,21 +95,26 @@ const OVERALL_COLUMNS: Column[] = [
   { key: "standing", label: "Standing", kind: "text" },
 ];
 
+/** Whose a ticket's figures are, as the service's notes say it (its CREDIT_READING). */
+const CREDIT_READING =
+  "every ticket, open or finished, by whom it counts for (the board's credit setting: a people field such as " +
+  "Programmer, the assignee, or Automatic: Programmer where it is filled, otherwise the assignee; a ticket " +
+  "without one counts for no one)";
 const READING =
-  "by each ticket's current assignee, Epics left out; a rate's value is a percentage of its denominator, a count's " +
+  `${CREDIT_READING}, Epics left out; a rate's value is a percentage of its denominator, a count's ` +
   "value is the count, and open findings per 10 open tickets is the open breaches and warnings on the person's open " +
   `tickets for every 10 of those tickets; enough tickets means the figure rests on at least ${MIN_TICKETS} tickets; ` +
   "next to the board says closer to the process than the board, further from it, or level with it (within 5 " +
   "points, 0.5 for the ratio), only when both sides have enough";
 const OVERALL_READING =
-  "by each ticket's current assignee, Epics left out; the closer, further and level counts are the measures on " +
+  `${CREDIT_READING}, Epics left out; the closer, further and level counts are the measures on ` +
   "which the person's figure stands closer to the process than the board's, further from it, or level with it " +
   "(within 5 points, 0.5 for the ratio); measures compared is their sum; too few tickets counts the measures where " +
   `either side rests on fewer than ${MIN_TICKETS} tickets; open findings per 10 open tickets is the open breaches ` +
   "and warnings on the person's open tickets for every 10 of those tickets, compared only when it rests on enough " +
   "tickets";
 
-/** The work nobody holds, as a ranking by a count names it after the people: "148 open tickets". */
+/** The work that counts for no one, as a ranking by a count names it after the people: "148 open tickets". */
 export const UNASSIGNED_WORDS: Record<RankedCount, readonly [string, string]> = {
   open_tickets: ["open ticket", "open tickets"],
   in_progress: ["ticket in progress", "tickets in progress"],
@@ -283,11 +290,11 @@ export function compareFacts(
     ...(only ? { person_ids: [...only] } : {}),
   };
   const askedAbout = (person: Person) => only === null || only.includes(person.id);
-  const everyone = only ? "the people asked about" : "everyone who holds a ticket";
+  const everyone = only ? "the people asked about" : "everyone with tickets";
   const limit = n ?? Number.POSITIVE_INFINITY;
   const as_of = iso(dataset.world.syncAt);
   if (measure === OVERALL) {
-    const ordered = overallOrder(set.measures, set.holders, order);
+    const ordered = overallOrder(set.measures, set.withTickets, order);
     return {
       ref,
       tool: "oversight_people_compare",
@@ -310,14 +317,14 @@ export function compareFacts(
       truncated: ordered.length > limit,
       as_of,
       note:
-        "everyone who holds a ticket, by the number of measures on which they are closer to the process than the whole board over " +
+        "everyone with tickets, by the number of measures on which they are closer to the process than the whole board over " +
         `${periodWords(set)}, ${fewest ? "fewest" : "most"} first, ties by open findings per 10 open tickets (${fewest ? "more" : "fewer"} first; ` +
         `a figure on too few tickets is never compared, so it counts as the most), people compared on no measure last; ${OVERALL_READING}`,
     };
   }
   const counted = isCount(measure);
   const definition = set.measures.find((candidate) => candidate.key === measure)!;
-  const ordered = compareOrder(definition, set.holders, order).filter((row) => askedAbout(row.person));
+  const ordered = compareOrder(definition, set.withTickets, order).filter((row) => askedAbout(row.person));
   const line = (person: Person | null, value: ScorecardValue, name = BOARD_NAME): Row => ({
     person_id: person?.id ?? null,
     name: person?.name ?? name,
@@ -334,11 +341,12 @@ export function compareFacts(
     measurable: definition.measurable,
     reason: definition.reason,
   });
-  const nobody = counted && definition.measurable && set.unassigned && only === null ? [line(null, set.unassigned.values[measure], UNASSIGNED_LABEL)] : [];
+  // After a ranking by a count, the work that is no one's: the tickets that count for no one.
+  const nobody = counted && definition.measurable && set.noOne && only === null ? [line(null, set.noOne.values[measure], UNASSIGNED_LABEL)] : [];
   const people = definition.measurable ? ordered.slice(0, limit).map((row) => line(row.person, row.values[measure])) : [];
   // A count of now states no period, and its label may say "now" already ("In progress now").
   const when = now ? (definition.label.endsWith(" now") ? "" : " now") : ` over ${periodWords(set)}`;
-  const then = nobody.length > 0 ? "the tickets nobody holds (Unassigned, never ranked), then the whole board" : "the whole board";
+  const then = nobody.length > 0 ? "the tickets that count for no one (Unassigned, never ranked), then the whole board" : "the whole board";
   // As the service notes the order: closer first says which way that is; most and fewest, highest or lowest first.
   const direction = definition.direction === "higher_is_closer" ? "highest" : "lowest";
   const orderSaid = order === "closer" ? `closest to the process first (${direction} first)` : order === "most" ? "highest first" : "lowest first";
@@ -373,8 +381,8 @@ function labelPieces(_fact: FactSet, label: string): Piece[] {
 const labels = (fact: FactSet, items: readonly string[]): Piece[] => listed(items.map((label) => labelPieces(fact, label)));
 
 /** The caveat, its days cited from the parameters: the final paragraph of every scorecard or comparison answer. */
-function caveatPieces(fact: FactSet, days: number, codeReview: boolean): Piece[] {
-  const text = scorecardCaveat(days, codeReview);
+function caveatPieces(fact: FactSet, days: number, codeReview: boolean, credit: CreditReading): Piece[] {
+  const text = scorecardCaveat(days, codeReview, credit);
   const [before, after] = text.split(String(days));
   return [before, param(fact, String(days)), after];
 }
@@ -403,7 +411,7 @@ function personSummary(fact: FactSet, set: ScorecardSet, row: ScorecardPerson, d
 
 /** Then the decision sentence for a personnel question, then the caveat: how every such answer closes. */
 function closing(fact: FactSet, set: ScorecardSet, days: number, personnel: boolean): Piece[] {
-  return [...(personnel ? ["\n\n", SCORECARD_SENTENCES.decision] : []), "\n\n", ...caveatPieces(fact, days, codeReviewShown(set))];
+  return [...(personnel ? ["\n\n", SCORECARD_SENTENCES.decision] : []), "\n\n", ...caveatPieces(fact, days, codeReviewShown(set), set.credit)];
 }
 
 /** One person's scorecard, or several side by side: a summary each, next to */
@@ -469,7 +477,7 @@ export function comparisonAnswer(
       );
     }
   } else if (definition) {
-    // The whole board's row is the last with no person; a count's ranking has the work nobody holds before it.
+    // The whole board's row is the last with no person; a count's ranking has the work that counts for no one before it.
     const boardIndex = fact.rows.length - 1;
     const unassignedIndex = fact.rows.findIndex((row) => row.person_id === null && row.name === UNASSIGNED_LABEL);
     const counted = definition.kind === "count";
@@ -531,19 +539,21 @@ const TICKET_COLUMNS: Column[] = [
   { key: "assignee_id", label: "Person id", kind: "text" },
   { key: "assignee", label: "Assignee", kind: "text" },
 ];
+/** A person's tickets: the person they count for, who may not be assigned them now (the service's _CREDITED_COLUMNS). */
+const CREDITED_COLUMNS: Column[] = [...TICKET_COLUMNS.slice(0, -1), { key: "assignee", label: "Counts for", kind: "text" }];
 
 /** The longest list of one person's tickets an answer asks for (their backlog, what they finished): the whole of it. */
 const WHOLE_LIST = 200;
 
 export function openTicketsFacts(dataset: Dataset, ref: string, person: Person, n = WHOLE_LIST): FactSet {
-  const issues = dataset.world.issues
-    .filter((issue) => isWork(issue) && STATUS[issue.status].category !== "done" && personOf(issue)?.id === person.id)
+  const issues = ticketsOf(dataset, person.id)
+    .filter((issue) => isWork(issue) && STATUS[issue.status].category !== "done")
     .sort((a, b) => b.createdAt - a.createdAt || b.num - a.num);
   return {
     ref,
     tool: "oversight_person_tickets",
     params: { project: dataset.board.key, person: person.id, state: "open", n },
-    columns: TICKET_COLUMNS,
+    columns: CREDITED_COLUMNS,
     rows: issues.slice(0, n).map((issue) => ({
       issue_key: issue.key,
       summary: issue.summary,
@@ -555,20 +565,20 @@ export function openTicketsFacts(dataset: Dataset, ref: string, person: Person, 
     })),
     truncated: issues.length > n,
     as_of: iso(dataset.world.syncAt),
-    note: `open tickets (status not done, Epics left out, as the scorecard counts them) assigned to this person now, newest first; ${issues.length} in all`,
+    note: `open tickets (status not done, Epics left out, as the scorecard counts them) that count for this person (the board's credit setting), newest first; ${issues.length} in all`,
   };
 }
 
 export function doneTicketsFacts(dataset: Dataset, ref: string, person: Person, days: ScorecardDays, n = WHOLE_LIST): FactSet {
   const set = scorecards(dataset, days);
-  const issues = dataset.world.issues
-    .filter((issue) => isWork(issue) && personOf(issue)?.id === person.id && within(set.period, issue.doneAt))
+  const issues = ticketsOf(dataset, person.id)
+    .filter((issue) => isWork(issue) && within(set.period, issue.doneAt))
     .sort((a, b) => (b.doneAt ?? 0) - (a.doneAt ?? 0) || b.num - a.num);
   return {
     ref,
     tool: "oversight_person_tickets",
     params: { project: dataset.board.key, person: person.id, state: "done", days, n },
-    columns: TICKET_COLUMNS,
+    columns: CREDITED_COLUMNS,
     rows: issues.slice(0, n).map((issue) => ({
       issue_key: issue.key,
       summary: issue.summary,
@@ -580,7 +590,7 @@ export function doneTicketsFacts(dataset: Dataset, ref: string, person: Person, 
     })),
     truncated: issues.length > n,
     as_of: iso(dataset.world.syncAt),
-    note: `tickets done in ${periodWords(set)} (Epics left out, as the scorecard counts them) assigned to this person now, newest first; ${issues.length} in all`,
+    note: `tickets done in ${periodWords(set)} (Epics left out, as the scorecard counts them) that count for this person (the board's credit setting), newest first; ${issues.length} in all`,
   };
 }
 

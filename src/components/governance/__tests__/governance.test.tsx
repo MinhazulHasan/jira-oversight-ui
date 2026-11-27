@@ -200,6 +200,7 @@ describe("the access log page", () => {
       "Viewed findings for a person",
       "Asked about people",
       "Viewed a person card",
+      "Viewed the tickets behind a figure",
       "Viewed the access log",
       "Exported the access log",
     ]);

@@ -366,7 +366,8 @@ export function DataTable<TRow extends RowData>({
                           type="button"
                           onClick={header.column.getToggleSortingHandler()}
                           className={cn(
-                            "group pressable -mx-1.5 inline-flex h-7 max-w-full items-center gap-1 rounded-[5px] px-1.5 text-ink-low hover:bg-hover hover:text-ink-mid",
+                            // The button reaches into the cell's padding (-mx-1.5), so its label may use that width too.
+                            "group pressable -mx-1.5 inline-flex h-7 max-w-[calc(100%+0.75rem)] items-center gap-0.5 rounded-[5px] px-1.5 text-ink-low hover:bg-hover hover:text-ink-mid",
                             meta?.numeric && "flex-row-reverse",
                             sorted && "text-ink",
                           )}

@@ -7,11 +7,12 @@ import {
   type ScorecardDays,
 } from "@/lib/api/schemas";
 
-import { STATUS, isWork } from "./catalogue";
-import { memo, meta, type Dataset } from "./dataset";
-import { peopleView } from "./people";
+import { STATUS } from "./catalogue";
+import { ticketsOf } from "./credit";
+import { meta, type Dataset } from "./dataset";
+import { peopleRows } from "./people";
 import { scorecards } from "./scorecard";
-import { personIdFor, personOf } from "./team";
+import { personIdFor } from "./team";
 import { iso } from "./time";
 import type { Issue } from "./world";
 
@@ -44,19 +45,6 @@ export function inProgressSince(issue: Issue): number {
   return since;
 }
 
-/** Their work on the board now (Epics left out, as every count of a person's tickets leaves them out). */
-function ticketsOf(dataset: Dataset, personId: string): Issue[] {
-  const byPerson = memo(dataset, "person-card:tickets", () => {
-    const map = new Map<string, Issue[]>();
-    for (const issue of dataset.world.issues) {
-      const person = isWork(issue) ? personOf(issue) : null;
-      if (person) map.set(person.id, [...(map.get(person.id) ?? []), issue]);
-    }
-    return map;
-  });
-  return byPerson.get(personId) ?? [];
-}
-
 /** The latest status change or logged work on these tickets, up to the sample's now; null when there is none. */
 function lastActivity(dataset: Dataset, tickets: readonly Issue[]): string | null {
   let latest = Number.NEGATIVE_INFINITY;
@@ -67,7 +55,7 @@ function lastActivity(dataset: Dataset, tickets: readonly Issue[]): string | nul
   return Number.isFinite(latest) ? iso(latest) : null;
 }
 
-/** The other synced boards (in the service's order) on which the person holds open tickets, with how many. */
+/** The other synced boards (in the service's order) on which the person has open tickets, with how many. */
 function servedElsewhere(others: readonly Dataset[], personId: string, days: ScorecardDays): PersonCardBoard[] {
   return others.flatMap((other) => {
     const open = scorecards(other, days).byId.get(personId)?.values.open_tickets.value ?? 0;
@@ -101,7 +89,8 @@ export function personCardView(dataset: Dataset, personId: string, days: Scoreca
   const compared = closer + level + further;
   const process: PersonCardProcess | null = compared === 0 ? null : { closer, level, further, too_few: tooFew, measurable: compared + tooFew };
 
-  const findings = peopleView(dataset).people.find((summary) => summary.person?.id === personId);
+  // Every figure on the card, findings too, is over the tickets that count for them.
+  const findings = peopleRows(dataset, "credit").find((summary) => summary.person?.id === personId);
   const tickets = holds ? ticketsOf(dataset, personId) : [];
   const listed: PersonCardTicket[] = tickets
     .filter((issue) => inProgress(issue.status))

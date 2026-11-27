@@ -99,8 +99,8 @@ describe("the card's parameters", () => {
 });
 
 describe("the access log's words for a card read", () => {
-  it("are a seventh action, last in the catalogue's order, in plain words", () => {
-    expect(ACCESS_ACTIONS.at(-1)).toBe("person_card_view");
+  it("are a seventh action, after the six before it in the catalogue's order, in plain words", () => {
+    expect(ACCESS_ACTIONS[6]).toBe("person_card_view");
     expect(ACCESS_ACTION_LABELS.person_card_view).toBe("Viewed a person card");
     const entry = {
       id: "e1",

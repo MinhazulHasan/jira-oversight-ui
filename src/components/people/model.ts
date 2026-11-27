@@ -11,6 +11,8 @@ import {
 import { formatCount, formatNumber, formatShare, MISSING } from "@/lib/format";
 import { compareByFoldedName } from "@/lib/names";
 
+import { creditNote, type CreditInForce } from "./credit/model";
+
 /** Where a figure stands next to the board's: the service's comparison, or too few tickets to make one. */
 export type Mark = "closer" | "further" | "level" | "too_few";
 
@@ -44,6 +46,12 @@ export function directionText(measure: Pick<ScorecardMeasure, "direction">): str
   if (measure.direction === "higher_is_closer") return "Higher is closer to the process.";
   if (measure.direction === "lower_is_closer") return "Lower is closer to the process.";
   return null;
+}
+
+/** What a measure counts, which way is closer, and whom each ticket counts for under the board's credit setting (the note's words). */
+export function measureDefinition(measure: Pick<ScorecardMeasure, "key" | "direction">, credit: CreditInForce | null): string {
+  const direction = directionText(measure);
+  return `${MEASURE_DEFINITIONS[measure.key]}${direction ? ` ${direction}` : ""} ${creditNote(credit)}`;
 }
 
 /* ------------------------------------------------------------- figures -- */
@@ -159,8 +167,8 @@ export function measureLink(
     case "open_findings_per_10":
       return {
         href: findings([], "open"),
-        label: "Open findings on all their tickets",
-        description: `${person.name}'s open findings on every ticket they hold, done ones too; this figure counts those on their open tickets`,
+        label: "Open findings on tickets they hold",
+        description: `${person.name}'s open findings on every ticket they hold now, done ones too; this figure counts those on their open tickets`,
       };
     case "stuck_now":
       return measure.rule_ids.length > 0

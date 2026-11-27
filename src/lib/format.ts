@@ -121,6 +121,15 @@ export function formatDate(value: DateInput | null | undefined, options: ZoneOpt
   }).format(date);
 }
 
+/** "29 May – 25 Nov 2026" (en-GB): the year once where both ends share it, as the locale writes a range. */
+export function formatDateRange(from: DateInput | null | undefined, to: DateInput | null | undefined, options: ZoneOptions = {}): string {
+  const start = toDate(from);
+  const end = toDate(to);
+  if (!start || !end) return MISSING;
+  const format = dateFormat(resolveLocale(options.locale), { day: "numeric", month: "short", year: "numeric", timeZone: options.timeZone });
+  return typeof format.formatRange === "function" ? format.formatRange(start, end) : `${format.format(start)} – ${format.format(end)}`;
+}
+
 export interface ClockOptions extends ZoneOptions {
   zoneNamed?: boolean;
 }

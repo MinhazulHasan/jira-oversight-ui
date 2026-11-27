@@ -135,7 +135,7 @@ describe("people by name and picture, never by id", () => {
     const table = within(ledger()).getByRole("table");
     const headers = within(table).getAllByRole("columnheader").map((header) => header.textContent);
     expect(headers).not.toContain("Person id");
-    expect(headers).toContain("Assignee");
+    expect(headers).toContain("Counts for");
     const first = within(table).getAllByRole("row")[1];
     expect(first).toHaveTextContent("Carmen Ruiz");
     expect(first.querySelector(".jo-avatar")).not.toBeNull();

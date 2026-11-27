@@ -28,7 +28,7 @@ export const dataModeSchema = z.enum(["sample", "live"]);
 export const severitySchema = z.enum(["breach", "warning"]);
 /** `rule` is one of James's hard and fast rules; `warning` an early warning. */
 export const ruleKindSchema = z.enum(["rule", "warning"]);
-export const findingStateSchema = z.enum(["open", "resolved"]);
+export const findingStateSchema = z.enum(["open", "resolved", "ignored"]);
 export const statusCategorySchema = z.enum(["new", "indeterminate", "done"]);
 /** James's process, in order (config/process.yaml). */
 export const STAGES = [
@@ -160,14 +160,14 @@ export const personSchema = z.object({
 export const personSummarySchema = z
   .object({
     person: personSchema.nullable(),
-    /** Their tickets on the board: its work, of every status (Epics left out, as the scorecard counts them). */
-    tickets: z.number().int().min(1),
+    /** Their tickets on the board: its work that counts for them, of every status (Epics left out, as the scorecard counts them); 0 for someone with only findings here. */
+    tickets: count,
     /** Those whose status category is not done. */
     open_tickets: count,
-    /** Open findings on those tickets, by severity. */
+    /** Open findings on the tickets they are assigned now, by severity: what Findings filtered to them lists. */
     open_breaches: count,
     open_warnings: count,
-    /** Distinct tickets with at least one open finding. */
+    /** Distinct tickets they are assigned now with at least one open finding. */
     tickets_with_findings: count,
   })
   .superRefine((row, ctx) => {
@@ -175,8 +175,11 @@ export const personSummarySchema = z
       ctx.addIssue({ code: "custom", path: ["open_tickets"], message: "more open tickets than tickets" });
     }
     const open = row.open_breaches + row.open_warnings;
-    if (row.tickets_with_findings > Math.min(row.tickets, open) || (open > 0 && row.tickets_with_findings === 0)) {
-      ctx.addIssue({ code: "custom", path: ["tickets_with_findings"], message: "does not fit the tickets and open findings" });
+    if (row.tickets_with_findings > open || (open > 0 && row.tickets_with_findings === 0)) {
+      ctx.addIssue({ code: "custom", path: ["tickets_with_findings"], message: "does not fit the open findings" });
+    }
+    if (row.tickets === 0 && open === 0) {
+      ctx.addIssue({ code: "custom", path: ["tickets"], message: "a row with neither tickets nor open findings" });
     }
   });
 
@@ -290,8 +293,8 @@ export const peopleScorecardSchema = z
       /** The snapshot's as-of: the figures are as of the last sync. */
       to: isoDateTime,
     }),
-    /** Whose a ticket is: the person it is assigned to now, as findings are. */
-    basis: z.literal("current_assignee"),
+    /** Whose a ticket is, for every measure: the people the board's credit setting names on it. */
+    basis: z.literal("credit"),
     comparison: z.enum(["on", "off"]),
     /** Always all eleven, in the contract's order. */
     measures: z.array(scorecardMeasureSchema),
@@ -381,16 +384,120 @@ export function recordsCodeReview(measures: readonly Pick<ScorecardMeasure, "key
   return codeReview !== undefined && (codeReview.measurable || codeReview.reason !== CODE_REVIEW_NOT_RECORDED);
 }
 
-export function scorecardCaveat(days: number, codeReviewRecorded: boolean): string {
-  return `Figures from Jira over the last ${days} days, next to the whole board, by each ticket's current assignee.${codeReviewRecorded ? "" : CODE_REVIEW_CAVEAT}`;
+/** A board's credit setting as its words read it: the source, and the people field it reads, by name (null for none). */
+export interface CreditReading {
+  source: CreditSource;
+  field: string | null;
 }
+
+/** Whom every ticket counts for, by the board's credit setting, the service's words to the letter; null while it is not known. */
+export function creditWords(credit: CreditReading | null): string {
+  if (credit === null) return "Tickets count for the people the board's setting names.";
+  if (credit.field === null) return "Tickets count for their assignee; tickets without one count for no one.";
+  return credit.source === "auto"
+    ? `Tickets count for their ${credit.field} in Jira, or their assignee where there is no ${credit.field}.`
+    : `Tickets count for their ${credit.field} in Jira; tickets without one count for no one.`;
+}
+
+/** The caveat at the foot of every scorecard and comparison, the service's words to the letter (its Ask answers end with it). */
+export function scorecardCaveat(days: number, codeReviewRecorded: boolean, credit: CreditReading | null): string {
+  return `Figures from Jira over the last ${days} days, next to the whole board. ${creditWords(credit)}${codeReviewRecorded ? "" : CODE_REVIEW_CAVEAT}`;
+}
+
+/* ---------------------------------------------------------------- credit -- */
+
+/** Whom a board's tickets count for: Automatic (Programmer where it is filled, otherwise the assignee), the assignee, or a Jira people field. */
+export const CREDIT_SOURCES = ["auto", "assignee", "field"] as const;
+export const creditSourceSchema = z.enum(CREDIT_SOURCES);
+/** A Jira people field by its logical name, as config/fields.yaml keys it: "programmer", "testers". */
+export const CREDIT_FIELD_KEY_PATTERN = /^[a-z][a-z0-9_]{0,63}$/;
+export const creditFieldKey = z.string().regex(CREDIT_FIELD_KEY_PATTERN);
+export const creditFieldSchema = z.object({ key: creditFieldKey, name: z.string().trim().min(1).max(PERSON_NAME_MAX) });
+/** Why a ticket counts for someone: they are its assignee now, or the people field the setting reads names them. */
+export const CREDIT_BASES = ["assignee_now", "field"] as const;
+export const creditBasisSchema = z.enum(CREDIT_BASES);
+
+export const creditSettingSchema = z.object({
+  source: creditSourceSchema,
+  field: creditFieldSchema.nullable(),
+  revision: count,
+  changed_by: z.string().trim().min(1).max(PERSON_NAME_MAX).nullable(),
+  changed_at: isoDateTime.nullable(),
+});
+
+export const creditOptionSchema = z.object({
+  source: creditSourceSchema,
+  field: creditFieldSchema.nullable(),
+  /** Finished tickets the option's own source fills (Automatic's: Programmer; the assignee's: assigned now). */
+  source_filled: count,
+  /** Finished tickets that count for at least one person under the option. */
+  credited: count,
+});
+
+export const peopleCreditSchema = z
+  .object({
+    meta: metaSchema,
+    period: z.object({ days: z.literal(SCORECARD_DAYS), from: isoDateTime, to: isoDateTime }),
+    setting: creditSettingSchema,
+    /** The people field the setting reads now: the chosen one, or Automatic's Programmer where the site has it; null for Assignee. */
+    effective_field: creditFieldSchema.nullable(),
+    /** The board's work finished in the period: what each option's coverage is out of. */
+    finished: count,
+    options: z.array(creditOptionSchema).min(2),
+  })
+  .superRefine((body, ctx) => {
+    if (Date.parse(body.period.from) >= Date.parse(body.period.to)) {
+      ctx.addIssue({ code: "custom", path: ["period", "from"], message: "the period starts after it ends" });
+    }
+    const { setting } = body;
+    if ((setting.source === "field") !== (setting.field !== null)) {
+      ctx.addIssue({ code: "custom", path: ["setting", "field"], message: "a field exactly when the source is a field" });
+    }
+    if ((setting.changed_by === null) !== (setting.changed_at === null)) {
+      ctx.addIssue({ code: "custom", path: ["setting", "changed_at"], message: "who and when, or neither" });
+    }
+    if (setting.source === "assignee" && body.effective_field !== null) {
+      ctx.addIssue({ code: "custom", path: ["effective_field"], message: "the assignee reads no field first" });
+    }
+    if (setting.source === "field" && setting.field !== null && body.effective_field?.key !== setting.field.key) {
+      ctx.addIssue({ code: "custom", path: ["effective_field"], message: "not the field chosen" });
+    }
+    const [first, second, ...fields] = body.options;
+    if (first?.source !== "auto" || first.field !== null || second?.source !== "assignee" || second.field !== null) {
+      ctx.addIssue({ code: "custom", path: ["options"], message: "Automatic, then Assignee, first" });
+    }
+    const seen = new Set<string>();
+    fields.forEach((option, index) => {
+      if (option.source !== "field" || option.field === null || seen.has(option.field.key)) {
+        ctx.addIssue({ code: "custom", path: ["options", index + 2], message: "each field once, after Automatic and Assignee" });
+      } else seen.add(option.field.key);
+    });
+    body.options.forEach((option, index) => {
+      if (option.source_filled > body.finished || option.credited > body.finished) {
+        ctx.addIssue({ code: "custom", path: ["options", index], message: "more tickets than were finished" });
+      }
+    });
+  });
+
+/** A change of the board's credit setting, as the People page sends it: the choice, and the revision it was made against. */
+export const peopleCreditSaveRequestSchema = z
+  .strictObject({
+    source: creditSourceSchema,
+    field: creditFieldKey.nullable().default(null),
+    revision: count,
+  })
+  .superRefine((body, ctx) => {
+    if ((body.source === "field") !== (body.field !== null)) {
+      ctx.addIssue({ code: "custom", path: ["field"], message: "a field's key exactly when the source is a field" });
+    }
+  });
 
 /* ----------------------------------------------------------- person card -- */
 
 /** The tickets in progress a person card lists by name: the rest are counted (`in_progress_more`). */
 export const PERSON_CARD_TICKETS = 3;
 
-/** Whether someone holds any of the board's tickets now (any status), or is one of its members who holds none. */
+/** Whether any of the board's tickets count for someone (any status), or they are on the board with none. */
 export const personCardMembershipSchema = z.enum(["holds_tickets", "member_no_tickets"]);
 
 /** One of their tickets in progress now: its key, its summary, its status, and when it last went into progress. */
@@ -403,7 +510,7 @@ export const personCardTicketSchema = z.object({
   since: isoDateTime.nullable(),
 });
 
-/** Another board they hold open tickets on, with how many: a board the reader may open (this interface's server keeps no other). */
+/** Another board they have open tickets on, with how many: a board the reader may open (this interface's server keeps no other). */
 export const personCardBoardSchema = z.object({
   key: projectKey,
   name: z.string().min(1),
@@ -440,16 +547,16 @@ export const personCardSchema = z
       done_in_period: count,
       days: z.literal(SCORECARD_DAYS),
     }),
-    /** Open findings on every ticket they hold, finished ones too: what Findings filtered to them lists. */
+    /** Open findings on every ticket of theirs, finished ones too. */
     findings: z.object({ open_breaches: count, open_warnings: count }),
     process: personCardProcessSchema.nullable(),
     /** At most three, longest in progress first. */
     in_progress_now: z.array(personCardTicketSchema).max(PERSON_CARD_TICKETS),
     /** How many more of their tickets are in progress than are listed. */
     in_progress_more: count,
-    /** Every other board they hold open tickets on, that the reader may open. */
+    /** Every other board they have open tickets on, that the reader may open. */
     other_boards: z.array(personCardBoardSchema),
-    /** The latest status change or logged work on the tickets they hold here; null when there is none. */
+    /** The latest status change or logged work on their tickets here; null when there is none. */
     last_activity_at: isoDateTime.nullable(),
   })
   // Only what no reading of the figures allows: a card that contradicts itself is never shown as if it were true.
@@ -545,6 +652,47 @@ export const warnedBeforeSchema = z.object({
   warned_at: isoDateTime,
 });
 
+/** An ignore covers one rule on a ticket (`finding`) or every rule on it (`ticket`). */
+export const IGNORE_SCOPES = ["finding", "ticket"] as const;
+export const ignoreScopeSchema = z.enum(IGNORE_SCOPES);
+/** An ignore's id: the service's own key for it, opaque. */
+export const IGNORE_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+export const ignoreId = z.string().regex(IGNORE_ID_PATTERN);
+/** The longest reason an ignore keeps, in characters (as the service's Python counts them). */
+export const IGNORE_REASON_MAX = 500;
+
+/** Who ignored it, by the name the access log keeps for them: never an email address. */
+export const ignoredBy = z
+  .string()
+  .min(1)
+  .refine((name) => [...name].length <= PERSON_NAME_MAX, { message: `at most ${PERSON_NAME_MAX} characters` })
+  .transform((name) => (EMAIL_IN_NAME.test(name) ? SIGNED_IN_USER : name));
+
+/** An ignore's reason as shown: never an email address, whoever wrote it. */
+export const ignoreReason = z
+  .string()
+  .min(1)
+  .refine((text) => [...text].length <= IGNORE_REASON_MAX, { message: `is at most ${IGNORE_REASON_MAX} characters` })
+  .transform((text) => text.replace(new RegExp(EMAIL_IN_NAME.source, "gu"), REASON_EMAIL_REMOVED));
+
+/** The ignore that holds a finding (and leaves a ticket out of a measure): who, when, why and what it covers. */
+export const findingIgnoreSchema = z
+  .object({
+    scope: ignoreScopeSchema,
+    /** The rule it covers; null for a whole ticket's. */
+    rule_id: ruleId.nullable(),
+    reason: ignoreReason.nullable(),
+    /** Who ignored it; null below the people level. */
+    by: ignoredBy.nullable(),
+    at: isoDateTime,
+    /** The ignore itself, which Restore takes; without it the page looks the ignore up (4.28). */
+    ignore_id: ignoreId.optional(),
+  })
+  .refine((ignore) => (ignore.scope === "ticket") === (ignore.rule_id === null), {
+    path: ["rule_id"],
+    message: "a rule exactly when it covers one rule",
+  });
+
 export const findingSchema = z
   .object({
     finding_id: findingId,
@@ -569,11 +717,12 @@ export const findingSchema = z
     first_seen_at: isoDateTime,
     last_seen_at: isoDateTime,
     resolved_at: isoDateTime.nullable(),
-    resolved_why: z.enum(["cleared", "superseded", "settings_changed"]).nullable(),
+    resolved_why: z.enum(["cleared", "superseded", "settings_changed", "ignored"]).nullable(),
     /** The rule's threshold as text ("1.5×"), or null for rules without one. */
     threshold: z.string().nullable(),
     evidence: z.array(evidenceItemSchema),
     warned_before: warnedBeforeSchema.nullable(),
+    ignore: findingIgnoreSchema.nullable(),
   })
   .superRefine((finding, ctx) => {
     if (finding.scope === "issue" && finding.issue_key === null) {
@@ -585,8 +734,11 @@ export const findingSchema = z
     if (finding.scope === "sprint" && finding.assignee !== null) {
       ctx.addIssue({ code: "custom", path: ["assignee"], message: "a sprint finding belongs to no one" });
     }
-    if ((finding.state === "resolved") !== (finding.resolved_at !== null)) {
-      ctx.addIssue({ code: "custom", path: ["resolved_at"], message: "resolved_at is set exactly when the finding is resolved" });
+    if ((finding.state === "open") !== (finding.resolved_at === null)) {
+      ctx.addIssue({ code: "custom", path: ["resolved_at"], message: "resolved_at is set exactly when the finding is not open" });
+    }
+    if ((finding.state === "ignored") !== (finding.resolved_why === "ignored")) {
+      ctx.addIssue({ code: "custom", path: ["resolved_why"], message: "an ignored finding is resolved as ignored, and only it" });
     }
   });
 
@@ -1151,6 +1303,7 @@ export const ACCESS_ACTIONS = [
   "access_log_view",
   "access_log_export",
   "person_card_view",
+  "scorecard_tickets_view",
 ] as const;
 export const accessActionSchema = z.enum(ACCESS_ACTIONS);
 export type AccessAction = (typeof ACCESS_ACTIONS)[number];
@@ -1164,6 +1317,7 @@ export const ACCESS_ACTION_LABELS: Readonly<Record<AccessAction, string>> = {
   access_log_view: "Viewed the access log",
   access_log_export: "Exported the access log",
   person_card_view: "Viewed a person card",
+  scorecard_tickets_view: "Viewed the tickets behind a figure",
 };
 
 /** An entry's id: the service's own key for the row (a uuid, as hex with or without dashes). */
@@ -2429,6 +2583,198 @@ export const ruleDraftSchema = z
     }
   });
 
+/* ----------------------------------------------------------------- proof -- */
+
+/** The figure behind "N tickets" under a name: a person's tickets (or the board's), beside the eleven measures. */
+export const TICKETS_KEY = "tickets";
+export type ProofMeasureKey = ScorecardMeasureKey | typeof TICKETS_KEY;
+export const PROOF_MEASURE_KEYS = [...SCORECARD_MEASURE_KEYS, TICKETS_KEY] as unknown as readonly [ProofMeasureKey, ...ProofMeasureKey[]];
+export const proofMeasureKeySchema = z.enum(PROOF_MEASURE_KEYS, { message: "is one of the eleven measures, or tickets" });
+
+export const proofMeasureSchema = scorecardMeasureSchema.extend({ key: proofMeasureKeySchema });
+export type ProofMeasure = z.infer<typeof proofMeasureSchema>;
+
+/** "N tickets" as the proof names its measure (the contract's own object). */
+export const TICKETS_MEASURE: ProofMeasure = {
+  key: TICKETS_KEY,
+  label: "Tickets",
+  kind: "count",
+  direction: "neutral",
+  rule_ids: [],
+  measurable: true,
+  reason: null,
+};
+
+const PROOF_SHAPES: ReadonlyMap<ProofMeasureKey, Pick<ProofMeasure, "kind" | "direction">> = new Map<ProofMeasureKey, Pick<ProofMeasure, "kind" | "direction">>([
+  ...SCORECARD_MEASURES.map((measure) => [measure.key, measure] as const),
+  [TICKETS_KEY, TICKETS_MEASURE],
+]);
+
+/** What a ticket's `at` is for each measure: when it was done, when work started on it, or nothing. */
+export const PROOF_AT: Readonly<Record<ProofMeasureKey, "done" | "started" | null>> = {
+  open_tickets: null,
+  in_progress: null,
+  done_in_period: "done",
+  estimated_before_start: "started",
+  time_logged: "done",
+  within_estimate: "done",
+  stuck_now: null,
+  reopened: "done",
+  skipped_stage: "done",
+  code_review: "done",
+  open_findings_per_10: null,
+  tickets: null,
+};
+
+/** Each measure's detail on a ticket, numbers raw (the page formats them); the counts and "tickets" have none. */
+export const proofDetailSchemas = {
+  estimated_before_start: z.object({ started_at: isoDateTime, estimate_set_at: isoDateTime.nullable(), grace_hours: nonNegative }),
+  time_logged: z.object({ time_spent_s: count, subtask_time_spent_s: count }),
+  within_estimate: z.object({ logged_s: count, estimate_s: count.nullable(), ratio: nonNegative, limit: z.number().positive() }),
+  stuck_now: z.object({
+    status: z.string().min(1).nullable(),
+    since: isoDateTime.nullable(),
+    hours: nonNegative.nullable(),
+    /** As the finding states it: "p90 of To Do: 524.8 h"; null for a ticket that is not stuck. */
+    threshold: z.string().min(1).max(200).nullable(),
+  }),
+  reopened: z.object({ times: count }),
+  skipped_stage: z.object({ stages: z.array(z.string().min(1).max(80)) }),
+  code_review: z.object({ breach: z.boolean() }),
+  open_findings_per_10: z.object({ findings: count, rule_ids: z.array(ruleId) }),
+} as const;
+
+export type ProofDetailKey = keyof typeof proofDetailSchemas;
+export type ProofDetails = { [K in ProofDetailKey]: z.output<(typeof proofDetailSchemas)[K]> };
+export type ProofDetail = ProofDetails[ProofDetailKey];
+
+export function hasProofDetail(key: ProofMeasureKey): key is ProofDetailKey {
+  return key in proofDetailSchemas;
+}
+
+/** Why a ticket counts for the row: for a person, their part in it; for the whole board, who it counts for (nobody: all null). */
+export const proofCreditSchema = z
+  .object({
+    person: personSchema.nullable(),
+    basis: creditBasisSchema.nullable(),
+    /** The Jira field's name ("Programmer") exactly when the basis is the field. */
+    field: z.string().trim().min(1).max(PERSON_NAME_MAX).nullable(),
+  })
+  .superRefine((credit, ctx) => {
+    if ((credit.person === null) !== (credit.basis === null)) {
+      ctx.addIssue({ code: "custom", path: ["basis"], message: "a basis exactly when it counts for someone" });
+    }
+    if ((credit.basis === "field") !== (credit.field !== null)) {
+      ctx.addIssue({ code: "custom", path: ["field"], message: "a field's name exactly when the basis is the field" });
+    }
+  });
+
+export const proofTicketSchema = z.object({
+  key: issueKey,
+  summary: z.string().nullable(),
+  issue_type: z.string().min(1).nullable(),
+  status: z.string().min(1).nullable(),
+  status_category: statusCategorySchema.nullable(),
+  /** In the figure's count (a rate's numerator; the ratio's tickets with open findings; every ticket of a count). */
+  counted: z.boolean(),
+  credit: proofCreditSchema,
+  at: isoDateTime.nullable(),
+  /** The measure's detail (proofDetailSchemas), checked against the measure with the body. */
+  detail: z.unknown().transform((value) => (value ?? null) as ProofDetail | null),
+  /** An ignore on the ticket (findingIgnoreSchema, as a finding carries it). */
+  ignore: findingIgnoreSchema.nullable(),
+  /** "Open in Jira": filled by this interface from OVERSIGHT_JIRA_BASE_URL; null in sample mode or without it. */
+  url: z.url({ protocol: /^https$/ }).nullable(),
+});
+
+const proofBodySchema = z.object({
+  meta: metaSchema,
+  period: z.object({ days: z.literal(SCORECARD_DAYS), from: isoDateTime, to: isoDateTime }),
+  measure: proofMeasureSchema,
+  /** Null: the whole board. */
+  person: personSchema.nullable(),
+  /** The value the scorecard shows in that cell, to the byte. */
+  value: scorecardValueSchema,
+  total: count,
+  counted: count,
+  /** Counted first, then the newest `at` first (none last), then by key. */
+  tickets: z.array(proofTicketSchema),
+  /** Tickets an ignore leaves out of this measure, each with its ignore. */
+  left_out: z.array(proofTicketSchema),
+});
+
+type ProofBody = z.output<typeof proofBodySchema>;
+
+export interface ProofProblem {
+  path: (string | number)[];
+  message: string;
+}
+
+/** What breaks the proof's arithmetic: the list must add up to the figure it stands behind, or nothing is shown. */
+export function proofProblems(body: ProofBody): ProofProblem[] {
+  const problems: ProofProblem[] = [];
+  const add = (path: (string | number)[], message: string) => problems.push({ path, message });
+  const { measure, value, person } = body;
+  const shape = PROOF_SHAPES.get(measure.key);
+  if (!shape || shape.kind !== measure.kind || shape.direction !== measure.direction) add(["measure"], "kind or direction is not the contract's");
+  if (!measure.measurable || measure.reason !== null) add(["measure", "measurable"], "a figure the board cannot show has no tickets behind it");
+  if (Date.parse(body.period.from) >= Date.parse(body.period.to)) add(["period", "from"], "the period starts after it ends");
+  for (const message of scorecardValueProblems({ kind: measure.kind, measurable: true }, { ...value, vs_board: null }, null)) add(["value"], message);
+  if (value.vs_board !== null && (person === null || !value.enough || measure.kind === "count")) add(["value", "vs_board"], "compared where nothing is compared");
+
+  const counted = body.tickets.filter((ticket) => ticket.counted).length;
+  if (body.total !== body.tickets.length) add(["total"], "not the number of tickets listed");
+  if (body.counted !== counted) add(["counted"], "not the number of tickets counted");
+  if (measure.kind === "count") {
+    if ((value.value ?? 0) !== body.total || body.counted !== body.total) add(["value"], "a count is its tickets, every one counted");
+  } else if (measure.kind === "rate") {
+    if ((value.numerator ?? 0) !== body.counted || (value.denominator ?? 0) !== body.total) add(["value"], "a rate is its tickets counted over all its tickets");
+  } else {
+    if ((value.denominator ?? 0) !== body.total) add(["value", "denominator"], "the ratio is over its open tickets");
+    let findings = 0;
+    body.tickets.forEach((ticket, index) => {
+      const detail = ticket.detail as ProofDetails["open_findings_per_10"] | null;
+      const many = detail?.findings ?? 0;
+      findings += many;
+      if (ticket.counted !== many > 0) add(["tickets", index, "counted"], "counted exactly when it has open findings");
+    });
+    if ((value.numerator ?? 0) !== findings) add(["value", "numerator"], "not the open findings on its tickets");
+  }
+
+  const keys = new Set<string>();
+  const check = (list: "tickets" | "left_out") =>
+    body[list].forEach((ticket, index) => {
+      if (keys.has(ticket.key)) add([list, index, "key"], "listed twice");
+      keys.add(ticket.key);
+      if (person !== null && ticket.credit.person?.id !== person.id) add([list, index, "credit", "person"], "counts for someone else");
+      const leftOut = list === "left_out";
+      if (leftOut && ticket.ignore === null) add([list, index, "ignore"], "left out with no ignore");
+      if (!hasProofDetail(measure.key)) {
+        if (ticket.detail !== null) add([list, index, "detail"], "a count has no detail");
+      } else if (!(leftOut && ticket.detail === null) && !proofDetailSchemas[measure.key].safeParse(ticket.detail).success) {
+        add([list, index, "detail"], "not the measure's detail");
+      }
+    });
+  check("tickets");
+  check("left_out");
+  return problems;
+}
+
+export const peopleProofSchema = proofBodySchema.transform((body, ctx) => {
+  const problems = proofProblems(body);
+  for (const problem of problems.slice(0, 24)) ctx.addIssue({ code: "custom", path: problem.path, message: problem.message });
+  if (problems.length > 0) return z.NEVER;
+  // Each detail as its measure's schema reads it: unknown fields dropped, as everywhere else.
+  const detailOf = (ticket: ProofBody["tickets"][number]): ProofDetail | null =>
+    hasProofDetail(body.measure.key) && ticket.detail !== null ? (proofDetailSchemas[body.measure.key].parse(ticket.detail) as ProofDetail) : null;
+  const tidy = (ticket: ProofBody["tickets"][number]) => ({ ...ticket, detail: detailOf(ticket) });
+  return { ...body, tickets: body.tickets.map(tidy), left_out: body.left_out.map(tidy) };
+});
+
+export type ProofCredit = z.infer<typeof proofCreditSchema>;
+export type ProofTicket = z.output<typeof peopleProofSchema>["tickets"][number];
+export type PeopleProof = z.output<typeof peopleProofSchema>;
+
 /* ---------------------------------------------------------------- errors -- */
 
 export const API_ERROR_CODES = [
@@ -2452,6 +2798,12 @@ export const API_ERROR_CODES = [
   "rule_settings_conflict",
   /** Rule settings refused: a value out of bounds, a warning not below its breach, a rule that does not exist. */
   "rule_settings_invalid",
+  /** A change of the board's credit setting made against a revision it has moved on from: someone else changed it. */
+  "stale_revision",
+  /** A credit setting refused: an unknown source, or a field the board does not fill. */
+  "credit_invalid",
+  /** The tickets behind a figure the board cannot show (the scorecard's `measurable: false`). */
+  "not_measurable",
   "forbidden",
   /** Sign-in is on and the request carries no valid session: the browser goes to /login and comes back. */
   "unauthenticated",
@@ -2501,6 +2853,8 @@ export type TrendPoint = z.infer<typeof trendPointSchema>;
 export type Interval = z.infer<typeof intervalSchema>;
 export type EvidenceItem = z.infer<typeof evidenceItemSchema>;
 export type WarnedBefore = z.infer<typeof warnedBeforeSchema>;
+export type IgnoreScope = z.infer<typeof ignoreScopeSchema>;
+export type FindingIgnore = z.output<typeof findingIgnoreSchema>;
 export type Finding = z.infer<typeof findingSchema>;
 export type WindowPoint = z.infer<typeof windowPointSchema>;
 export type WindowTotal = z.infer<typeof windowTotalSchema>;
@@ -2546,6 +2900,13 @@ export type ScorecardValue = z.infer<typeof scorecardValueSchema>;
 export type ScorecardValues = Record<ScorecardMeasureKey, ScorecardValue>;
 export type ScorecardPerson = z.infer<typeof scorecardPersonSchema>;
 export type PeopleScorecard = z.infer<typeof peopleScorecardSchema>;
+export type CreditSource = z.infer<typeof creditSourceSchema>;
+export type CreditBasis = z.infer<typeof creditBasisSchema>;
+export type CreditField = z.infer<typeof creditFieldSchema>;
+export type CreditSetting = z.infer<typeof creditSettingSchema>;
+export type CreditOption = z.infer<typeof creditOptionSchema>;
+export type PeopleCredit = z.output<typeof peopleCreditSchema>;
+export type PeopleCreditSaveRequest = z.output<typeof peopleCreditSaveRequestSchema>;
 export type PersonCardMembership = z.infer<typeof personCardMembershipSchema>;
 export type PersonCardTicket = z.infer<typeof personCardTicketSchema>;
 export type PersonCardBoard = z.infer<typeof personCardBoardSchema>;

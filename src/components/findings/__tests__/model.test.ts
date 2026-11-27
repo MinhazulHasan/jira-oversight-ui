@@ -170,7 +170,7 @@ describe("what was looked at", () => {
 
   it("names work outside every epic, and counts long lists", () => {
     expect(describeFilters({ ...DEFAULTS, state: "all", epic: ["none"] }, ["DEMO"])).toBe(
-      "findings, open or resolved in DEMO, outside every epic",
+      "findings, open, resolved or ignored in DEMO, outside every epic",
     );
     const rules = ["R-EST-01", "R-EST-02", "R-EFF-01", "R-FLOW-02"];
     expect(describeFilters({ ...DEFAULTS, rule: rules }, [])).toBe("open findings, 4 rules");

@@ -22,6 +22,7 @@ import type { Finding, FindingDetail } from "@/lib/api/schemas";
 import { formatDateTime } from "@/lib/format";
 
 import { ChangelogTable } from "./changelog-table";
+import { IgnoredBanner } from "./ignored-banner";
 import { useFindingClock } from "./clock";
 import { evidenceText, timelineModel, turnsOn } from "./evidence";
 import { findingAgeMs, findingStatus, formatAge, NO_ONES_LABEL, noOnesReason } from "./model";
@@ -75,7 +76,8 @@ function WarnedBefore({ finding, onOpenFinding }: { finding: Finding; onOpenFind
 function resolvedValue(finding: Finding) {
   if (finding.resolved_at === null) return <span className="text-ink-low">Not yet</span>;
   const status = findingStatus(finding);
-  const why = status === "superseded" ? "superseded" : status === "settings_changed" ? "closed: rule settings changed" : "cleared";
+  const why =
+    status === "superseded" ? "superseded" : status === "settings_changed" ? "closed: rule settings changed" : status === "ignored" ? "ignored" : "cleared";
   return (
     <>
       <Timestamp value={finding.resolved_at} mode="datetime" /> <span className="text-ink-low">· {why}</span>
@@ -167,6 +169,7 @@ export function FindingEvidence({ finding, detail, onOpenFinding, lastSyncedAt }
   return (
     <div ref={top} className="flex flex-col gap-7">
       <div className="flex flex-col gap-4">
+        <IgnoredBanner finding={finding} />
         <p className="text-base text-ink">{finding.message}</p>
         <WarnedBefore finding={finding} onOpenFinding={onOpenFinding} />
       </div>

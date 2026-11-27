@@ -71,7 +71,7 @@ describe("the figures in words", () => {
     expect(measureLink(measure("in_progress"), carmen)?.href).toBe(`/ask?q=What+is+%40Carmen+Ruiz+working+on%3F&m=${carmen.id}`);
     // Done in the period opens Ask's list of exactly those tickets, over the scorecard's own period.
     expect(measureLink(measure("done_in_period"), carmen, 30)?.href).toBe(`/ask?q=What+did+%40Carmen+Ruiz+finish+in+the+last+30+days%3F&m=${carmen.id}`);
-    expect(measureLink(measure("open_findings_per_10"), carmen)?.label).toBe("Open findings on all their tickets");
+    expect(measureLink(measure("open_findings_per_10"), carmen)?.label).toBe("Open findings on tickets they hold");
     expect(measureLink(measure("estimated_before_start"), carmen)?.label).toBe("All findings");
     expect(measureLink(measure("estimated_before_start"), carmen, 30)?.description).toMatch(/from any time; this figure counts the last 30 days$/);
     expect(measureLink(measure("stuck_now"), carmen)?.label).toBe("Findings");
@@ -141,7 +141,9 @@ describe("the scorecard", () => {
     });
     expect(marks).toEqual(expected);
     expect(screen.getByText(standingText(standingOf(everyone.measures, carmen.values)))).toBeInTheDocument();
-    expect(screen.getByText(/^Figures from Jira over the last 90 days, next to the whole board, by each ticket's current assignee\. Code review isn't recorded/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/^Figures from Jira over the last 90 days, next to the whole board\. Tickets count for .+\. Code review isn't recorded/),
+    ).toBeInTheDocument();
     // Neutral inks only: never the status colours, which mean breach and resolved.
     expect(table.innerHTML).not.toMatch(/breach|ok-ink|text-ok|warn/);
   });
@@ -161,7 +163,7 @@ describe("the scorecard", () => {
   it("for someone with no tickets: says so, and shows nothing as a zero", () => {
     const noor = { person: { id: "p48c4e26bc1d6", name: "Noor Haddad", avatar: null }, tickets: 0, values: Object.fromEntries(everyone.measures.map((candidate) => [candidate.key, { value: null, numerator: null, denominator: null, enough: false, vs_board: null }])) } as ScorecardPerson;
     show(everyone, noor);
-    expect(screen.getByText("Noor Haddad holds no tickets on this board.")).toBeInTheDocument();
+    expect(screen.getByText("Noor Haddad has no tickets on this board.")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Findings|Tickets/ })).not.toBeInTheDocument();
     expect(document.querySelector("table")!.textContent).not.toMatch(/\b0%/);
   });

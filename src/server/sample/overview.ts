@@ -9,7 +9,7 @@ import { WEEK, isoDay } from "./time";
 
 /** Open findings (breaches and warnings) in one epic at the end of each week, as the trend series count them. */
 function epicSeries(dataset: Dataset, epicKey: string | null): Overview["hot_spots"][number]["series"] {
-  const findings = dataset.engine.findings.filter((finding) => (finding.issue?.epicKey ?? null) === epicKey);
+  const findings = dataset.engine.findings.filter((finding) => (finding.issue?.epicKey ?? null) === epicKey && finding.resolvedWhy !== "ignored");
   return weekStarts(dataset.now, SERIES_WEEKS).map((start) => {
     const end = start + WEEK;
     return {

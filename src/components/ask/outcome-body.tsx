@@ -141,7 +141,7 @@ function NoTickets({ response, onAsk, busy }: BodyProps) {
     <div className="flex flex-col gap-6">
       <AnswerProse segments={[{ kind: "text", text: sentence }]} describe={NOTHING_CITED} people={response.people} unlinked={everyone} />
       <p className="-mt-3 max-w-[62ch] text-sm text-ink-mid">
-        Tickets count for whoever holds them now. Type @ to pick someone else.
+        Whom tickets count for is set on the People page. Type @ to pick someone else.
       </p>
       <Part title="Try one of these">
         <SuggestionChips questions={nextQuestions(response.question, response.suggestions)} onAsk={onAsk} disabled={busy} />

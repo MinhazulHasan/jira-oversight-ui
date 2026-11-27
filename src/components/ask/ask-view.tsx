@@ -177,7 +177,7 @@ export function AskView({ level = "team" }: { level?: AskLevel }) {
     [setAddress],
   );
 
-  // The @ list's people: everyone on the board, with the tickets assigned to them now.
+  // The @ list's people: everyone on the board, with the tickets that count for them.
   const directory = board.data?.people;
   // People in the facts and the plan by name and picture, never by id: the board's people, the answer's, the rows'.
   const known = useMemo(() => peopleIndex(shown, directory), [shown, directory]);

@@ -293,7 +293,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
     expect(response.answer).toBe(
       `${lead.person!.name} has the most open breaches, ${lead.open_breaches}, with ${lead.open_warnings} open warnings on ${lead.tickets_with_findings} tickets with findings. ` +
         `Next come ${second.person!.name} with ${second.open_breaches} and ${third.person!.name} with ${third.open_breaches}. ` +
-        `Unassigned: ${nobody.open_breaches} open breaches. Findings follow the ticket's current assignee.`,
+        `Unassigned: ${nobody.open_breaches} open breaches. A person's findings are those on their tickets.`,
     );
     expect(response.people).toEqual([lead.person, second.person, third.person]);
     const [facts] = response.facts;
@@ -325,7 +325,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
     const page = findingsPage(dataset, normalizeFindingsQuery({ person: [CARMEN], state: "open", page_size: 20 }));
     expect(list.rows.map((item) => item.finding_id)).toEqual(page.items.map((item) => item.finding_id));
     expect(list.truncated).toBe(page.total > 20);
-    expect(String(list.params.sql)).toContain(`assignee_id = '${CARMEN}' AND state = 'open'`);
+    expect(String(list.params.sql)).toMatch(/ FROM findings WHERE issue_key IN \('DEMO-\d+'(?:, 'DEMO-\d+')*\) AND state = 'open' /);
   });
 
   it("narrows one person's findings to breaches or warnings", () => {
@@ -399,20 +399,23 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
       const response = at(question, mentions);
       expect(response.outcome, question).toBe("answered");
       expect(response.plan, question).toEqual([{ tool: "oversight_person_scorecard", params: { project: "DEMO", person_ids: [CARMEN], days: 90 } }]);
-      expect(paragraphs(response), question).toEqual([summaryOf(CARMEN), scorecardCaveat(90, false)]);
+      expect(paragraphs(response), question).toEqual([summaryOf(CARMEN), scorecardCaveat(90, false, { source: "auto", field: "Programmer" })]);
       expect(response.people).toEqual([carmen]);
       expect(response.answer).not.toMatch(LABELS);
       expectPrincipleThree(response);
     }
     // The caveat names what the board does not record: here, code review.
-    expect(scorecardCaveat(90, false)).toBe(
-      "Figures from Jira over the last 90 days, next to the whole board, by each ticket's current assignee. Code review isn't recorded on this board, so reviewers' work doesn't show.",
+    // DEMO is on Automatic, which reads Programmer first.
+    expect(scorecardCaveat(90, false, { source: "auto", field: "Programmer" })).toBe(
+      "Figures from Jira over the last 90 days, next to the whole board. Tickets count for their Programmer in Jira, or their assignee where there is no Programmer. Code review isn't recorded on this board, so reviewers' work doesn't show.",
     );
-    expect(scorecardCaveat(30, true)).toBe("Figures from Jira over the last 30 days, next to the whole board, by each ticket's current assignee.");
+    expect(scorecardCaveat(30, true, { source: "assignee", field: null })).toBe(
+      "Figures from Jira over the last 30 days, next to the whole board. Tickets count for their assignee; tickets without one count for no one.",
+    );
     // The period a question names is the period read.
     const month = at("Is @Carmen Ruiz doing well over the last 30 days?", [CARMEN]);
     expect(month.plan[0].params.days).toBe(30);
-    expect(paragraphs(month)).toEqual([summaryOf(CARMEN, 30), scorecardCaveat(30, false)]);
+    expect(paragraphs(month)).toEqual([summaryOf(CARMEN, 30), scorecardCaveat(30, false, { source: "auto", field: "Programmer" })]);
     expectPrincipleThree(month);
   });
 
@@ -432,14 +435,14 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
     ] as [string, string[]][]) {
       const response = at(question, mentions);
       expect(response.outcome, question).toBe("answered");
-      expect(paragraphs(response), question).toEqual([summaryOf(ADA), SCORECARD_SENTENCES.decision, scorecardCaveat(90, false)]);
+      expect(paragraphs(response), question).toEqual([summaryOf(ADA), SCORECARD_SENTENCES.decision, scorecardCaveat(90, false, { source: "auto", field: "Programmer" })]);
       expect(response.answer).not.toMatch(LABELS);
       expectPrincipleThree(response);
     }
     // With no one named: everyone in order, then the same sentence.
     const who = at("Who deserves a promotion?");
     expect(who.plan[0].tool).toBe("oversight_people_compare");
-    expect(paragraphs(who).slice(-2)).toEqual([SCORECARD_SENTENCES.decision, scorecardCaveat(90, false)]);
+    expect(paragraphs(who).slice(-2)).toEqual([SCORECARD_SENTENCES.decision, scorecardCaveat(90, false, { source: "auto", field: "Programmer" })]);
     expectPrincipleThree(who);
   });
 
@@ -447,7 +450,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
     const response = at("How are @Ada Brooks and @Carmen Ruiz doing?", [ADA, CARMEN]);
     expect(response.outcome).toBe("answered");
     expect(response.plan).toEqual([{ tool: "oversight_person_scorecard", params: { project: "DEMO", person_ids: [ADA, CARMEN], days: 90 } }]);
-    expect(paragraphs(response)).toEqual([summaryOf(ADA, 90, false), summaryOf(CARMEN, 90, false), NOT_MEASURABLE, scorecardCaveat(90, false)]);
+    expect(paragraphs(response)).toEqual([summaryOf(ADA, 90, false), summaryOf(CARMEN, 90, false), NOT_MEASURABLE, scorecardCaveat(90, false, { source: "auto", field: "Programmer" })]);
     expect(response.people.map((named) => named.id)).toEqual([ADA, CARMEN]);
     expectPrincipleThree(response);
     const off = askSample(dataset, "How are @Ada Brooks and @Carmen Ruiz doing?", 0, { level: "people", mentions: [ADA, CARMEN], comparison: "off" });
@@ -476,7 +479,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
       expect(response.plan, question).toEqual([{ tool: "oversight_people_compare", params: { project: "DEMO", measure: "overall", days: 90, order } }]);
       const [facts] = response.facts;
       const people = facts.rows.filter((row) => row.person_id !== null);
-      expect(people).toHaveLength(set.holders.length);
+      expect(people).toHaveLength(set.withTickets.length);
       // Most measures closer to the process than the board first; ties by open findings per 10 open tickets.
       const closer = people.filter((row) => Number(row.compared) > 0).map((row) => Number(row.closer));
       expect(closer).toEqual([...closer].sort((a, b) => (order === "fewest" ? a - b : b - a)));
@@ -522,7 +525,7 @@ describe("Ask in sample mode, at people level (an admin, or sign-in off)", () =>
   it("reads a name typed in full as that person, and asks for @ only when two people share it", () => {
     const typed = at("Is ada brooks doing well?");
     expect(typed.plan).toEqual([{ tool: "oversight_person_scorecard", params: { project: "DEMO", person_ids: [ADA], days: 90 } }]);
-    expect(at("What are Carmen Ruiz's open findings?").plan[1]?.params.sql).toContain(`assignee_id = '${CARMEN}'`);
+    expect(at("What are Carmen Ruiz's open findings?").plan[0]?.params.sql).toContain(`person_id = '${CARMEN}'`);
     // Accents folded: a member with no tickets, typed without hers, gets the sentence.
     const member = at("how many tickets does tomas ferreira have");
     expect([member.outcome, member.answer]).toEqual(["no_data", "Tomás Ferreira has no tickets on this board."]);

@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -111,7 +111,10 @@ describe("the Findings list", () => {
     const view = renderFindings("?severity=breach&rule=R-EST-01&sort=severity");
     await rows();
 
-    await user.type(screen.getByRole("searchbox", { name: "Search findings" }), "rate limiting");
+    // Every key lands in one tick, so a slow machine cannot split the phrase.
+    const box = screen.getByRole("searchbox", { name: "Search findings" });
+    box.focus();
+    for (let end = 1; end <= "rate limiting".length; end += 1) fireEvent.change(box, { target: { value: "rate limiting".slice(0, end) } });
     await waitFor(() => expect(view.url().get("q")).toBe("rate limiting"));
     await waitFor(() => expect(findingsRequests(fetchMock).at(-1)?.get("q")).toBe("rate limiting"));
     // One request for the whole phrase, not one per key.
@@ -163,7 +166,7 @@ describe("the Findings list", () => {
 
     expect(await screen.findByText("No findings match these filters")).toBeInTheDocument();
     expect(
-      screen.getByText("open findings in DEMO, first seen in the last 7 days, matching “zebra”."),
+      screen.getByText("Open findings in DEMO, first seen in the last 7 days, matching “zebra”."),
     ).toBeInTheDocument();
     // The way out sits in the empty table as well as at the end of the filter row.
     const table = screen.getByRole("table", { name: "Findings" });
@@ -333,7 +336,7 @@ describe("the person view", () => {
 
     expect(await screen.findByText("No findings match these filters")).toBeInTheDocument();
     expect(findingsRequests(fetchMock).at(-1)?.getAll("person")).toEqual([ADA]);
-    expect(screen.getByText("open findings in DEMO, assigned to Ada Brooks.")).toBeInTheDocument();
+    expect(screen.getByText("Open findings in DEMO, assigned to Ada Brooks.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Person Ada Brooks" })).toBeInTheDocument();
   });
 

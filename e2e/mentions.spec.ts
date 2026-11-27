@@ -235,12 +235,12 @@ for (const colorScheme of ["light", "dark"] as const) {
       await expect(prose).toHaveText(`${noor.name} has no tickets on this board.`);
       const mark = prose.locator(`[data-person-mention="${noor.id}"]`);
       await expect(mark).toHaveText(noor.name);
-      // The same pill, opening their card, which says they hold no tickets here; no link to an empty Findings.
+      // The same pill, opening their card, which says they have no tickets here; no link to an empty Findings.
       await expect(mark).toHaveAttribute("aria-haspopup", "dialog");
       await expect(prose.getByRole("link")).toHaveCount(0);
       await expect(answer(page, question).locator("footer")).not.toContainText("scripted");
       expect(await avatarOf(mark)).toMatchObject({ state: "initials", hidden: "true", size: [20, 20], radius: "50%" });
-      await expect(page.getByRole("complementary", { name: "Sources" })).toContainText("They hold no tickets on this board.");
+      await expect(page.getByRole("complementary", { name: "Sources" })).toContainText("They have no tickets on this board.");
       expect(await axeBlocking(page)).toEqual([]);
       expect(problems).toEqual([]);
     });

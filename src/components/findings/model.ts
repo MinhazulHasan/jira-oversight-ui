@@ -1,8 +1,8 @@
 import type { CsvColumn } from "@/components/ui/csv";
 import { DATE_RANGE_PRESETS } from "@/components/ui/date-range";
 import { NO_EPIC } from "@/lib/api/params";
-import { UNASSIGNED, UNASSIGNED_LABEL, type FacetEntry, type Finding, type FindingsPage } from "@/lib/api/schemas";
-import { formatCount } from "@/lib/format";
+import { UNASSIGNED, UNASSIGNED_LABEL, type FacetEntry, type Finding, type FindingIgnore, type FindingsPage } from "@/lib/api/schemas";
+import { formatCount, formatDate } from "@/lib/format";
 import { isStale } from "@/lib/sync";
 
 import type { FindingsFilters } from "./url-state";
@@ -53,10 +53,11 @@ export function formatAge(ms: number, locale?: string): string {
 
 /* -------------------------------------------------------------- status -- */
 
-export type FindingStatus = "open" | "resolved" | "superseded" | "settings_changed";
+export type FindingStatus = "open" | "resolved" | "superseded" | "settings_changed" | "ignored";
 
 export function findingStatus(finding: Pick<Finding, "state" | "resolved_why">): FindingStatus {
   if (finding.state === "open") return "open";
+  if (finding.state === "ignored") return "ignored";
   if (finding.resolved_why === "superseded") return "superseded";
   return finding.resolved_why === "settings_changed" ? "settings_changed" : "resolved";
 }
@@ -66,10 +67,17 @@ export const STATUS_LABEL: Record<FindingStatus, string> = {
   resolved: "Resolved",
   superseded: "Superseded",
   settings_changed: "Closed: rule settings changed",
+  ignored: "Ignored",
 };
 
 /** What a closed finding's state says beyond its label, for a tooltip. */
 export const SETTINGS_CHANGED_TITLE = "Closed because the rule settings changed";
+
+/** "Ignored by Morgan Ellis on 26 Nov 2026: Closed long ago"; who, only where the reader may see it. */
+export function ignoreSentence(ignore: Pick<FindingIgnore, "by" | "at" | "reason">, options: { locale?: string; timeZone?: string } = {}): string {
+  const head = `Ignored${ignore.by ? ` by ${ignore.by}` : ""} on ${formatDate(ignore.at, options)}`;
+  return ignore.reason ? `${head}: ${ignore.reason}` : head;
+}
 
 /* ------------------------------------------------------------ assignee -- */
 
@@ -145,7 +153,7 @@ function listed(ids: readonly string[], name: (id: string) => string, one: strin
 
 export function describeFilters(filters: FindingsFilters, projects: readonly string[], names?: FacetNames): string {
   const severity = filters.severity === "breach" ? "breaches" : filters.severity === "warning" ? "warnings" : "findings";
-  const subject = filters.state === "all" ? `${severity}, open or resolved` : `${filters.state} ${severity}`;
+  const subject = filters.state === "all" ? `${severity}, open, resolved or ignored` : `${filters.state} ${severity}`;
   const parts = [projects.length > 0 ? `${subject} in ${projects.join(", ")}` : subject];
 
   if (filters.rule.length > 0) parts.push(listed(filters.rule, (id) => id, "rule", "rules"));
@@ -173,6 +181,7 @@ export function describeFilters(filters: FindingsFilters, projects: readonly str
     const preset = DATE_RANGE_PRESETS.find((option) => option.value === filters.first_seen);
     parts.push(`first seen in the ${preset?.label.toLowerCase() ?? filters.first_seen}`);
   }
+  if (filters.ticket) parts.push(filters.ticket === "finished" ? "on finished tickets" : "on open tickets");
   const q = filters.q.trim();
   if (q !== "") parts.push(`matching “${q}”`);
   return parts.join(", ");
@@ -203,4 +212,8 @@ export const FINDINGS_CSV: readonly CsvColumn<Finding>[] = [
   { header: "Resolved (UTC)", value: (finding) => finding.resolved_at },
   { header: "Threshold", value: (finding) => finding.threshold },
   { header: "Message", value: (finding) => finding.message },
+  // Who ignored it only where the API named them (the people level).
+  { header: "Ignored by", value: (finding) => finding.ignore?.by },
+  { header: "Ignored (UTC)", value: (finding) => finding.ignore?.at },
+  { header: "Ignore reason", value: (finding) => finding.ignore?.reason },
 ];

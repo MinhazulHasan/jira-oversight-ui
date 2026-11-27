@@ -252,7 +252,7 @@ describe("people mentioned who hold no tickets on the board", () => {
     expect(screen.getByText(/Type @ to pick someone else/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Who has the most open breaches?" }));
     expect(onAsk).toHaveBeenCalledWith("Who has the most open breaches?");
-    expect(within(ledger()).getByText(/They hold no tickets on this board/)).toBeInTheDocument();
+    expect(within(ledger()).getByText(/They have no tickets on this board/)).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 
     // Three of them: one sentence, each marked, in the order mentioned.

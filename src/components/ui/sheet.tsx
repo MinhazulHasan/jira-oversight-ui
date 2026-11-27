@@ -35,6 +35,8 @@ export interface SheetProps {
   keepBackspace?: boolean;
   /** Where focus goes when it closes, in place of what held it when it opened: a mention chip's field, say. */
   onCloseFocus?: () => void;
+  /** Where focus goes as it opens: the panel (the default), or its title, read out first. */
+  initialFocus?: "panel" | "title";
   className?: string;
 }
 
@@ -76,10 +78,12 @@ export function Sheet({
   contained = false,
   keepBackspace = false,
   onCloseFocus,
+  initialFocus = "panel",
   className,
 }: SheetProps) {
   const bottom = side === "bottom";
   const returnFocus = useRef<HTMLElement | null>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const events = contained ? CONTAINED_EVENTS : undefined;
 
   return (
@@ -99,7 +103,8 @@ export function Sheet({
             event.preventDefault();
             const opener = document.activeElement;
             returnFocus.current = opener instanceof HTMLElement && opener !== document.body ? opener : null;
-            if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
+            if (initialFocus === "title" && titleRef.current) titleRef.current.focus();
+            else if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus();
           }}
           onCloseAutoFocus={(event) => {
             const opener = returnFocus.current;
@@ -121,8 +126,14 @@ export function Sheet({
           <header className={bottom ? BOTTOM_HEADER : HEADER}>
             {leading}
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              {eyebrow ? <div className="micro flex items-center gap-2 text-ink-low">{eyebrow}</div> : null}
-              <Dialog.Title className={TITLE}>{title}</Dialog.Title>
+              {eyebrow ? <div className="micro flex flex-wrap items-center gap-x-2 gap-y-1 text-ink-low">{eyebrow}</div> : null}
+              <Dialog.Title
+                ref={titleRef}
+                tabIndex={initialFocus === "title" ? -1 : undefined}
+                className={cn(TITLE, initialFocus === "title" && "outline-none")}
+              >
+                {title}
+              </Dialog.Title>
               {description ? <Dialog.Description className={DESCRIPTION}>{description}</Dialog.Description> : null}
             </div>
             <div className={bottom ? BOTTOM_TOOLS : HEADER_TOOLS}>
@@ -163,7 +174,7 @@ export function SheetPreview({
     <div inert aria-hidden className={cn(PANEL, "h-full", className)} style={{ width: `min(${width}px, 100%)` }}>
       <div className={HEADER}>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          {eyebrow ? <div className="micro flex items-center gap-2 text-ink-low">{eyebrow}</div> : null}
+          {eyebrow ? <div className="micro flex flex-wrap items-center gap-x-2 gap-y-1 text-ink-low">{eyebrow}</div> : null}
           <p className={TITLE}>{title}</p>
           {description ? <p className={DESCRIPTION}>{description}</p> : null}
         </div>

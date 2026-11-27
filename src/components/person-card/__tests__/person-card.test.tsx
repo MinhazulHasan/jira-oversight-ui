@@ -178,9 +178,9 @@ describe("the card's words, in every state", () => {
     expect(avatar).toHaveAttribute("data-size", "48");
     expect(avatar).toHaveAttribute("data-initials", "AB");
     expect(within(card).getByRole("heading", { name: "Ada Brooks" })).not.toHaveClass("truncate");
-    expect(card.querySelector("[data-card-line]")).toHaveTextContent(`Holds ${body.work.open_tickets} open tickets on Demo project`);
+    expect(card.querySelector("[data-card-line]")).toHaveTextContent(`${body.work.open_tickets} open tickets on Demo project`);
     // The board by its name, as the top bar names it; its key in the tooltip.
-    expect(card.querySelector("[data-card-line]")).toHaveAttribute("title", `Holds ${body.work.open_tickets} open tickets on Demo project (DEMO)`);
+    expect(card.querySelector("[data-card-line]")).toHaveAttribute("title", `${body.work.open_tickets} open tickets on Demo project (DEMO)`);
     // The header band and the action bar are plain blocks: no second banner or content-information landmark on the page.
     expect(card.querySelector("header, footer")).toBeNull();
 
@@ -195,7 +195,7 @@ describe("the card's words, in every state", () => {
 
     // What the findings cover is said where everyone sees it: on every ticket they hold, done ones too.
     const findings = card.querySelector("[data-card-findings-section]") as HTMLElement;
-    expect(within(findings).getByRole("heading", { name: "Open findings on all their tickets" })).toBeVisible();
+    expect(within(findings).getByRole("heading", { name: "Open findings on their tickets" })).toBeVisible();
     expect(card.querySelector("[data-card-findings]")).toHaveTextContent(`${body.findings.open_breaches} breaches${body.findings.open_warnings} warnings`);
     const process = body.process!;
     expect(card).toHaveTextContent(`Closer to the process than the board on ${process.closer} of ${process.closer + process.level + process.further} measures.`);
@@ -810,7 +810,7 @@ describe("a card read on another board than the top bar's (an access log entry's
     expect(cardCalls(fetchMock).map(([input]) => String(input))).toEqual([`/api/oversight/people/${ADA.id}/card?board=OPS`]);
     // The picture from that board too: the service serves one only for someone on the board it is asked about.
     expect(card.querySelector("[data-avatar] img")).toHaveAttribute("src", `/api/oversight/people/${ADA.id}/avatar?v=0123456789ab&board=OPS`);
-    expect(card.querySelector("[data-card-line]")).toHaveTextContent(`Holds ${OPS_CARD.work.open_tickets} open tickets on Operations`);
+    expect(card.querySelector("[data-card-line]")).toHaveTextContent(`${OPS_CARD.work.open_tickets} open tickets on Operations`);
 
     // Each way on picks OPS, then opens there: the page it leads to says what the card said.
     const ways: [string, string][] = [

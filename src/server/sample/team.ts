@@ -57,6 +57,13 @@ export function pictureOfPerson(personId: string): SamplePicture | null {
   return accountId === undefined ? null : pictureOf(accountId);
 }
 
+/** Anyone on the team or among the members, by person id, as a response names them; null for an id that is nobody's. */
+export function personById(personId: string): Person | null {
+  const accountId = ACCOUNTS.get(personId);
+  const person = accountId === undefined ? undefined : PEOPLE.get(accountId);
+  return person ? { ...person } : null;
+}
+
 /** The board's members who hold none of its tickets, as a response names them, in the order MEMBERS lists them. */
 export function memberPeople(): Person[] {
   return MEMBERS.map((member) => ({ ...PEOPLE.get(member.accountId)! }));

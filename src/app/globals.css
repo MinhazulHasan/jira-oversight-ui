@@ -360,7 +360,8 @@
     scroll-padding-top: calc(var(--topbar-h) + 16px);
   }
 
-  html:has([data-unsaved-bar]) {
+  html:has([data-unsaved-bar]),
+  html:has([data-selection-bar]) {
     scroll-padding-bottom: 5.5rem;
   }
 
@@ -586,7 +587,8 @@
   font-family: var(--font-sans);
   cursor: default;
 }
-html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"] {
+html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"],
+html:has([data-selection-bar]) [data-sonner-toaster][data-y-position="bottom"] {
   bottom: 84px;
 }
 /* Sonner's own focus style is injected after this sheet at the same weight. */
@@ -634,6 +636,38 @@ html:has([data-unsaved-bar]) [data-sonner-toaster][data-y-position="bottom"] {
   font-size: var(--t-xs);
   line-height: 1.45;
   color: var(--text-low);
+}
+/* One action in the line (Undo): a quiet raised control, level with the title. */
+.jo-toast-action {
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: 16px;
+  height: 26px;
+  padding: 0 10px;
+  border: var(--hairline) solid var(--rule);
+  border-radius: var(--r-sm);
+  background: var(--paper-150);
+  box-shadow: var(--raise-inset);
+  color: var(--text-hi);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    transform 90ms ease;
+}
+.jo-toast-action:hover {
+  background: var(--paper-200);
+  border-color: var(--rule-strong);
+}
+.jo-toast-action:active {
+  transform: translateY(0.5px) scale(0.98);
+}
+.jo-toast-action:focus-visible {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: 2px;
 }
 
 .jo-palette [cmdk-group-heading] {

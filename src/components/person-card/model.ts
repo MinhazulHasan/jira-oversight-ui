@@ -17,15 +17,15 @@ export function firstName(name: string): string {
 
 /** The header's plain line, in parts: the count (set in Plex Mono) and the words around it. */
 export interface HeaderLine {
-  /** "Holds", "No open tickets on", "Member of". */
+  /** "No open tickets on", "Member of", or nothing before their open tickets. */
   lead: string;
-  /** The open tickets, when they hold any: "13". */
+  /** Their open tickets, when they have any: "13". */
   figure: string | null;
   /** " open tickets on", " open ticket on". */
   middle: string;
   /** The board's name, as the top bar names it. */
   board: string;
-  /** " · no tickets" for a member who holds none. */
+  /** " · no tickets" for someone with none. */
   tail: string;
   /** The whole line, for a screen reader and a copy. */
   text: string;
@@ -43,7 +43,7 @@ export function headerLine(card: Pick<PersonCard, "membership" | "work" | "board
   if (open === 0) return { lead: "No open tickets on ", figure: null, middle: "", board, tail: "", ...titled(`No open tickets on ${board}`) };
   const figure = formatCount(open, { locale });
   const middle = open === 1 ? " open ticket on " : " open tickets on ";
-  return { lead: "Holds ", figure, middle, board, tail: "", ...titled(`Holds ${figure}${middle}${board}`) };
+  return { lead: "", figure, middle, board, tail: "", ...titled(`${figure}${middle}${board}`) };
 }
 
 export function processSentence(process: PersonCardProcess, locale?: string): string {
@@ -112,10 +112,10 @@ export function moreText(more: number, locale?: string): string | null {
   return more > 0 ? `and ${formatCount(more, { locale })} more` : null;
 }
 
-export const FINDINGS_LABEL = "Open findings on all their tickets";
+export const FINDINGS_LABEL = "Open findings on their tickets";
 
 /** The findings line's tooltip, the scope said in full. */
-export const FINDINGS_SCOPE = "On every ticket they hold, done ones too";
+export const FINDINGS_SCOPE = "On every ticket of theirs, done ones too";
 
 /** What a count of open findings is called under the label, which says they are open: "breach", "warnings". */
 export function findingsNoun(count: number, severity: "breach" | "warning"): string {
@@ -151,7 +151,7 @@ export function boardsText(boards: readonly { key: string; open_tickets: number 
 
 /* --------------------------------------------------------------- links -- */
 
-/** Findings filtered to them: every open finding on the tickets they hold, as the card's findings line counts them. */
+/** Findings filtered to them: the open findings on the tickets they are assigned now, as Findings reads a person. */
 export function findingsHref(personId: string): string {
   return `/findings?${findingsSearchParams({ person: [personId] }).toString()}`;
 }

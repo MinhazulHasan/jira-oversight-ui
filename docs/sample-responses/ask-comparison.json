@@ -13,7 +13,7 @@
   "qa_id": "ea9a472eb9a369d08f6c38624503a934",
   "question": "Who is best on the board? Rank the others",
   "outcome": "answered",
-  "answer": "Measures closer to the process than the board, last 90 days, most first: Finn Gallagher 2 of 5, Ben Okafor 1 of 7, Carmen Ruiz 1 of 7, Ada Brooks 1 of 7, Hana Mori 1 of 5, Dev Malhotra 0 of 7, Grace Lindqvist 0 of 7 and Elif Aydin 0 of 5.\n\nFigures from Jira over the last 90 days, next to the whole board, by each ticket's current assignee. Code review isn't recorded on this board, so reviewers' work doesn't show.",
+  "answer": "Measures closer to the process than the board, last 90 days, most first: Finn Gallagher 2 of 5, Ben Okafor 1 of 7, Carmen Ruiz 1 of 7, Ada Brooks 1 of 7, Hana Mori 1 of 5, Dev Malhotra 0 of 7, Grace Lindqvist 0 of 7 and Elif Aydin 0 of 5.\n\nFigures from Jira over the last 90 days, next to the whole board. Tickets count for their Programmer in Jira, or their assignee where there is no Programmer. Code review isn't recorded on this board, so reviewers' work doesn't show.",
   "citations": [
     {
       "marker": 1,
@@ -330,7 +330,7 @@
       ],
       "truncated": false,
       "as_of": "2026-11-04T14:28:00.000Z",
-      "note": "everyone who holds a ticket, by the number of measures on which they are closer to the process than the whole board over the last 90 days (6 Aug 2026 to 4 Nov 2026), most first, ties by open findings per 10 open tickets (fewer first; a figure on too few tickets is never compared, so it counts as the most), people compared on no measure last; by each ticket's current assignee, Epics left out; the closer, further and level counts are the measures on which the person's figure stands closer to the process than the board's, further from it, or level with it (within 5 points, 0.5 for the ratio); measures compared is their sum; too few tickets counts the measures where either side rests on fewer than 5 tickets; open findings per 10 open tickets is the open breaches and warnings on the person's open tickets for every 10 of those tickets, compared only when it rests on enough tickets"
+      "note": "everyone with tickets, by the number of measures on which they are closer to the process than the whole board over the last 90 days (6 Aug 2026 to 4 Nov 2026), most first, ties by open findings per 10 open tickets (fewer first; a figure on too few tickets is never compared, so it counts as the most), people compared on no measure last; every ticket, open or finished, by whom it counts for (the board's credit setting: a people field such as Programmer, the assignee, or Automatic: Programmer where it is filled, otherwise the assignee; a ticket without one counts for no one), Epics left out; the closer, further and level counts are the measures on which the person's figure stands closer to the process than the board's, further from it, or level with it (within 5 points, 0.5 for the ratio); measures compared is their sum; too few tickets counts the measures where either side rests on fewer than 5 tickets; open findings per 10 open tickets is the open breaches and warnings on the person's open tickets for every 10 of those tickets, compared only when it rests on enough tickets"
     }
   ],
   "plan": [

@@ -12,8 +12,16 @@ const SYNC_URL = `http://localhost:${SYNC_PORT}`;
 const SYNC_WEBKIT_PORT = 3407;
 const SYNC_WEBKIT_URL = `http://localhost:${SYNC_WEBKIT_PORT}`;
 const BOARD_SYNC_SPEC = /board-sync\.spec\.ts$/;
+const CREDIT_PORT = 3409;
+const CREDIT_URL = `http://localhost:${CREDIT_PORT}`;
+/** The specs that change a board's credit setting, which every page of people reads. */
+const CREDIT_SPECS = /credit(-acceptance)?\.spec\.ts$/;
+const IGNORE_PORT = 3410;
+const IGNORE_URL = `http://localhost:${IGNORE_PORT}`;
+/** The specs that ignore findings, which every page of findings and counts reads. */
+const IGNORE_SPECS = /ignore(-acceptance)?\.spec\.ts$/;
 /** The specs with servers of their own: no other project runs them. */
-const OWN_SERVER_SPECS = [RULE_SETTINGS_SPEC, BOARD_SYNC_SPEC];
+const OWN_SERVER_SPECS = [RULE_SETTINGS_SPEC, BOARD_SYNC_SPEC, CREDIT_SPECS, IGNORE_SPECS];
 
 export const SAMPLE_ENV = {
   OVERSIGHT_DATA: "sample",
@@ -26,6 +34,8 @@ export const SAMPLE_ENV = {
 const COMPARISON_SPECS = /(scorecard|ask|mentions|people)\.spec\.ts$/;
 
 const WEBKIT_TIMEOUT = 60_000;
+// WebKit renders slower when the whole suite runs at once, so its assertions wait longer before failing.
+const WEBKIT_EXPECT = { timeout: 10_000 };
 
 export default defineConfig({
   testDir: "e2e",
@@ -52,6 +62,7 @@ export default defineConfig({
       name: "webkit",
       testIgnore: OWN_SERVER_SPECS,
       timeout: WEBKIT_TIMEOUT,
+      expect: WEBKIT_EXPECT,
       use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 } },
     },
     {
@@ -63,6 +74,7 @@ export default defineConfig({
       name: "webkit, comparison off",
       testMatch: COMPARISON_SPECS,
       timeout: WEBKIT_TIMEOUT,
+      expect: WEBKIT_EXPECT,
       use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, baseURL: OFF_URL },
     },
     {
@@ -78,7 +90,40 @@ export default defineConfig({
       dependencies: ["chromium, rule settings"],
       fullyParallel: false,
       timeout: WEBKIT_TIMEOUT,
+      expect: WEBKIT_EXPECT,
       use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, baseURL: RULES_URL },
+    },
+    {
+      // Serial within each spec; WebKit waits for Chromium, so the two never change the setting at once.
+      name: "chromium, credit",
+      testMatch: CREDIT_SPECS,
+      fullyParallel: false,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, baseURL: CREDIT_URL },
+    },
+    {
+      name: "webkit, credit",
+      testMatch: CREDIT_SPECS,
+      dependencies: ["chromium, credit"],
+      fullyParallel: false,
+      timeout: WEBKIT_TIMEOUT,
+      expect: WEBKIT_EXPECT,
+      use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, baseURL: CREDIT_URL },
+    },
+    {
+      // Serial within each spec; WebKit waits for Chromium, so the two never ignore at once.
+      name: "chromium, ignore",
+      testMatch: IGNORE_SPECS,
+      fullyParallel: false,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, baseURL: IGNORE_URL },
+    },
+    {
+      name: "webkit, ignore",
+      testMatch: IGNORE_SPECS,
+      dependencies: ["chromium, ignore"],
+      fullyParallel: false,
+      timeout: WEBKIT_TIMEOUT,
+      expect: WEBKIT_EXPECT,
+      use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, baseURL: IGNORE_URL },
     },
     {
       // Serial within the spec: its tests follow one server's syncs in order.
@@ -92,6 +137,7 @@ export default defineConfig({
       testMatch: BOARD_SYNC_SPEC,
       fullyParallel: false,
       timeout: WEBKIT_TIMEOUT,
+      expect: WEBKIT_EXPECT,
       use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 }, baseURL: SYNC_WEBKIT_URL },
     },
   ],
@@ -119,6 +165,22 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 60_000,
       env: { ...SAMPLE_ENV, SAMPLE_LATENCY: "150" },
+    },
+    {
+      // The credit specs' own: never reused, so every board starts on its file's choice.
+      command: `node node_modules/next/dist/bin/next start --port ${CREDIT_PORT}`,
+      url: `${CREDIT_URL}/api/oversight/health`,
+      reuseExistingServer: false,
+      timeout: 60_000,
+      env: SAMPLE_ENV,
+    },
+    {
+      // The ignore specs' own: never reused, so no finding starts ignored.
+      command: `node node_modules/next/dist/bin/next start --port ${IGNORE_PORT}`,
+      url: `${IGNORE_URL}/api/oversight/health`,
+      reuseExistingServer: false,
+      timeout: 60_000,
+      env: SAMPLE_ENV,
     },
     ...[SYNC_PORT, SYNC_WEBKIT_PORT].map((port) => ({
       // The board sync spec's own, one for each browser: never reused, so HELP starts never synced.

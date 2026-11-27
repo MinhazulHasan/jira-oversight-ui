@@ -61,6 +61,7 @@ const PEOPLE_LEVEL_ACTIONS: readonly (readonly [AccessAction, number])[] = [
   ["person_ask", 3],
   ["access_log_view", 1.2],
   ["access_log_export", 0.3],
+  ["scorecard_tickets_view", 2],
 ];
 
 const idOf = (label: string) => createHash("sha256").update(`sample-access:${label}`, "utf8").digest("hex").slice(0, 32);
@@ -82,6 +83,7 @@ function detailOf(draft: Draft, label: string): Record<string, unknown> {
     case "scorecard_view":
     case "people_compare_view":
     case "person_card_view":
+    case "scorecard_tickets_view":
       return { days: draft.days ?? 90 };
     case "person_findings_view":
       return { state: "open", page: 1 };
@@ -157,6 +159,7 @@ function history(dataset: Dataset): AccessLogEntry[] {
       const one = () => (at < now - 40 * DAY && rng.chance(0.08) ? FORMER : pick());
       switch (action) {
         case "scorecard_view":
+        case "scorecard_tickets_view":
           drafts.push({ at, viewer, action, subjects: [one()], days: rng.pick([30, 90, 90, 180]) });
           break;
         case "people_compare_view":

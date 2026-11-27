@@ -66,7 +66,7 @@ export function peopleMatching(people: readonly Person[], query: string): Person
   return people.filter((person) => nameMatches(person.name, query)).sort((a, b) => leads(a) - leads(b) || compareByFoldedName(a, b));
 }
 
-/** The @ list's two groups, in the order they are listed: who holds the board's tickets now, then its members who hold none. */
+/** The @ list's two groups, in the order they are listed: who has the board's tickets, then its members who have none. */
 export const MENTION_GROUPS = [
   { key: "tickets", label: "With tickets" },
   { key: "none", label: "No tickets" },

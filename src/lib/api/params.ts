@@ -11,6 +11,7 @@ import {
   ISSUE_KEY_PATTERN,
   PERSON_ID_PATTERN,
   PROJECT_KEY_PATTERN,
+  proofMeasureKeySchema,
   RULE_ID_PATTERN,
   SCORECARD_DAYS,
   SCORECARD_DEFAULT_DAYS,
@@ -20,6 +21,7 @@ import {
   severitySchema,
   trendMetricSchema,
   type AccessAction,
+  type ProofMeasureKey,
   type ScorecardDays,
 } from "./schemas";
 
@@ -36,7 +38,9 @@ export const FINDINGS_SORTS = [
 ] as const;
 
 export const FIRST_SEEN_WINDOWS = ["7d", "30d", "90d", "all"] as const;
-export const FINDING_STATES = ["open", "resolved", "all"] as const;
+export const FINDING_STATES = ["open", "resolved", "ignored", "all"] as const;
+/** The ticket a finding is on, by its status category now: open (not done) or finished (done). Sprint findings match neither. */
+export const TICKET_STATES = ["open", "finished"] as const;
 /** Filters findings whose issue belongs to no epic (and sprint findings). */
 export const NO_EPIC = "none";
 export const FINDINGS_PAGE_SIZES = { default: 25, max: 100 } as const;
@@ -55,6 +59,8 @@ export const findingsQuerySchema = z.object({
   q: z.string().trim().max(100).optional(),
   /** Findings first seen in the last 7, 30 or 90 days. */
   first_seen: z.enum(FIRST_SEEN_WINDOWS).default("all"),
+  /** Findings on open or on finished tickets; any ticket when left out. */
+  ticket: z.enum(TICKET_STATES).optional(),
   sort: z.enum(FINDINGS_SORTS).default("first_seen_at"),
   order: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().int().min(1).max(10_000).default(1),
@@ -67,6 +73,26 @@ export type FindingsQuery = z.output<typeof findingsQuerySchema>;
 export type FindingsQueryInput = z.input<typeof findingsQuerySchema>;
 
 const FINDINGS_LISTS = ["rule", "epic", "person"] as const;
+
+/* --------------------------------------------------------------- ignored -- */
+
+export const IGNORED_SORTS = ["at", "issue_key", "rule_id"] as const;
+
+export const ignoredQuerySchema = z.object({
+  /** Ignores of any of these rules (repeatable). */
+  rule: listOf(z.string().regex(RULE_ID_PATTERN), 24),
+  /** A key, a number or words in the ticket's key or summary, as the findings search reads them. */
+  q: z.string().trim().max(100).optional(),
+  sort: z.enum(IGNORED_SORTS).default("at"),
+  order: z.enum(["asc", "desc"]).default("desc"),
+  page: z.coerce.number().int().min(1).max(10_000).default(1),
+  page_size: z.coerce.number().int().min(1).max(FINDINGS_PAGE_SIZES.max).default(FINDINGS_PAGE_SIZES.default),
+});
+
+export type IgnoredQuery = z.output<typeof ignoredQuerySchema>;
+export type IgnoredQueryInput = z.input<typeof ignoredQuerySchema>;
+
+const IGNORED_LISTS = ["rule"] as const;
 
 /* ---------------------------------------------------------------- trends -- */
 
@@ -242,6 +268,74 @@ export function personCardSearchParams(input: PersonCardQueryInput = {}): URLSea
   return search;
 }
 
+/* ----------------------------------------------------------------- proof -- */
+
+/** The tickets behind one figure: the period, the measure (or "tickets"), and the person; no person is the whole board. */
+export const proofQuerySchema = z.object({
+  days: scorecardQuerySchema.shape.days,
+  measure: proofMeasureKeySchema,
+  person: z.string().regex(PERSON_ID_PATTERN, { message: "is a person id: p and 12 lower-case hexadecimal characters" }).optional(),
+});
+
+export interface ProofQuery {
+  days: ScorecardDays;
+  measure: ProofMeasureKey;
+  /** Null: the whole board. */
+  person: string | null;
+}
+export interface ProofQueryInput {
+  days?: ScorecardDays;
+  measure: ProofMeasureKey;
+  person?: string | null;
+}
+
+/** Checked and rebuilt: a measure is required; anything else, or a name given twice, is refused. */
+export function parseProofQuery(search: URLSearchParams): ParseResult<ProofQuery> {
+  const parsed = parseSearch(proofQuerySchema, search, []);
+  return parsed.ok ? { ok: true, value: normalizeProofQuery(parsed.value as ProofQueryInput) } : parsed;
+}
+
+/** Throws on a value no URL could carry (a programming error). */
+export function normalizeProofQuery(input: ProofQueryInput): ProofQuery {
+  const query = proofQuerySchema.parse({ days: input.days, measure: input.measure, person: input.person ?? undefined });
+  return { days: query.days as ScorecardDays, measure: query.measure, person: query.person ?? null };
+}
+
+/** The canonical query string: the period unless it is the default, the measure, then the person when there is one. */
+export function proofSearchParams(input: ProofQueryInput): URLSearchParams {
+  const query = normalizeProofQuery(input);
+  const search = new URLSearchParams();
+  if (query.days !== SCORECARD_DEFAULT_DAYS) search.set("days", String(query.days));
+  search.set("measure", query.measure);
+  if (query.person) search.set("person", query.person);
+  return search;
+}
+
+/* ---------------------------------------------------------------- credit -- */
+
+/** The credit setting's period: what each choice's coverage is counted over (the People page's). */
+export const creditQuerySchema = z.object({ days: scorecardQuerySchema.shape.days });
+
+export type CreditQuery = { days: ScorecardDays };
+export type CreditQueryInput = { days?: ScorecardDays };
+
+export function parseCreditQuery(search: URLSearchParams): ParseResult<CreditQuery> {
+  const parsed = parseSearch(creditQuerySchema, search, []);
+  return parsed.ok ? { ok: true, value: normalizeCreditQuery(parsed.value as CreditQueryInput) } : parsed;
+}
+
+export function normalizeCreditQuery(input: CreditQueryInput = {}): CreditQuery {
+  return { days: creditQuerySchema.parse({ days: input.days }).days as ScorecardDays };
+}
+
+/** The period unless it is the default. */
+export function creditSearchParams(input: CreditQueryInput = {}): URLSearchParams {
+  const query = normalizeCreditQuery(input);
+  const search = new URLSearchParams();
+  if (query.days !== SCORECARD_DEFAULT_DAYS) search.set("days", String(query.days));
+  return search;
+}
+
 export function parseAccessLogQuery(search: URLSearchParams): ParseResult<AccessLogQuery> {
   const parsed = parseSearch(accessLogQuerySchema, search, ACCESS_LOG_LISTS);
   if (!parsed.ok) return parsed;
@@ -333,6 +427,7 @@ export function findingsSearchParams(input: FindingsQueryInput = {}): URLSearchP
   for (const person of query.person) search.append("person", person);
   if (query.q) search.set("q", query.q);
   if (query.first_seen !== FINDINGS_DEFAULTS.first_seen) search.set("first_seen", query.first_seen);
+  if (query.ticket) search.set("ticket", query.ticket);
   if (query.sort !== FINDINGS_DEFAULTS.sort) search.set("sort", query.sort);
   if (query.order !== FINDINGS_DEFAULTS.order) search.set("order", query.order);
   if (query.page !== FINDINGS_DEFAULTS.page) search.set("page", String(query.page));
@@ -343,4 +438,30 @@ export function findingsSearchParams(input: FindingsQueryInput = {}): URLSearchP
 export function trendSearchParams(input: TrendQueryInput): URLSearchParams {
   const query = normalizeTrendQuery(input);
   return new URLSearchParams({ metric: query.metric, period: query.period, last_n: String(query.last_n) });
+}
+
+export function parseIgnoredQuery(search: URLSearchParams): ParseResult<IgnoredQuery> {
+  const parsed = parseSearch(ignoredQuerySchema, search, IGNORED_LISTS);
+  return parsed.ok ? { ok: true, value: normalizeIgnoredQuery(parsed.value) } : parsed;
+}
+
+/** Fills in defaults, rules each once and sorted; throws on a value no URL could carry (a programming error). */
+export function normalizeIgnoredQuery(input: IgnoredQueryInput = {}): IgnoredQuery {
+  const query = ignoredQuerySchema.parse(input);
+  return { ...query, rule: [...new Set(query.rule)].sort(), q: query.q === "" ? undefined : query.q };
+}
+
+const IGNORED_DEFAULTS = ignoredQuerySchema.parse({});
+
+/** The canonical query string for the ignored list: defaults left out, rules sorted. */
+export function ignoredSearchParams(input: IgnoredQueryInput = {}): URLSearchParams {
+  const query = normalizeIgnoredQuery(input);
+  const search = new URLSearchParams();
+  for (const rule of query.rule) search.append("rule", rule);
+  if (query.q) search.set("q", query.q);
+  if (query.sort !== IGNORED_DEFAULTS.sort) search.set("sort", query.sort);
+  if (query.order !== IGNORED_DEFAULTS.order) search.set("order", query.order);
+  if (query.page !== IGNORED_DEFAULTS.page) search.set("page", String(query.page));
+  if (query.page_size !== IGNORED_DEFAULTS.page_size) search.set("page_size", String(query.page_size));
+  return search;
 }

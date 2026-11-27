@@ -88,7 +88,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "0b7b3b0f61c477e61699982f24892735",
@@ -142,7 +143,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "a59f6d27db353a9c64e3667e6e1e4e86",
         "warned_at": "2026-10-23T12:29:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "0c8945416f88697236f895dcbf942780",
@@ -212,7 +214,8 @@
           "changelog_id": "318609"
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "b7ab29c0aed0029b2ef20a74c06ebd37",
@@ -262,7 +265,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "df2e5ddd883f7d3d3cc1fc80198161a8",
@@ -332,7 +336,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "0747f249107e3a362337b0b83c9a37b2",
@@ -386,7 +391,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "b0dbabe58f5060c035321288a86a6a5c",
         "warned_at": "2026-10-23T12:29:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "5c6bcdc3cfe0d185e638a7c228e61bf3",
@@ -446,7 +452,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "68599faacc67d8814a34715c2b9aaa9b",
@@ -500,7 +507,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "b7be78efa310b4b48452e54f5e59f797",
         "warned_at": "2026-11-02T11:59:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "ff94ef7047dadf4f0952f8a63709ccb6",
@@ -550,7 +558,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "93fe30f875b6d17daddf3ec4861d2416",
@@ -600,7 +609,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "f6c5eaefacc6af95dc0efd83187bd778",
@@ -654,7 +664,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "d003085e80929dd2a9f1004a04809f9d",
         "warned_at": "2026-11-02T12:59:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "76ad59fe15c5750708479bbf99377bc7",
@@ -708,7 +719,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "0899235c449327ce68f151954fefae82",
         "warned_at": "2026-10-23T12:29:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "f40e7da555061b51df8e570ce1196519",
@@ -778,7 +790,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "d003085e80929dd2a9f1004a04809f9d",
@@ -828,7 +841,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "b7be78efa310b4b48452e54f5e59f797",
@@ -878,7 +892,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "1396b85409c5cbc6d316792e893d7701",
@@ -924,7 +939,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "2a0c2e45246597b2985bfd9bf232bf01",
@@ -994,7 +1010,8 @@
           "changelog_id": "318451"
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "fc0aa8ddfeb2bd7cc2228025e33de6f7",
@@ -1064,7 +1081,8 @@
           "changelog_id": "318557"
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "3f5c959e7a66d247c2e8f1409f742cf5",
@@ -1138,7 +1156,8 @@
         "warning_rule_id": "W-EFF-01",
         "warning_finding_id": "349760ee54533963f41d37dbb093b718",
         "warned_at": "2026-10-30T11:59:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "47a6f0682693b0e899cc587739fe8b0f",
@@ -1198,7 +1217,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "6eaa31261d9ac3ca0ab85f2881466b8d",
@@ -1268,7 +1288,8 @@
           "changelog_id": "318376"
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "71fb9d9327f4541789648a535885aaa8",
@@ -1338,7 +1359,8 @@
           "changelog_id": "318484"
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "f29270892286712bd0cfb933fa817999",
@@ -1408,7 +1430,8 @@
           "changelog_id": "318592"
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "37dea47e9a872e68ad0b42abfef05874",
@@ -1462,7 +1485,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "876bbb252ba1f07bd3a45ef48e86b0ff",
         "warned_at": "2026-10-27T08:59:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "6848f192c6397a8d198cbe729c0a5f87",
@@ -1532,7 +1556,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     }
   ],
   "total": 809,
@@ -1756,6 +1781,11 @@
         "value": "resolved",
         "label": "Resolved",
         "count": 737
+      },
+      {
+        "value": "ignored",
+        "label": "Ignored",
+        "count": 0
       }
     ]
   }

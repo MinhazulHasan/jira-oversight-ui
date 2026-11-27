@@ -1,0 +1,228 @@
+{
+  "meta": {
+    "data_mode": "sample",
+    "last_synced_at": "2026-11-04T14:28:00.000Z",
+    "projects": [
+      "DEMO"
+    ],
+    "rules_version": "0.1.0",
+    "process_version": "0.1.0",
+    "generated_at": "2026-11-04T14:30:00.000Z",
+    "report_timezone": "Europe/London"
+  },
+  "period": {
+    "days": 90,
+    "from": "2026-08-06T14:28:00.000Z",
+    "to": "2026-11-04T14:28:00.000Z"
+  },
+  "measure": {
+    "key": "stuck_now",
+    "label": "Open tickets stuck in a status",
+    "kind": "rate",
+    "direction": "lower_is_closer",
+    "rule_ids": [
+      "W-AGE-01"
+    ],
+    "measurable": true,
+    "reason": null
+  },
+  "person": {
+    "id": "p599114b761a6",
+    "name": "Carmen Ruiz",
+    "avatar": "55ea1804e5bd"
+  },
+  "value": {
+    "value": 14,
+    "numerator": 1,
+    "denominator": 7,
+    "enough": true,
+    "vs_board": "closer"
+  },
+  "total": 7,
+  "counted": 1,
+  "tickets": [
+    {
+      "key": "DEMO-802",
+      "summary": "Tax number validation breaks in Safari",
+      "issue_type": "Bug",
+      "status": "To Do",
+      "status_category": "new",
+      "counted": true,
+      "credit": {
+        "person": {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        "basis": "assignee_now",
+        "field": null
+      },
+      "at": null,
+      "detail": {
+        "status": "To Do",
+        "since": "2026-07-28T08:26:00.000Z",
+        "hours": 2382.0333,
+        "threshold": "p90 of To Do: 542.0 h"
+      },
+      "ignore": null,
+      "url": null
+    },
+    {
+      "key": "DEMO-1097",
+      "summary": "Review integration health page",
+      "issue_type": "Task",
+      "status": "In Progress",
+      "status_category": "indeterminate",
+      "counted": false,
+      "credit": {
+        "person": {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        "basis": "assignee_now",
+        "field": null
+      },
+      "at": null,
+      "detail": {
+        "status": "In Progress",
+        "since": "2026-10-29T16:13:00.000Z",
+        "hours": 142.25,
+        "threshold": null
+      },
+      "ignore": null,
+      "url": null
+    },
+    {
+      "key": "DEMO-1099",
+      "summary": "Implement OAuth client registration",
+      "issue_type": "Task",
+      "status": "To Do",
+      "status_category": "new",
+      "counted": false,
+      "credit": {
+        "person": {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        "basis": "assignee_now",
+        "field": null
+      },
+      "at": null,
+      "detail": {
+        "status": "To Do",
+        "since": "2026-10-21T10:24:00.000Z",
+        "hours": 340.0667,
+        "threshold": null
+      },
+      "ignore": null,
+      "url": null
+    },
+    {
+      "key": "DEMO-1103",
+      "summary": "Spelling on the settings page breaks in Safari",
+      "issue_type": "Bug",
+      "status": "To Do",
+      "status_category": "new",
+      "counted": false,
+      "credit": {
+        "person": {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        "basis": "assignee_now",
+        "field": null
+      },
+      "at": null,
+      "detail": {
+        "status": "To Do",
+        "since": "2026-10-22T08:27:00.000Z",
+        "hours": 318.0167,
+        "threshold": null
+      },
+      "ignore": null,
+      "url": null
+    },
+    {
+      "key": "DEMO-1127",
+      "summary": "Load test for staging environment configuration",
+      "issue_type": "Test",
+      "status": "In Progress",
+      "status_category": "indeterminate",
+      "counted": false,
+      "credit": {
+        "person": {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        "basis": "assignee_now",
+        "field": null
+      },
+      "at": null,
+      "detail": {
+        "status": "In Progress",
+        "since": "2026-11-02T08:11:00.000Z",
+        "hours": 54.2833,
+        "threshold": null
+      },
+      "ignore": null,
+      "url": null
+    },
+    {
+      "key": "DEMO-1135",
+      "summary": "Responsive navigation times out",
+      "issue_type": "Bug",
+      "status": "In Progress",
+      "status_category": "indeterminate",
+      "counted": false,
+      "credit": {
+        "person": {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        "basis": "assignee_now",
+        "field": null
+      },
+      "at": null,
+      "detail": {
+        "status": "In Progress",
+        "since": "2026-11-04T08:44:00.000Z",
+        "hours": 5.7333,
+        "threshold": null
+      },
+      "ignore": null,
+      "url": null
+    },
+    {
+      "key": "DEMO-1143",
+      "summary": "Document holiday calendar",
+      "issue_type": "Task",
+      "status": "To Do",
+      "status_category": "new",
+      "counted": false,
+      "credit": {
+        "person": {
+          "id": "p599114b761a6",
+          "name": "Carmen Ruiz",
+          "avatar": "55ea1804e5bd"
+        },
+        "basis": "assignee_now",
+        "field": null
+      },
+      "at": null,
+      "detail": {
+        "status": "To Do",
+        "since": "2026-11-02T17:59:00.000Z",
+        "hours": 44.4833,
+        "threshold": null
+      },
+      "ignore": null,
+      "url": null
+    }
+  ],
+  "left_out": []
+}

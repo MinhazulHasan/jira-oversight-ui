@@ -20,6 +20,7 @@ import {
   workStarted,
   type Threshold,
 } from "./evidence";
+import type { IgnoreInfo } from "./ignores";
 import { DAY, HOUR, MINUTE, spelledDay } from "./time";
 import { HALF_HOUR, loggedHoursAt, workItems, type Issue, type Sprint, type World } from "./world";
 
@@ -31,7 +32,7 @@ const RUN_DELAY = MINUTE;
 type Span = readonly [from: number, to: number | null];
 
 /** Why a finding was resolved: its condition stopped, a new rule version replaced it, or the board's settings changed. */
-export type ResolvedWhy = "cleared" | "superseded" | "settings_changed";
+export type ResolvedWhy = "cleared" | "superseded" | "settings_changed" | "ignored";
 
 export interface FindingRecord {
   id: string;
@@ -51,6 +52,8 @@ export interface FindingRecord {
   threshold: string | null;
   evidence: EvidenceItem[];
   warnedBefore: { ruleId: string; findingId: string; at: number } | null;
+  /** The ignore that resolved it, when it is resolved as ignored (ignores.ts). */
+  ignore?: IgnoreInfo;
 }
 
 export interface Engine {

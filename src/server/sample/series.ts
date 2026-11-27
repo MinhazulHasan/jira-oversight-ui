@@ -74,7 +74,7 @@ function trendValues(dataset: Dataset, metric: TrendMetric): (number | null)[] {
 
   if (metric === "open_breaches" || metric === "open_warnings") {
     const severity = metric === "open_breaches" ? "breach" : "warning";
-    const relevant = findings.filter((finding) => finding.rule.severity === severity);
+    const relevant = findings.filter((finding) => finding.rule.severity === severity && finding.resolvedWhy !== "ignored");
     return weeks.map((start) => {
       const end = start + WEEK;
       return relevant.filter(
@@ -140,15 +140,17 @@ export interface Totals {
 export function totals(dataset: Dataset): Totals {
   return memo(dataset, "totals", () => {
     const { findings } = dataset.engine;
+    const judged = findings.filter((finding) => finding.resolvedWhy !== "ignored");
     const ends = windowEnds(dataset.now);
     const openOf = (severity: "breach" | "warning") => (end: number) =>
-      findings.filter((finding) => finding.rule.severity === severity && openAt(finding, end)).length;
+      judged.filter((finding) => finding.rule.severity === severity && openAt(finding, end)).length;
     const work = workItems(dataset.world);
     return {
       open_breaches: windowTotal(ends, openOf("breach")),
       open_warnings: windowTotal(ends, openOf("warning")),
-      new_7d: windowTotal(ends, (end) => findings.filter((finding) => inWeekEnding(finding.firstSeenAt, end)).length),
-      resolved_7d: windowTotal(ends, (end) => findings.filter((finding) => inWeekEnding(finding.resolvedAt, end)).length),
+      // An ignored finding is neither new nor resolved: the admin set it aside, nothing was fixed.
+      new_7d: windowTotal(ends, (end) => judged.filter((finding) => inWeekEnding(finding.firstSeenAt, end)).length),
+      resolved_7d: windowTotal(ends, (end) => judged.filter((finding) => inWeekEnding(finding.resolvedAt, end)).length),
       issues_in_scope: windowTotal(ends, (end) => work.filter((issue) => issue.createdAt <= end).length),
       rules_not_measurable: windowTotal(ends, () => NOT_MEASURABLE_RULES.length),
     };

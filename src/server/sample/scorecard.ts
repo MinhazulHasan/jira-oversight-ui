@@ -4,6 +4,7 @@ import {
   SCORECARD_MEASURES,
   SCORECARD_SENTENCES,
   type ApiErrorCode,
+  type CreditReading,
   type PeopleScorecard,
   type Person,
   type ScorecardDays,
@@ -18,9 +19,11 @@ import { compareByFoldedName } from "@/lib/names";
 
 import { effortThreshold, estimateGraceHours } from "./board-rules";
 import { RULES, STATUS, isWork, missingFor } from "./catalogue";
-import { memo, meta, type Dataset } from "./dataset";
+import { creditChoice, creditMemo, stepOneField, ticketsByPerson, ticketsOf } from "./credit";
+import { meta, type Dataset } from "./dataset";
+import type { FindingRecord } from "./engine";
+import type { IgnoreInfo } from "./ignores";
 import { directoryPeople, workPeople } from "./people";
-import { personOf } from "./team";
 import { DAY, HOUR, iso } from "./time";
 import type { Issue } from "./world";
 
@@ -64,7 +67,7 @@ export const NOT_MEASURABLE_REASONS = {
 } as const;
 
 /** The period: the days back from the snapshot's as-of (the last sync), both edges in. */
-interface Period {
+export interface Period {
   days: ScorecardDays;
   from: number;
   to: number;
@@ -162,8 +165,13 @@ function hasOpenFinding(dataset: Dataset, issue: Issue, ruleId: string): boolean
   return (dataset.engine.byIssue.get(issue.key) ?? []).some((finding) => finding.resolvedAt === null && finding.rule.id === ruleId);
 }
 
+/** The ticket's open findings (an ignored one is resolved, so never among them): the ratio's numerator and the proof's detail. */
+export function openFindingsOf(dataset: Dataset, issue: Issue): FindingRecord[] {
+  return (dataset.engine.byIssue.get(issue.key) ?? []).filter((finding) => finding.resolvedAt === null);
+}
+
 function openFindings(dataset: Dataset, issue: Issue): number {
-  return (dataset.engine.byIssue.get(issue.key) ?? []).filter((finding) => finding.resolvedAt === null).length;
+  return openFindingsOf(dataset, issue).length;
 }
 
 /** Work, as every rule counts it (catalogue.ts): re-exported for the sample's Ask. */
@@ -174,42 +182,87 @@ function reachedTesting(issue: Issue): boolean {
   return issue.intervals.some((interval) => STATUS[interval.status].stage === "testing");
 }
 
-function valuesOf(dataset: Dataset, tickets: readonly Issue[], period: Period, measures: readonly ScorecardMeasure[]): ScorecardValues {
-  const issues = tickets.filter(isWork);
-  const open = issues.filter((issue) => STATUS[issue.status].category !== "done");
-  const done = issues.filter((issue) => within(period, issue.doneAt));
-  const started = issues.filter((issue) => within(period, issue.startedAt));
+/** One measure's tickets: those it counts out of (a rate's denominator, a count's tickets), those counted, and those an ignore leaves out. */
+export interface MeasureSet {
+  all: readonly Issue[];
+  counted: readonly Issue[];
+  leftOut: readonly { issue: Issue; ignore: IgnoreInfo }[];
+}
+
+export type MeasureSets = Record<ScorecardMeasureKey, MeasureSet>;
+
+/** The tickets behind every figure of one row: each figure is its set's size, and the proof lists the same sets. */
+export function measureSets(dataset: Dataset, tickets: readonly Issue[], period: Period): MeasureSets {
+  const work = tickets.filter(isWork);
+  const open = work.filter((issue) => STATUS[issue.status].category !== "done");
+  const done = work.filter((issue) => within(period, issue.doneAt));
+  const started = work.filter((issue) => within(period, issue.startedAt));
   // An effort ratio needs an estimate and time logged: a ratio of 0 is missing time, not effort (contract 8.2).
   const effort = done.filter((issue) => issue.effortRatio !== null && issue.timeSpentS > 0);
   const tested = done.filter(reachedTesting);
   // The board's own thresholds: R-EST-02's grace, and R-EFF-01's effort limit below.
   const grace = estimateGraceHours(dataset.rules) * HOUR;
   const limit = effortThreshold(dataset.rules);
-  const all: ScorecardValues = {
-    open_tickets: countValue(open.length),
-    in_progress: countValue(issues.filter((issue) => STATUS[issue.status].category === "indeterminate").length),
-    done_in_period: countValue(done.length),
-    estimated_before_start: rateValue(
-      started.filter((issue) => issue.estimateSetAt !== null && issue.estimateSetAt <= issue.startedAt! + grace).length,
-      started.length,
-    ),
-    time_logged: rateValue(done.filter((issue) => issue.timeSpentS > 0 || issue.aggregateTimeSpentS > 0).length, done.length),
-    within_estimate: rateValue(effort.filter((issue) => issue.effortRatio! < limit).length, effort.length),
-    stuck_now: rateValue(open.filter((issue) => hasOpenFinding(dataset, issue, "W-AGE-01")).length, open.length),
-    reopened: rateValue(done.filter((issue) => issue.reopenCount > 0).length, done.length),
-    skipped_stage: rateValue(done.filter((issue) => issue.skips.length > 0).length, done.length),
-    code_review: rateValue(tested.filter((issue) => !hasOpenOrResolved(dataset, issue, "R-FLOW-01")).length, tested.length),
-    open_findings_per_10: ratioValue(
-      open.reduce((sum, issue) => sum + openFindings(dataset, issue), 0),
-      open.length,
-    ),
+  const set = (key: ScorecardMeasureKey, base: readonly Issue[], counts: (issue: Issue) => boolean = () => true): MeasureSet => {
+    const rules = RULE_IDS[key];
+    const all: Issue[] = [];
+    const leftOut: { issue: Issue; ignore: IgnoreInfo }[] = [];
+    for (const issue of base) {
+      // An ignore of a measure's rules leaves the ticket out of it, judged neither way; of the ratio, only a whole ticket's.
+      const ignore = key === "open_findings_per_10" ? dataset.ignores.ticket(issue.key) : rules.length > 0 ? dataset.ignores.covers(issue.key, rules) : null;
+      if (ignore) leftOut.push({ issue, ignore });
+      else all.push(issue);
+    }
+    return { all, counted: all.filter(counts), leftOut };
   };
+  return {
+    open_tickets: set("open_tickets", open),
+    in_progress: set("in_progress", work.filter((issue) => STATUS[issue.status].category === "indeterminate")),
+    done_in_period: set("done_in_period", done),
+    estimated_before_start: set("estimated_before_start", started, (issue) => issue.estimateSetAt !== null && issue.estimateSetAt <= issue.startedAt! + grace),
+    time_logged: set("time_logged", done, (issue) => issue.timeSpentS > 0 || issue.aggregateTimeSpentS > 0),
+    within_estimate: set("within_estimate", effort, (issue) => issue.effortRatio! < limit),
+    stuck_now: set("stuck_now", open, (issue) => hasOpenFinding(dataset, issue, "W-AGE-01")),
+    reopened: set("reopened", done, (issue) => issue.reopenCount > 0),
+    skipped_stage: set("skipped_stage", done, (issue) => issue.skips.length > 0),
+    code_review: set("code_review", tested, (issue) => !hasOpenOrResolved(dataset, issue, "R-FLOW-01")),
+    open_findings_per_10: set("open_findings_per_10", open, (issue) => openFindings(dataset, issue) > 0),
+  };
+}
+
+/** Each figure as its set's size: a count, a rate of those counted, or the open findings per 10 open tickets. */
+function valuesFrom(dataset: Dataset, sets: MeasureSets, measures: readonly ScorecardMeasure[]): ScorecardValues {
+  const all = Object.fromEntries(
+    SCORECARD_MEASURES.map(({ key, kind }) => {
+      const { all: tickets, counted } = sets[key];
+      if (kind === "count") return [key, countValue(tickets.length)];
+      if (kind === "rate") return [key, rateValue(counted.length, tickets.length)];
+      return [key, ratioValue(tickets.reduce((sum, issue) => sum + openFindings(dataset, issue), 0), tickets.length)];
+    }),
+  ) as ScorecardValues;
   for (const measure of measures) if (!measure.measurable) all[measure.key] = { ...NOTHING };
   return all;
 }
 
+function valuesOf(dataset: Dataset, tickets: readonly Issue[], period: Period, measures: readonly ScorecardMeasure[]): ScorecardValues {
+  return valuesFrom(dataset, measureSets(dataset, tickets, period), measures);
+}
+
+/** The tickets a row's figures are worked out from: every ticket for the whole board, a person's tickets for them. */
+export function rowTickets(dataset: Dataset, personId: string | null): readonly Issue[] {
+  return personId === null ? dataset.world.issues : ticketsOf(dataset, personId);
+}
+
+/** The sets behind one row's figures over a period (the whole board's for null): what the proof lists. */
+export function rowSets(dataset: Dataset, days: ScorecardDays, personId: string | null): { period: Period; sets: MeasureSets } {
+  return creditMemo(dataset, `scorecard:sets:${days}:${personId ?? "board"}`, () => {
+    const period = periodOf(dataset, days);
+    return { period, sets: measureSets(dataset, rowTickets(dataset, personId), period) };
+  });
+}
+
 /** Any R-FLOW-01 breach on the ticket, open or resolved: the ticket reached testing without review either way. */
-function hasOpenOrResolved(dataset: Dataset, issue: Issue, ruleId: string): boolean {
+export function hasOpenOrResolved(dataset: Dataset, issue: Issue, ruleId: string): boolean {
   return (dataset.engine.byIssue.get(issue.key) ?? []).some((finding) => finding.rule.id === ruleId);
 }
 
@@ -236,48 +289,47 @@ export interface ScorecardSet {
   period: Period;
   measures: ScorecardMeasure[];
   board: { tickets: number; values: ScorecardValues };
-  /** Everyone on the board (ticket holders and members), by id. */
+  /** Everyone on the board (people with tickets and members), by id. */
   byId: ReadonlyMap<string, ScorecardPerson>;
-  /** The people who hold a ticket on the board now (its work, Epics left out), in the directory's order. */
-  holders: readonly ScorecardPerson[];
-  /** The work nobody holds, as Ask's rankings by a count say it after the */
-  unassigned: { tickets: number; values: ScorecardValues } | null;
+  /** The people with a ticket on the board (its work, Epics left out, that counts for them), in the directory's order. */
+  withTickets: readonly ScorecardPerson[];
+  /** The work that counts for no one, as Ask's rankings by a count say it after the people; null when there is none. */
+  noOne: { tickets: number; values: ScorecardValues } | null;
+  /** The board's credit setting, as the caveat words it. */
+  credit: CreditReading;
 }
 
-/** Every scorecard for one period, computed once per dataset. */
+/** Every scorecard for one period, computed once per dataset and credit setting. */
 export function scorecards(dataset: Dataset, days: ScorecardDays): ScorecardSet {
-  return memo(dataset, `scorecard:${days}`, () => {
+  return creditMemo(dataset, `scorecard:${days}`, () => {
     const period = periodOf(dataset, days);
     const measures = measuresFor(dataset, period);
     const issues = dataset.world.issues;
     // A person's tickets and the board's are its work, Epics left out, as GET /people counts them.
     const work = issues.filter(isWork);
     const board = { tickets: work.length, values: valuesOf(dataset, issues, period, measures) };
-    const byPerson = new Map<string, Issue[]>();
-    const nobody: Issue[] = [];
-    for (const issue of work) {
-      const person = personOf(issue);
-      if (person) byPerson.set(person.id, [...(byPerson.get(person.id) ?? []), issue]);
-      else nobody.push(issue);
-    }
+    const tickets = ticketsByPerson(dataset);
     const card = (person: Person): ScorecardPerson => {
-      const theirs = byPerson.get(person.id) ?? [];
+      const theirs = tickets.byPerson.get(person.id) ?? [];
       if (theirs.length === 0) {
-        // A member who holds none of the board's tickets (or only Epics): nothing to count, so nothing to compare.
+        // No ticket counts for them (a member, someone the setting does not name, or only Epics): nothing to compare.
         const values = Object.fromEntries(measures.map((measure) => [measure.key, { ...NOTHING }])) as ScorecardValues;
         return { person: { ...person }, tickets: 0, values };
       }
-      return { person: { ...person }, tickets: theirs.length, values: compared(measures, valuesOf(dataset, theirs, period, measures), board.values) };
+      const values = valuesOf(dataset, theirs, period, measures);
+      return { person: { ...person }, tickets: theirs.length, values: compared(measures, values, board.values) };
     };
     const everyone = directoryPeople(dataset).map(card);
-    const holderIds = new Set(workPeople(dataset).map((person) => person.id));
+    const ids = new Set(workPeople(dataset).map((person) => person.id));
+    const choice = creditChoice(dataset);
     return {
       period,
       measures,
       board,
       byId: new Map(everyone.map((row) => [row.person.id, row])),
-      holders: everyone.filter((row) => holderIds.has(row.person.id)).sort((a, b) => compareByFoldedName(a.person, b.person)),
-      unassigned: nobody.length > 0 ? { tickets: nobody.length, values: valuesOf(dataset, nobody, period, measures) } : null,
+      withTickets: everyone.filter((row) => ids.has(row.person.id)).sort((a, b) => compareByFoldedName(a.person, b.person)),
+      noOne: tickets.byNobody.length > 0 ? { tickets: tickets.byNobody.length, values: valuesOf(dataset, tickets.byNobody, period, measures) } : null,
+      credit: { source: choice.source, field: stepOneField(choice)?.name ?? null },
     };
   });
 }
@@ -300,14 +352,14 @@ export function scorecardView(dataset: Dataset, query: ScorecardQuery, compariso
     query.person.length > 0
       ? (asked as ScorecardPerson[]).sort((a, b) => compareByFoldedName(a.person, b.person))
       : comparison === "on"
-        ? [...set.holders]
+        ? [...set.withTickets]
         : [];
   return {
     found: true,
     body: {
       meta: meta(dataset),
       period: { days: set.period.days, from: iso(set.period.from), to: iso(set.period.to) },
-      basis: "current_assignee",
+      basis: "credit",
       comparison,
       measures: set.measures.map((measure) => ({ ...measure, rule_ids: [...measure.rule_ids] })),
       board: { tickets: set.board.tickets, values: structuredClone(set.board.values) },

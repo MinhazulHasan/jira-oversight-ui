@@ -600,7 +600,10 @@ function CardPopover({ person, days, board, mode, side, contentRef, getAnchor, g
           // A press on the name is the name's own (it closes the pinned card, or pins a hover card): the layer leaves it.
           if (onAnchor) event.preventDefault();
         }}
-        onFocusOutside={() => {
+        onFocusOutside={(event) => {
+          // A press on plain page text moves focus to the page itself before the card closes: that is not tabbing away.
+          const landed = event.target instanceof Element ? event.target : null;
+          if (landed && !landed.closest(FOCUSABLE)) return;
           last.current.tabbedAway = true;
         }}
         onPointerEnter={onHold}
@@ -751,7 +754,7 @@ function CardButton({
               onFocus?.(event);
               if (inRow) event.stopPropagation();
             }}
-            className={cn("cursor-pointer rounded-[4px] text-left outline-offset-2 select-text", className)}
+            className={cn("-my-0.5 cursor-pointer rounded-[4px] py-0.5 text-left outline-offset-2 select-text", className)}
           >
             {children}
           </button>

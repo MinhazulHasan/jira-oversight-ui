@@ -57,6 +57,7 @@ const FINDING: Finding = {
   threshold: "1.5×",
   evidence: [],
   warned_before: null,
+  ignore: null,
 };
 
 describe("the contract's schemas", () => {
@@ -246,11 +247,13 @@ describe("people in the contract", () => {
     const body = (people: unknown[]) => ({ meta: peopleSample.meta, people });
     expect(peopleSchema.safeParse(body([row, { ...row, person: null, tickets: 3, open_tickets: 1, open_breaches: 1, open_warnings: 0, tickets_with_findings: 1 }])).success).toBe(true);
     expect(peopleSchema.safeParse(body([])).success).toBe(true);
+    // Findings follow the assignee and tickets the credit setting: findings on more tickets than count for them, or on none that do.
+    expect(peopleSchema.safeParse(body([{ ...row, tickets: 4, open_tickets: 4 }])).success).toBe(true);
+    expect(peopleSchema.safeParse(body([{ ...row, tickets: 0, open_tickets: 0 }])).success).toBe(true);
     for (const broken of [
       { ...row, tickets: 0, open_tickets: 0, tickets_with_findings: 0, open_breaches: 0, open_warnings: 0 },
       { ...row, open_tickets: 41 },
       { ...row, tickets_with_findings: 11 },
-      { ...row, tickets: 4, open_tickets: 4 },
       { ...row, tickets_with_findings: 0 },
       { ...row, open_breaches: -1 },
     ]) {

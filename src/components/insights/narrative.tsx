@@ -48,7 +48,7 @@ function SentenceText({
             <Link
               key={index}
               href={`/issues/${part.issueKey}`}
-              className="mono text-ink underline decoration-rule-strong underline-offset-[3px] hover:text-cite hover:decoration-cite"
+              className="mono -my-0.5 inline-block py-0.5 text-ink underline decoration-rule-strong underline-offset-[3px] hover:text-cite hover:decoration-cite"
             >
               {part.text}
             </Link>

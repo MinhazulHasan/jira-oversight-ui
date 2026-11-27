@@ -3,10 +3,10 @@ import { noTicketsSentence, UNASSIGNED_LABEL, type FactCell, type FactColumnKind
 import { compareByFoldedName, findNames, foldText } from "@/lib/names";
 
 import { STATUS } from "../catalogue";
+import { ticketsOf } from "../credit";
 import type { Dataset } from "../dataset";
 import { matchingFindings } from "../findings";
-import { directoryPeople, peopleView } from "../people";
-import { personOf } from "../team";
+import { directoryPeople, peopleRows } from "../people";
 import { iso } from "../time";
 import { cite, listed, type Piece } from "./compose";
 import { asksForFewest, severityIn } from "./match";
@@ -28,7 +28,7 @@ const PLURAL = { breach: "breaches", warning: "warnings" } as const;
 const OTHER: Record<Severity, Severity> = { breach: "warning", warning: "breach" };
 
 /** The sentence every answer about findings by person ends with: whose findings are whose (the service's _FOLLOWS). */
-const FOLLOWS = "Findings follow the ticket's current assignee.";
+const FOLLOWS = "A person's findings are those on their tickets.";
 
 function queryFacts(dataset: Dataset, ref: string, sql: string, columns: Column[], rows: Row[], note: string, truncated = false): FactSet {
   return { ref, tool: "oversight_query", params: { sql }, columns, rows, truncated, as_of: iso(dataset.world.syncAt), note };
@@ -68,17 +68,16 @@ const RANKED_BY: Record<Ranked, string> = {
 /** The figures whose answers end saying whose findings are whose. */
 const ABOUT_FINDINGS: readonly Ranked[] = ["open_breaches", "open_warnings", "open_findings", "tickets_with_findings"];
 
+/** A person's tickets and findings, as the service's notes say them (its _THEIR_TICKETS and _FOLLOW). */
+const THEIR_TICKETS =
+  "a person's tickets, open or finished, are the board's work (Epics left out) that counts for them (the board's credit setting)";
+const FOLLOW = "a person's findings are those on their tickets, and a sprint finding is no one's";
+
 /** How the people view's rows read, as the service's oversight_people notes */
 function peopleNote(rankBy: Ranked, { fewest = false, mentioned = false, unassigned = false } = {}): string {
-  const whose = mentioned
-    ? "one row for each person asked about, by person id, who is assigned a ticket on this board now"
-    : "one row per person assigned a ticket on this board now";
-  const after = unassigned ? "; then one row for the tickets nobody holds (Unassigned), which is no one's and never ranked" : "";
-  return (
-    `${whose}, by ${RANKED_BY[rankBy]}, ${fewest ? "fewest" : "most"} first, ties by name${after}; a person's tickets are the board's work, ` +
-    "Epics left out, as the scorecard counts them; findings follow the ticket's current assignee: a person's findings are those on the tickets " +
-    "they hold now, and a sprint finding is no one's"
-  );
+  const whose = mentioned ? "one row for each person asked about, by person id, who has tickets on this board" : "one row per person with tickets on this board";
+  const after = unassigned ? "; then one row for the tickets that count for no one (Unassigned), never ranked" : "";
+  return `${whose}, by ${RANKED_BY[rankBy]}, ${fewest ? "fewest" : "most"} first, ties by name${after}; ${THEIR_TICKETS}, as the scorecard counts them; ${FOLLOW}`;
 }
 
 function personRow(row: PersonSummary): Row {
@@ -93,13 +92,18 @@ function personRow(row: PersonSummary): Row {
   };
 }
 
-function rowsOfPeople(dataset: Dataset): (PersonSummary & { person: Person })[] {
-  return peopleView(dataset).people.filter((row): row is PersonSummary & { person: Person } => row.person !== null);
+/** The people view's rows: a person's tickets and their findings both by whom each ticket counts for. */
+function peopleFigures(dataset: Dataset): PersonSummary[] {
+  return peopleRows(dataset, "credit");
 }
 
-/** The people view's row for the tickets nobody holds; null when every ticket has someone. */
+function rowsOfPeople(dataset: Dataset): (PersonSummary & { person: Person })[] {
+  return peopleFigures(dataset).filter((row): row is PersonSummary & { person: Person } => row.person !== null);
+}
+
+/** The people view's row for the tickets that count for no one; null when every ticket counts for someone. */
 function unassignedRow(dataset: Dataset): PersonSummary | null {
-  return peopleView(dataset).people.find((row) => row.person === null) ?? null;
+  return peopleFigures(dataset).find((row) => row.person === null) ?? null;
 }
 
 function peopleRanking(dataset: Dataset, ref: string, rankBy: Ranked, n: number, fewest: boolean, only: readonly string[] | null = null): FactSet {
@@ -110,7 +114,7 @@ function peopleRanking(dataset: Dataset, ref: string, rankBy: Ranked, n: number,
   const ranked = [...rowsOfPeople(dataset)]
     .filter((row) => only === null || only.includes(row.person.id))
     .sort((a, b) => sign * (value(b) - value(a)) || compareByFoldedName(a.person, b.person));
-  // The people asked about alone: the tickets nobody holds are no one asked about.
+  // The people asked about alone: the tickets that count for no one are no one asked about.
   const nobody = only === null ? unassignedRow(dataset) : null;
   const select = findings ? PEOPLE_SELECT.replace(" FROM people", ", open_breaches + open_warnings AS open_findings FROM people") : PEOPLE_SELECT;
   const where = only === null ? "person_id IS NOT NULL" : `person_id IN (${only.map((id) => `'${id}'`).join(", ")})`;
@@ -132,7 +136,7 @@ export function rankingFacts(dataset: Dataset, ref: string, severity: Severity, 
   return peopleRanking(dataset, ref, MEASURE[severity], n, fewest);
 }
 
-/** How many of a ranking's rows are people: the tickets nobody holds come after them, never among them. */
+/** How many of a ranking's rows are people: the tickets that count for no one come after them, never among them. */
 const peopleIn = (facts: FactSet) => facts.rows.filter((row) => row.person_id !== null).length;
 
 function unassignedPieces(facts: FactSet, column: Ranked): Piece[] {
@@ -177,7 +181,7 @@ export function boardPeopleFacts(dataset: Dataset, ref: string, holding: "any" |
     .map((row) => ({ person: row.person, tickets: row.tickets }))
     .sort((a, b) => compareByFoldedName(a.person, b.person));
   const held = new Set(holders.map((row) => row.person.id));
-  // A member who holds none of its tickets, or someone who holds only Epics (no work: G5).
+  // A member with none of its tickets, someone none of its work counts for, or someone with only Epics (no work: G5).
   const members = directoryPeople(dataset)
     .filter((person) => !held.has(person.id))
     .sort(compareByFoldedName)
@@ -193,10 +197,10 @@ export function boardPeopleFacts(dataset: Dataset, ref: string, holding: "any" |
     as_of: iso(dataset.world.syncAt),
     note:
       holding === "none"
-        ? `the members of this board (its last member fetch) who hold none of its tickets now, by name; ${members.length} in all`
-        : `everyone on this board, as the @ list shows them: the ${holders.length} ${holders.length === 1 ? "person" : "people"} assigned its tickets now ` +
-          `(tickets: the ones they hold, any status, Epics left out), then the ${members.length} ` +
-          `${members.length === 1 ? "member who holds" : "members who hold"} none, each by name; ${holders.length + members.length} in all`,
+        ? `the members of this board who have none of its tickets, by name; ${members.length} in all`
+        : `everyone on this board, as the @ list shows them: the ${holders.length} ${holders.length === 1 ? "person" : "people"} with its tickets ` +
+          `(tickets: the ones that count for them, any status, Epics left out), then the ${members.length} ` +
+          `${members.length === 1 ? "member who has" : "members who have"} none, each by name; ${holders.length + members.length} in all`,
   };
 }
 
@@ -220,23 +224,23 @@ export function boardPeoplePieces(facts: FactSet): Piece[] {
   const total: Piece = { text: String(names.length), fact: facts, row: -1, column: "row_count" };
   const joined = (list: readonly string[]) => listed(list.map((name) => [name]));
   if (facts.params.holding === "none") {
-    if (names.length === 0) return ["Everyone on this board holds at least one of its tickets."];
+    if (names.length === 0) return ["Everyone on this board has at least one of its tickets."];
     if (names.length > NAMES_IN_A_SENTENCE) return [total, " members of this board have no tickets on it; the facts list them by name."];
     return [noTicketsSentence(names)];
   }
   if (names.length > NAMES_IN_A_SENTENCE) {
-    return [total, " people are on this board: those assigned its tickets first, then its members who hold none; the facts list them by name."];
+    return [total, " people are on this board: those with its tickets first, then its members who have none; the facts list them by name."];
   }
   const who: Piece[] = [total, names.length === 1 ? " person is on this board" : " people are on this board"];
   if (none.length === 0) return [...who, ": ", ...joined(names), "."];
   if (holders.length === 0) {
-    return [...who, names.length === 1 ? ", a member who holds none of its tickets: " : ", all members who hold none of its tickets: ", ...joined(none), "."];
+    return [...who, names.length === 1 ? ", a member who has none of its tickets: " : ", all members who have none of its tickets: ", ...joined(none), "."];
   }
   return [
     ...who,
     ": ",
     ...joined(holders),
-    `, and ${none.length} ${none.length === 1 ? "member who holds" : "members who hold"} none of its tickets: `,
+    `, and ${none.length} ${none.length === 1 ? "member who has" : "members who have"} none of its tickets: `,
     ...joined(none),
     ".",
   ];
@@ -258,16 +262,19 @@ export function mentionedFacts(dataset: Dataset, ref: string, ids: readonly stri
   );
 }
 
-/** One person's open findings, newest first: issue findings on the tickets assigned to them now. */
+/** One person's open findings, newest first: issue findings on the tickets that count for them. */
 export function personFindingsFacts(dataset: Dataset, ref: string, personId: string, severity: Severity | null, n = 20): FactSet {
+  const keys = ticketsOf(dataset, personId).map((issue) => issue.key);
+  const theirs = new Set(keys);
   const findings = matchingFindings(
     dataset,
-    normalizeFindingsQuery({ person: [personId], state: "open", severity: severity ?? undefined, sort: "first_seen_at", order: "desc", page_size: 100 }),
-  );
+    normalizeFindingsQuery({ state: "open", severity: severity ?? undefined, sort: "first_seen_at", order: "desc", page_size: 100 }),
+  ).filter((finding) => finding.issue_key !== null && theirs.has(finding.issue_key));
+  const among = keys.length > 0 ? keys.map((key) => `'${key}'`).join(", ") : "NULL";
   return queryFacts(
     dataset,
     ref,
-    `SELECT finding_id, rule_id, rule_title, severity, issue_key, summary, epic_key, first_seen_at FROM findings WHERE assignee_id = '${personId}' AND state = 'open'${severity ? ` AND severity = '${severity}'` : ""} ORDER BY first_seen_at DESC LIMIT ${n}`,
+    `SELECT finding_id, rule_id, rule_title, severity, issue_key, summary, epic_key, first_seen_at FROM findings WHERE issue_key IN (${among}) AND state = 'open'${severity ? ` AND severity = '${severity}'` : ""} ORDER BY first_seen_at DESC LIMIT ${n}`,
     [
       { key: "finding_id", label: "Finding", kind: "text" },
       { key: "rule_id", label: "Rule", kind: "text" },
@@ -288,37 +295,42 @@ export function personFindingsFacts(dataset: Dataset, ref: string, personId: str
       epic_key: finding.epic_key,
       first_seen_at: finding.first_seen_at,
     })),
-    `open ${severity ? PLURAL[severity] : "findings"} on the tickets assigned to the person now, newest first`,
+    `open ${severity ? PLURAL[severity] : "findings"} on the tickets that count for the person (the board's credit setting), newest first`,
     findings.length > n,
   );
 }
 
-/** One person's tickets in progress (Epics left out), newest first. */
-export function inProgressFacts(dataset: Dataset, ref: string, personId: string, n = 50): FactSet {
-  const issues = dataset.world.issues
-    .filter((issue) => issue.type !== "Epic" && STATUS[issue.status].category === "indeterminate" && personOf(issue)?.id === personId)
+/** One person's tickets in progress (Epics left out), newest first: oversight_person_tickets, state in_progress. */
+export function inProgressFacts(dataset: Dataset, ref: string, person: Person, n = 50): FactSet {
+  const issues = ticketsOf(dataset, person.id)
+    .filter((issue) => issue.type !== "Epic" && STATUS[issue.status].category === "indeterminate")
     .sort((a, b) => b.createdAt - a.createdAt || b.num - a.num);
-  return queryFacts(
-    dataset,
+  return {
     ref,
-    `SELECT issue_key, summary, issue_type, status, epic_key FROM issues WHERE assignee_id = '${personId}' AND status_category = 'indeterminate' AND issue_type <> 'Epic' ORDER BY created DESC LIMIT ${n}`,
-    [
+    tool: "oversight_person_tickets",
+    params: { project: dataset.board.key, person: person.id, state: "in_progress", n },
+    columns: [
       { key: "issue_key", label: "Issue", kind: "issue_key" },
       { key: "summary", label: "Summary", kind: "text" },
       { key: "issue_type", label: "Type", kind: "text" },
       { key: "status", label: "Status", kind: "text" },
       { key: "epic_key", label: "Epic", kind: "issue_key" },
+      { key: "assignee_id", label: "Person id", kind: "text" },
+      { key: "assignee", label: "Counts for", kind: "text" },
     ],
-    issues.slice(0, n).map((issue) => ({
+    rows: issues.slice(0, n).map((issue) => ({
       issue_key: issue.key,
       summary: issue.summary,
       issue_type: issue.type,
       status: issue.status,
       epic_key: issue.epicKey,
+      assignee_id: person.id,
+      assignee: person.name,
     })),
-    "tickets assigned to the person now whose status is in progress; Epic issues left out (containers, not work)",
-    issues.length > n,
-  );
+    truncated: issues.length > n,
+    as_of: iso(dataset.world.syncAt),
+    note: `tickets in progress (status in progress, Epics left out) that count for this person (the board's credit setting), newest first; ${issues.length} in all`,
+  };
 }
 
 /* -------------------------------------------------------------- answers -- */
@@ -338,7 +350,7 @@ export function rankingAnswer(dataset: Dataset, question: string): ScriptResult 
   const people = peopleIn(facts);
   const unassigned = unassignedPieces(facts, measure);
   if (people === 0) {
-    return { outcome: "answered", facts: [facts], pieces: ["No one on this board holds a ticket now.", ...unassigned, ` ${FOLLOWS}`] };
+    return { outcome: "answered", facts: [facts], pieces: ["No one on this board has tickets.", ...unassigned, ` ${FOLLOWS}`] };
   }
   if (fewest) return { outcome: "answered", facts: [facts], pieces: [...fewestPieces(facts, measure, `open ${PLURAL[severity]}`), ...unassigned, ` ${FOLLOWS}`] };
   const lead = countAt(facts, 0, measure);
@@ -380,7 +392,7 @@ export function ticketsRankingAnswer(dataset: Dataset, column: Ranked, fewest = 
   const follows: Piece[] = ABOUT_FINDINGS.includes(column) ? [` ${FOLLOWS}`] : [];
   const unassigned = unassignedPieces(facts, column);
   const people = peopleIn(facts);
-  if (people === 0) return { outcome: "answered", facts: [facts], pieces: ["No one on this board holds a ticket now.", ...unassigned] };
+  if (people === 0) return { outcome: "answered", facts: [facts], pieces: ["No one on this board has tickets.", ...unassigned] };
   const words = FIGURE_WORDS[column][1];
   if (fewest) return { outcome: "answered", facts: [facts], pieces: [...fewestPieces(facts, column, words), ...unassigned, ...follows] };
   const top = countAt(facts, 0, column);
@@ -446,7 +458,7 @@ export function personFindingsAnswer(dataset: Dataset, question: string, person:
 
 /** "What is @X working on?": their tickets in progress now. */
 export function workingOnAnswer(dataset: Dataset, person: Person): ScriptResult {
-  const facts = inProgressFacts(dataset, "F1", person.id);
+  const facts = inProgressFacts(dataset, "F1", person);
   const count = facts.rows.length;
   if (count === 0) return { outcome: "answered", facts: [facts], pieces: [`${person.name} has no tickets in progress.`] };
   const keys = facts.rows.map((_, index) => [cite.key(facts, index, "issue_key")]);

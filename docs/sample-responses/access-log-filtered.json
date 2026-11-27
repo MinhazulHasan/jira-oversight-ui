@@ -93,11 +93,11 @@
       }
     },
     {
-      "id": "8720afa32365687a88379e5c9f493b43",
-      "at": "2026-10-31T13:18:00.000Z",
+      "id": "f2620c14bcf62028529245c5e0752da0",
+      "at": "2026-10-29T07:32:00.000Z",
       "viewer": {
-        "hash": "71951790dc5e96b3fd240f618540327a",
-        "name": "Priya Raman"
+        "hash": "local",
+        "name": "Local (sign-in off)"
       },
       "level": "people",
       "project": "DEMO",
@@ -151,7 +151,7 @@
       }
     }
   ],
-  "next_cursor": "1793452680000.8720afa32365687a88379e5c9f493b43",
+  "next_cursor": "1793259120000.f2620c14bcf62028529245c5e0752da0",
   "facets": {
     "viewers": [
       {

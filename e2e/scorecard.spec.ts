@@ -124,7 +124,7 @@ test.describe("with comparison on", () => {
       await expect(page.getByText("No one chosen yet")).toBeVisible();
 
       const carmen = card.people.find((row) => row.person.name === "Carmen Ruiz")!;
-      await rows.filter({ hasText: "Carmen Ruiz" }).click();
+      await rows.filter({ hasText: "Carmen Ruiz" }).click({ position: { x: 4, y: 4 } });
       await expect(page).toHaveURL(new RegExp(`person=${carmen.person.id}`));
       const scorecardRows = scorecardTable(page, "Carmen Ruiz").locator("tbody tr");
       await expect(scorecardRows).toHaveCount(card.measures.length);
@@ -135,7 +135,7 @@ test.describe("with comparison on", () => {
         await expect(scorecardRows.filter({ hasText: measure.label })).toContainText(`Not measurable. ${measure.reason}`);
       }
       await expect(page.locator("[data-scorecard]")).toContainText(
-        `Figures from Jira over the last ${card.period.days} days, next to the whole board, by each ticket's current assignee.`,
+        `Figures from Jira over the last ${card.period.days} days, next to the whole board. Tickets count for their `,
       );
       await expect(rows.filter({ hasText: "Carmen Ruiz" })).toHaveAttribute("aria-current", "true");
       expect(await axeBlocking(page)).toEqual([]);
@@ -147,7 +147,7 @@ test.describe("with comparison on", () => {
     const card = await scorecard(request);
     await page.goto("/people");
     await expect(table(page)).toBeVisible();
-    await table(page).getByRole("button", { name: "Open tickets stuck in a status" }).click();
+    await table(page).getByRole("button", { name: "Open tickets stuck in a status", exact: true }).click();
     await expect(page).toHaveURL(/sort=stuck_now/);
     const header = table(page).getByRole("columnheader", { name: /Open tickets stuck in a status/ });
     await expect(header).toHaveAttribute("aria-sort", "ascending");
@@ -162,7 +162,7 @@ test.describe("with comparison on", () => {
     const names = await table(page).locator("tbody tr[data-person] td[data-sticky] .truncate").allTextContents();
     expect(names).toEqual(expected);
     // Turned round: further first, and too few tickets still last.
-    await table(page).getByRole("button", { name: "Open tickets stuck in a status" }).click();
+    await table(page).getByRole("button", { name: "Open tickets stuck in a status", exact: true }).click();
     await expect(page).toHaveURL(/order=desc/);
     const turned = await table(page).locator("tbody tr[data-person] td[data-sticky] .truncate").allTextContents();
     const tooFew = card.people.filter((row) => !row.values.stuck_now.enough).map((row) => row.person.name);
@@ -178,7 +178,8 @@ test.describe("with comparison on", () => {
     for (const words of ["Closer to the process", "Further from the process", "Level with the board", "Too few tickets"]) {
       await expect(everyone.getByText(words, { exact: true }).first()).toBeVisible();
     }
-    await expect(everyone.getByText(/^Figures from Jira over the last 90 days, next to the whole board, by each ticket's current assignee\./)).toBeVisible();
+    // The note under the table says which way the figures count, as the board's credit setting has it.
+    await expect(everyone.getByText(/^Tickets count for their /)).toBeVisible();
     await expect(everyone).toContainText("Choose someone to open their scorecard");
     // The board's row is set apart from the people by a rule.
     const rule = await table(page).locator("tfoot td").first().evaluate((cell) => getComputedStyle(cell).boxShadow);
@@ -191,7 +192,7 @@ test.describe("with comparison on", () => {
 
   test("each measure's header says what it counts, on hover and on focus", async ({ page }) => {
     await page.goto("/people");
-    const button = table(page).getByRole("button", { name: "Reopened after Done" });
+    const button = table(page).getByRole("button", { name: "Reopened after Done", exact: true });
     await button.hover();
     await expect(page.getByRole("tooltip")).toContainText("Tickets done in the period that were reopened. Lower is closer to the process.");
     await page.mouse.move(0, 0);
@@ -217,7 +218,7 @@ test.describe("with comparison on", () => {
     const directory = (await (await request.get("/api/oversight/people/directory")).json()) as { people: { person: { id: string; name: string }; tickets: number }[] };
     const member = directory.people.find((entry) => entry.tickets === 0)!;
     await page.goto(`/people?person=${member.person.id}`);
-    await expect(page.getByText(`${member.person.name} holds no tickets on this board.`)).toBeVisible();
+    await expect(page.getByText(`${member.person.name} has no tickets on this board.`)).toBeVisible();
     expect(await axeBlocking(page)).toEqual([]);
   });
 
@@ -235,7 +236,7 @@ test.describe("with comparison on", () => {
         const row = card.people.find((candidate) => candidate.person.name === name)!;
         await page.goto(`/people?person=${row.person.id}`);
         await expectWholeName(page, name);
-        await expect(page.locator("[data-scorecard]")).toContainText(`${row.tickets} tickets assigned now, any status`);
+        await expect(page.locator("[data-scorecard]")).toContainText(`${row.tickets} tickets`);
       }
       expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
     });
@@ -259,7 +260,7 @@ test.describe("with comparison on", () => {
         const list = page.getByRole("list", { name: "Everyone with tickets" });
         await expect(list).toBeVisible();
         await expect(table(page)).toBeHidden();
-        await expect(list.getByRole("button")).toHaveCount(card.people.length);
+        await expect(list.locator("button:not([data-proof-cell])")).toHaveCount(card.people.length);
         await expect(page.getByRole("radio", { name: "Closer first" })).toBeChecked();
         const top = [...card.people].filter((row) => row.values.estimated_before_start.enough).sort((a, b) => b.values.estimated_before_start.value! - a.values.estimated_before_start.value!)[0];
         await expect(list.getByRole("button").first()).toContainText(top.person.name);

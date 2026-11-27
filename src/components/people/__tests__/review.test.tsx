@@ -9,12 +9,21 @@ import { FilterBar } from "@/components/findings/filter-bar";
 import { PeopleLevelProvider } from "@/components/shell/people-level";
 import { renderKit } from "@/components/ui/__tests__/kit";
 import { notify } from "@/lib/notify";
-import { peopleScorecardSchema, scorecardCaveat, type DirectoryEntry, type PeopleScorecard, type ScorecardValue } from "@/lib/api/schemas";
+import {
+  CODE_REVIEW_CAVEAT,
+  peopleCreditSchema,
+  peopleScorecardSchema,
+  type DirectoryEntry,
+  type PeopleScorecard,
+  type ScorecardValue,
+} from "@/lib/api/schemas";
 
 import findingsSample from "../../../../docs/sample-responses/findings.json";
+import creditJson from "../../../../docs/sample-responses/people-credit.json";
 import directoryJson from "../../../../docs/sample-responses/people-directory.json";
 import everyoneJson from "../../../../docs/sample-responses/people-scorecard.json";
 import { Comparison } from "../comparison";
+import { creditNote } from "../credit/model";
 import { PeopleView } from "../people-view";
 import { PersonPicker } from "../person-picker";
 import { Scorecard } from "../scorecard";
@@ -85,12 +94,13 @@ function partTimer(data: PeopleScorecard): PeopleScorecard {
 
 describe("the People page (the JO-11 review)", () => {
   it("gives the default view the caveat and the marks' key, and copy that fits the table and the list", async () => {
-    stub(() => ({ body: everyone }));
+    stub((url) => ({ body: url.pathname.endsWith("/people/credit") ? creditJson : everyone }));
     renderPage();
     await screen.findByRole("heading", { name: /Everyone with tickets/ });
     const codeReview = everyone.measures.find((measure) => measure.key === "code_review")!.measurable;
-    // No one chosen yet, so the only scorecard caveat on the page is the table's own.
-    expect(await screen.findByText(scorecardCaveat(90, codeReview))).toBeInTheDocument();
+    // No one chosen yet, so the only note on the page is the table's own: which way the figures count, and what they cannot show.
+    const note = `${creditNote(peopleCreditSchema.parse(creditJson))}${codeReview ? "" : CODE_REVIEW_CAVEAT}`;
+    expect(await screen.findByText(note)).toBeInTheDocument();
     // The key's words are on the page, not only in a tooltip.
     const key = screen.getAllByText("Closer to the process").find((element) => !element.closest(".sr-only") && !element.classList.contains("sr-only"));
     expect(key).toBeDefined();

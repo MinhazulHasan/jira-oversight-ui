@@ -128,9 +128,11 @@ describe("the scorecard schema", () => {
       comparisonOff: "Comparing people side by side is turned off. Ask about one person at a time instead.",
       decision: "The figures are above; the decision is yours.",
     });
-    expect(scorecardCaveat(90, true)).toBe("Figures from Jira over the last 90 days, next to the whole board, by each ticket's current assignee.");
-    expect(scorecardCaveat(180, false)).toBe(
-      "Figures from Jira over the last 180 days, next to the whole board, by each ticket's current assignee. Code review isn't recorded on this board, so reviewers' work doesn't show.",
+    expect(scorecardCaveat(90, true, { source: "auto", field: "Programmer" })).toBe(
+      "Figures from Jira over the last 90 days, next to the whole board. Tickets count for their Programmer in Jira, or their assignee where there is no Programmer.",
+    );
+    expect(scorecardCaveat(180, false, { source: "assignee", field: null })).toBe(
+      "Figures from Jira over the last 180 days, next to the whole board. Tickets count for their assignee; tickets without one count for no one. Code review isn't recorded on this board, so reviewers' work doesn't show.",
     );
     expect(API_ERROR_CODES).toContain("comparison_off");
   });

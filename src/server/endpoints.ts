@@ -4,21 +4,42 @@ import type { z } from "zod";
 
 import {
   accessLogSearchParams,
+  creditSearchParams,
   findingsSearchParams,
+  ignoredSearchParams,
   parseAccessLogQuery,
+  parseCreditQuery,
   parseFindingsQuery,
+  parseIgnoredQuery,
   parsePersonCardQuery,
+  parseProofQuery,
   parseScorecardQuery,
+  proofSearchParams,
   parseTrendQuery,
   scorecardSearchParams,
   trendSearchParams,
   type AccessLogQuery,
+  type CreditQuery,
   type FindingsQuery,
+  type IgnoredQuery,
   type ParamProblem,
   type PersonCardQuery,
+  type ProofQuery,
   type ScorecardQuery,
   type TrendQuery,
 } from "@/lib/api/params";
+import {
+  ignoredPageSchema,
+  ignorePreviewRequestSchema,
+  ignorePreviewSchema,
+  ignoreRequestSchema,
+  ignoreResultSchema,
+  restoreRequestSchema,
+  restoreResultSchema,
+  type IgnorePreviewRequest,
+  type IgnoreRequest,
+  type RestoreRequest,
+} from "@/lib/api/ignores";
 import {
   accessLogSchema,
   askRequestSchema,
@@ -33,7 +54,10 @@ import {
   ISSUE_KEY_PATTERN,
   issueTimelineSchema,
   overviewSchema,
+  peopleCreditSaveRequestSchema,
+  peopleCreditSchema,
   peopleDirectorySchema,
+  peopleProofSchema,
   peopleSchema,
   peopleScorecardSchema,
   PERSON_ID_PATTERN,
@@ -58,6 +82,7 @@ import {
   usageSchema,
   type ApiErrorCode,
   type AskLevel,
+  type PeopleCreditSaveRequest,
   type RuleDraftRequest,
   type RuleSettingsChange,
   type RuleSettingsPreviewRequest,
@@ -76,10 +101,22 @@ export type Route =
   /** Everyone on the board, members with no tickets too: what Ask's @ list offers. */
   | { name: "people_directory" }
   | { name: "people_scorecard"; query: ScorecardQuery; level: AskLevel }
+  /** The tickets behind one figure of the scorecard (a person's, or the board's): people level only. */
+  | { name: "scorecard_tickets"; query: ProofQuery; level: AskLevel }
   | { name: "person_card"; personId: string; query: PersonCardQuery; level: AskLevel }
+  /** Whom the board's tickets count for, and each choice's coverage over the period: people level only. */
+  | { name: "people_credit"; query: CreditQuery; level: AskLevel }
+  /** A change of it: the choice and the revision it was made against, the body checked and rebuilt. */
+  | { name: "people_credit_save"; body: PeopleCreditSaveRequest; level: AskLevel }
   | { name: "findings"; query: FindingsQuery }
   | { name: "finding"; findingId: string }
   | { name: "issue_timeline"; issueKey: string }
+  /** The board's standing ignores, a page at a time: people level only. */
+  | { name: "ignored"; query: IgnoredQuery; level: AskLevel }
+  /** What an ignore would do now, writing nothing; the ignore itself; and restoring ignores: the bodies checked and rebuilt. */
+  | { name: "ignore_preview"; body: IgnorePreviewRequest; level: AskLevel }
+  | { name: "ignore"; body: IgnoreRequest; level: AskLevel }
+  | { name: "restore"; body: RestoreRequest; level: AskLevel }
   /** A question, the people it mentions (person ids, checked), and the level it */
   | { name: "ask"; question: string; mentions: string[]; level: AskLevel }
   | { name: "insights" }
@@ -113,10 +150,17 @@ export const RESPONSE_SCHEMAS = {
   people: peopleSchema,
   people_directory: peopleDirectorySchema,
   people_scorecard: peopleScorecardSchema,
+  scorecard_tickets: peopleProofSchema,
   person_card: personCardSchema,
+  people_credit: peopleCreditSchema,
+  people_credit_save: peopleCreditSchema,
   findings: findingsPageSchema,
   finding: findingDetailSchema,
   issue_timeline: issueTimelineSchema,
+  ignored: ignoredPageSchema,
+  ignore_preview: ignorePreviewSchema,
+  ignore: ignoreResultSchema,
+  restore: restoreResultSchema,
   ask: askResponseSchema,
   insights: insightsSchema,
   trend: trendSchema,
@@ -251,6 +295,12 @@ export function resolveGet(segments: readonly string[], search: URLSearchParams)
     if (first === "rules" && second === "settings") return withoutQuery({ name: "rule_settings", level: "team" }, "rules/settings", search);
     // Board-scoped like the people themselves: the board comes from the top bar's pick, never from the query.
     if (first === "people" && second === "directory") return withoutQuery({ name: "people_directory" }, "people/directory", search);
+    if (first === "people" && second === "credit") {
+      // The period the coverage is counted over; the board comes from the top bar's pick, the level from the handler.
+      const parsed = parseCreditQuery(search);
+      if (!parsed.ok) return refuse(400, "bad_request", "The credit setting's parameters are not valid.", parsed.problems);
+      return accept({ name: "people_credit", query: parsed.value, level: "team" }, withQuery("people/credit", creditSearchParams(parsed.value)));
+    }
     if (first === "people" && second === "scorecard") {
       // The period and the people, checked and rebuilt; the board comes from the top bar's pick, never from the query.
       const parsed = parseScorecardQuery(search);
@@ -260,6 +310,12 @@ export function resolveGet(segments: readonly string[], search: URLSearchParams)
         { name: "people_scorecard", query: parsed.value, level: "team" },
         withQuery("people/scorecard", scorecardSearchParams(parsed.value)),
       );
+    }
+    if (first === "findings" && second === "ignored") {
+      // The board's standing ignores, checked and rebuilt; people level only, which the handler decides.
+      const parsed = parseIgnoredQuery(search);
+      if (!parsed.ok) return refuse(400, "bad_request", "The ignored list's parameters are not valid.", parsed.problems);
+      return accept({ name: "ignored", query: parsed.value, level: "team" }, withQuery("findings/ignored", ignoredSearchParams(parsed.value)));
     }
     if (first === "findings") {
       const findingId = second.toLowerCase();
@@ -271,6 +327,15 @@ export function resolveGet(segments: readonly string[], search: URLSearchParams)
     return notFound(segments);
   }
 
+  if (first === "people" && second === "scorecard" && third === "tickets") {
+    // The period, the measure and the person, checked and rebuilt; the board is the top bar's pick, the level the handler's.
+    const parsed = parseProofQuery(search);
+    if (!parsed.ok) return refuse(400, "bad_request", "The figure asked for is not one the People page shows.", parsed.problems);
+    return accept(
+      { name: "scorecard_tickets", query: parsed.value, level: "team" },
+      withQuery("people/scorecard/tickets", proofSearchParams(parsed.value)),
+    );
+  }
   if (first === "issues" && third === "timeline") {
     // Jira keys are upper case; "demo-12" means DEMO-12, as the backend reads it.
     const issueKey = second.toUpperCase();
@@ -386,6 +451,8 @@ export function resolvePost(segments: readonly string[], search: URLSearchParams
   if (segments.length === 1 && segments[0] === "refresh") return withoutQuery({ name: "refresh_start" }, "refresh", search);
   const settings = ruleSettingsPost(segments);
   if (settings) return resolveRuleSettings(settings, search, body);
+  const ignoring = ignorePost(segments);
+  if (ignoring) return resolveIgnore(ignoring, search, body);
   if (segments.length !== 1 || segments[0] !== "ask") return notFound(segments);
   if ([...search.keys()].length > 0) {
     return refuse(400, "bad_request", "/api/oversight/ask takes no query parameters.");
@@ -406,5 +473,73 @@ export function resolvePost(segments: readonly string[], search: URLSearchParams
   return accept({ name: "ask", question: parsed.data.question, mentions: parsed.data.mentions ?? [], level: "team" }, "ask");
 }
 
+/** Whether a PUT names the board's credit setting, the one endpoint that takes a PUT. */
+export const creditPut = (segments: readonly string[]) => segments.length === 2 && segments[0] === "people" && segments[1] === "credit";
+
+/** PUT is allowed for one endpoint: the board's credit setting, which writes only the service's own setting. */
+export function resolvePut(segments: readonly string[], search: URLSearchParams, body: unknown): Resolution {
+  if (!creditPut(segments)) return notFound(segments);
+  if ([...search.keys()].length > 0) return refuse(400, "bad_request", "/api/oversight/people/credit takes no query parameters on a change.");
+  const parsed = peopleCreditSaveRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return refuse(
+      422,
+      "credit_invalid",
+      CREDIT_BODY_FORM,
+      parsed.error.issues.slice(0, 12).map((issue) => ({ path: issue.path.map(String).join(".") || "(body)", message: issue.message })),
+    );
+  }
+  // Rebuilt from what was checked: the service never receives the browser's own body.
+  const { source, field, revision } = parsed.data;
+  return accept({ name: "people_credit_save", body: { source, field: source === "field" ? field : null, revision }, level: "team" }, "people/credit");
+}
+
+export const CREDIT_BODY_FORM =
+  'Send a JSON body of the form {"source": "auto" | "assignee" | "field", "field": a field\'s key or null, "revision": the setting\'s revision}.';
+
 export const ASK_BODY_FORM = 'Send a JSON body of the form {"question": "..."}, with "mentions" only as a list of person ids.';
 export const DRAFT_BODY_FORM = `Describe the rule in ${RULE_DRAFT_TEXT_MIN} to ${RULE_DRAFT_TEXT_MAX} characters, as a JSON body of the form {"text": "..."}.`;
+
+/* ---------------------------------------------------------------- ignore -- */
+
+/** The ignore POSTs: what an ignore would do, the ignore itself, and restoring ignores. */
+export type IgnorePost = "ignore_preview" | "ignore" | "restore";
+
+export function ignorePost(segments: readonly string[]): IgnorePost | null {
+  if (segments[0] !== "findings") return null;
+  if (segments.length === 2) return segments[1] === "ignore" ? "ignore" : segments[1] === "restore" ? "restore" : null;
+  return segments.length === 3 && segments[1] === "ignore" && segments[2] === "preview" ? "ignore_preview" : null;
+}
+
+const IGNORE_UPSTREAM: Readonly<Record<IgnorePost, string>> = {
+  ignore_preview: "findings/ignore/preview",
+  ignore: "findings/ignore",
+  restore: "findings/restore",
+};
+
+export const IGNORE_BODY_FORM: Readonly<Record<IgnorePost, string>> = {
+  ignore_preview: 'Send a JSON body of the form {"target": {"finding_ids" | "issue_keys" | "query": ...}, "scope": "finding" | "ticket"}.',
+  ignore: 'Send a JSON body of the form {"target": {"finding_ids" | "issue_keys" | "query": ...}, "scope": "finding" | "ticket", "reason": "..." or null}.',
+  restore: 'Send a JSON body of the form {"ignore_ids": [...]}.',
+};
+
+function resolveIgnore(name: IgnorePost, search: URLSearchParams, body: unknown): Resolution {
+  const upstream = IGNORE_UPSTREAM[name];
+  if ([...search.keys()].length > 0) return refuse(400, "bad_request", `/api/oversight/${upstream} takes no query parameters.`);
+  const problems = (issues: readonly { path: readonly PropertyKey[]; message: string }[]) =>
+    issues.slice(0, 24).map((issue) => ({ path: issue.path.map(String).join(".") || "(body)", message: issue.message }));
+  // Checked and rebuilt: the service is sent what this route checked, never the browser's own body.
+  if (name === "restore") {
+    const parsed = restoreRequestSchema.safeParse(body);
+    if (!parsed.success) return refuse(400, "bad_request", IGNORE_BODY_FORM.restore, problems(parsed.error.issues));
+    return accept({ name, body: parsed.data, level: "team" }, upstream);
+  }
+  if (name === "ignore") {
+    const parsed = ignoreRequestSchema.safeParse(body);
+    if (!parsed.success) return refuse(400, "bad_request", IGNORE_BODY_FORM.ignore, problems(parsed.error.issues));
+    return accept({ name, body: parsed.data, level: "team" }, upstream);
+  }
+  const parsed = ignorePreviewRequestSchema.safeParse(body);
+  if (!parsed.success) return refuse(400, "bad_request", IGNORE_BODY_FORM.ignore_preview, problems(parsed.error.issues));
+  return accept({ name, body: parsed.data, level: "team" }, upstream);
+}

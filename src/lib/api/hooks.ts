@@ -23,7 +23,9 @@ import {
   getIssueTimeline,
   getOverview,
   getPeople,
+  getPeopleCredit,
   getPeopleDirectory,
+  getPeopleProof,
   getPeopleScorecard,
   getPersonCard,
   getPortfolio,
@@ -38,19 +40,26 @@ import {
   postRuleDraft,
   postRuleSettings,
   postRuleSettingsPreview,
+  putPeopleCredit,
 } from "./client";
 import {
   normalizeAccessLogQuery,
+  normalizeCreditQuery,
   normalizeFindingsQuery,
   normalizePersonCardQuery,
+  normalizeProofQuery,
   normalizeScorecardQuery,
   normalizeTrendQuery,
   type AccessLogQuery,
   type AccessLogQueryInput,
+  type CreditQuery,
+  type CreditQueryInput,
   type FindingsQuery,
   type FindingsQueryInput,
   type PersonCardQuery,
   type PersonCardQueryInput,
+  type ProofQuery,
+  type ProofQueryInput,
   type ScorecardQuery,
   type ScorecardQueryInput,
   type TrendQuery,
@@ -70,7 +79,10 @@ import {
   type IssueTimeline,
   type Overview,
   type People,
+  type PeopleCredit,
+  type PeopleCreditSaveRequest,
   type PeopleDirectory,
+  type PeopleProof,
   type PeopleScorecard,
   type PersonCard,
   type Portfolio,
@@ -137,6 +149,10 @@ export const oversightKeys = {
   peopleDirectory: () => [...oversightKeys.people(), "directory"] as const,
   peopleScorecard: (query: ScorecardQuery) => [...oversightKeys.people(), "scorecard", query.days, ...query.person] as const,
   personCard: (personId: string, query: PersonCardQuery) => [...oversightKeys.people(), "card", personId, query.days, query.board ?? null] as const,
+  /** Whom the board's tickets count for: under the people, whose figures it decides. */
+  peopleCredit: (query: CreditQuery) => [...oversightKeys.people(), "credit", query.days] as const,
+  /** The tickets behind one figure: under the people, so whatever moves their figures moves these too. */
+  peopleProof: (query: ProofQuery) => [...oversightKeys.people(), "proof", query.days, query.measure, query.person ?? "board"] as const,
   findings: () => [...oversightKeys.all, "findings"] as const,
   findingsList: (query: FindingsQuery) => [...oversightKeys.findings(), "list", query] as const,
   finding: (findingId: string) => [...oversightKeys.findings(), "detail", findingId] as const,
@@ -232,6 +248,46 @@ export function usePeopleScorecard(
     // Another period for the same people keeps the figures on screen; other people never stand in for these.
     placeholderData: (previous, previousQuery) =>
       previousQuery && samePeople(previousQuery.queryKey, key) ? previous : undefined,
+  });
+}
+
+/** The tickets behind one figure (people level only); idle without a figure. Recorded by the service, so never read again on its own. */
+export function usePeopleProof(input: ProofQueryInput | null, { enabled = true }: { enabled?: boolean } = {}): UseQueryResult<PeopleProof, ApiError> {
+  const query = input ? normalizeProofQuery(input) : null;
+  return useQuery({
+    queryKey: query ? oversightKeys.peopleProof(query) : [...oversightKeys.people(), "proof", null],
+    queryFn: ({ signal }) => getPeopleProof(query!, { signal }),
+    staleTime: MINUTE,
+    ...RECORDED_READ,
+    enabled: enabled && query !== null,
+  });
+}
+
+/** Whom the board's tickets count for, and each choice's coverage over the period (people level only). */
+export function usePeopleCredit(input: CreditQueryInput = {}, { enabled = true }: { enabled?: boolean } = {}): UseQueryResult<PeopleCredit, ApiError> {
+  const query = normalizeCreditQuery(input);
+  return useQuery({
+    queryKey: oversightKeys.peopleCredit(query),
+    queryFn: ({ signal }) => getPeopleCredit(query, { signal }),
+    staleTime: MINUTE,
+    enabled,
+    // Another period keeps the choice on screen while its coverage loads.
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** A change of the board's credit setting: every figure that follows it is read again at once. Never retried: the revision would be stale. */
+export function useSavePeopleCredit(): UseMutationResult<PeopleCredit, ApiError, PeopleCreditSaveRequest> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: [...oversightKeys.people(), "credit", "save"],
+    mutationFn: (body: PeopleCreditSaveRequest) => putPeopleCredit(body),
+    retry: false,
+    onSuccess: (credit) => {
+      queryClient.setQueryData(oversightKeys.peopleCredit({ days: credit.period.days }), credit);
+      // Returned, so the save settles once the figures are read again.
+      return queryClient.invalidateQueries({ queryKey: oversightKeys.people() });
+    },
   });
 }
 

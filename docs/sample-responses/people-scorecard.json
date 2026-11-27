@@ -15,7 +15,7 @@
     "from": "2026-08-06T14:28:00.000Z",
     "to": "2026-11-04T14:28:00.000Z"
   },
-  "basis": "current_assignee",
+  "basis": "credit",
   "comparison": "on",
   "measures": [
     {

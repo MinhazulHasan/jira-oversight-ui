@@ -316,8 +316,8 @@ describe("G5: one meaning of open tickets", () => {
     const set = scorecards(dataset, 90);
     const ranked = ask("Who holds the most open tickets?").facts[0].rows;
     const backlog = ask("Who has the biggest backlog?").facts[0].rows;
-    expect(rows.size).toBe(set.holders.length);
-    for (const person of set.holders) {
+    expect(rows.size).toBe(set.withTickets.length);
+    for (const person of set.withTickets) {
       const id = person.person.id;
       const open = person.values.open_tickets.value;
       expect([rows.get(id)!.tickets, directory.get(id)]).toEqual([person.tickets, person.tickets]);
@@ -356,13 +356,13 @@ describe("G5: one meaning of open tickets", () => {
       expect(body.answer!.indexOf(String(leader))).toBeLessThan(body.answer!.indexOf("Unassigned"));
     }
     expect(byPeople.facts[0].note).toContain(
-      "ties by name; then one row for the tickets nobody holds (Unassigned), which is no one's and never ranked; a person's tickets are the board's work, Epics left out",
+      "ties by name; then one row for the tickets that count for no one (Unassigned), never ranked; a person's tickets, open or finished, are the board's work (Epics left out) that counts for them (the board's credit setting)",
     );
   });
 
-  it("says the work nobody holds after a ranking by breaches, then whose findings are whose", () => {
+  it("says the work that counts for no one after a ranking by breaches, then whose findings are whose", () => {
     const response = ask("Who has the most open breaches?");
-    expect(response.answer).toMatch(/\. Unassigned: \d+ open breach(?:es)?\. Findings follow the ticket's current assignee\.$/);
+    expect(response.answer).toMatch(/\. Unassigned: \d+ open breach(?:es)?\. A person's findings are those on their tickets\.$/);
     expect(response.facts[0].rows.at(-1)).toMatchObject({ person_id: null, name: "Unassigned" });
   });
 
@@ -370,24 +370,25 @@ describe("G5: one meaning of open tickets", () => {
     const work = dataset.world.issues.filter((issue) => issue.type !== "Epic");
     expect(scorecards(dataset, 90).board.tickets).toBe(work.length);
     expect(peopleView(dataset).people.reduce((sum, row) => sum + row.tickets, 0)).toBe(work.length);
-    expect(workPeople(dataset).length).toBe(scorecards(dataset, 90).holders.length);
+    expect(workPeople(dataset).length).toBe(scorecards(dataset, 90).withTickets.length);
   });
 });
 
 /* ------------------------------------------------ G8, G9, G11 -- */
 
 describe("G8: who is on this board, each name once", () => {
-  it("lists the holders, then how many members hold none, and who", () => {
+  it("lists the people with tickets, then how many members have none, and who", () => {
     const response = ask("Who is on this board?");
     const facts = response.facts[0];
     const holders = facts.rows.filter((row) => row.tickets !== 0).map((row) => String(row.name));
     const members = facts.rows.filter((row) => row.tickets === 0).map((row) => String(row.name));
     expect(members.length).toBeGreaterThan(0);
     for (const name of [...holders, ...members]) expect(response.answer!.split(name).length - 1, name).toBe(1);
-    expect(response.answer).toContain(`, and ${members.length} ${members.length === 1 ? "member who holds" : "members who hold"} none of its tickets: `);
+    expect(response.answer).toContain(`, and ${members.length} ${members.length === 1 ? "member who has" : "members who have"} none of its tickets: `);
     expect(facts.note).toBe(
-      `everyone on this board, as the @ list shows them: the ${holders.length} people assigned its tickets now (tickets: the ones they hold, any status, ` +
-        `Epics left out), then the ${members.length} ${members.length === 1 ? "member who holds" : "members who hold"} none, each by name; ${facts.rows.length} in all`,
+      `everyone on this board, as the @ list shows them: the ${holders.length} people with its tickets (tickets: the ones that count for them, any status, ` +
+        `Epics left out), then the ${members.length} ${members.length === 1 ? "member who has" : "members who have"} none, ` +
+        `each by name; ${facts.rows.length} in all`,
     );
   });
 });
@@ -398,7 +399,8 @@ describe("G9: the comparison's notes say what each column means", () => {
     expect(overall.params.measure).toBe("overall");
     expect(overall.note).not.toMatch(/is Open findings|per 10 Open/);
     expect(overall.note!.endsWith(
-      "; by each ticket's current assignee, Epics left out; the closer, further and level counts are the measures on which the person's figure stands " +
+      "; every ticket, open or finished, by whom it counts for (the board's credit setting: a people field such as Programmer, the assignee, or " +
+        "Automatic: Programmer where it is filled, otherwise the assignee; a ticket without one counts for no one), Epics left out; the closer, further and level counts are the measures on which the person's figure stands " +
         "closer to the process than the board's, further from it, or level with it (within 5 points, 0.5 for the ratio); measures compared is their sum; " +
         "too few tickets counts the measures where either side rests on fewer than 5 tickets; open findings per 10 open tickets is the open breaches and " +
         "warnings on the person's open tickets for every 10 of those tickets, compared only when it rests on enough tickets",
@@ -410,8 +412,8 @@ describe("G9: the comparison's notes say what each column means", () => {
         for (const label of labels) expect(fact.note, `${question}: ${label}`).not.toMatch(new RegExp(`(?<=[a-z,;] )${label}\\b`));
       }
     }
-    expect(ask("Who reopens the most work?").facts[0].note).toMatch(/^everyone who holds a ticket, by reopened after Done over the last 90 days \(/);
-    expect(ask("Who has the biggest backlog?").facts[0].note).toMatch(/^everyone who holds a ticket, by open tickets now, most first, ties by name, then the tickets nobody holds/);
+    expect(ask("Who reopens the most work?").facts[0].note).toMatch(/^everyone with tickets, by reopened after Done over the last 90 days \(/);
+    expect(ask("Who has the biggest backlog?").facts[0].note).toMatch(/^everyone with tickets, by open tickets now, most first, ties by name, then the tickets that count for no one/);
   });
 });
 
@@ -422,7 +424,7 @@ describe("G11: one truth per board", () => {
     expect(measure("skipped_stage")).toMatchObject({ measurable: true, reason: null });
     expect(measure("code_review").measurable).toBe(false);
     expect(set.board.values.skipped_stage.denominator).toBeGreaterThan(0);
-    const one = ask("How is @Ada Brooks doing?", [set.holders.find((row) => row.person.name === "Ada Brooks")!.person.id]);
+    const one = ask("How is @Ada Brooks doing?", [set.withTickets.find((row) => row.person.name === "Ada Brooks")!.person.id]);
     expect(one.answer).toContain("Not measurable on this board: Code review recorded.");
     expect(one.answer).not.toContain("Not measurable on this board: Skipped a stage");
     // As asked: the most skipped, highest first.

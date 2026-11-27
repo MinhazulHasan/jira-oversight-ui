@@ -123,7 +123,7 @@ function qaId(dataset: Dataset, question: string, options: AskOptions): string {
 
 const declined = (message: string, suggestions: readonly string[]): ScriptResult => ({ outcome: "not_understood", message, suggestions: [...suggestions] });
 
-/** Everyone the question mentions is on the board and holds none of its tickets: said in code, nothing planned. */
+/** Everyone the question mentions is on the board and has none of its tickets: said in code, nothing planned. */
 interface NoTickets {
   outcome: "no_tickets";
   people: readonly Person[];
@@ -132,7 +132,7 @@ interface NoTickets {
 /** The people a question names (all on the board): picked with @, then typed in */
 interface Mentioned {
   all: readonly Person[];
-  holding: readonly Person[];
+  withTickets: readonly Person[];
   without: readonly Person[];
   ambiguous: readonly string[];
   ambiguousFirst: { first: string; names: readonly string[] } | null;
@@ -358,10 +358,10 @@ function result(dataset: Dataset, question: string, options: AskOptions, mention
   if (mentioned.ambiguousFirst) {
     return declined(ambiguousFirstNameMessage(mentioned.ambiguousFirst.first, mentioned.ambiguousFirst.names), PEOPLE_SUGGESTIONS);
   }
-  // Everyone mentioned is a member with no tickets: nothing to plan or ask; the sentence says so.
-  if (mentioned.all.length > 0 && mentioned.holding.length === 0) return { outcome: "no_tickets", people: mentioned.without };
-  // Otherwise the question is answered about the people who hold tickets; the rest get a paragraph of their own.
-  return peopleResult(dataset, question, mentioned.holding, options.comparison ?? "on");
+  // Everyone mentioned has no tickets: nothing to plan or ask; the sentence says so.
+  if (mentioned.all.length > 0 && mentioned.withTickets.length === 0) return { outcome: "no_tickets", people: mentioned.without };
+  // Otherwise the question is answered about the people with tickets; the rest get a paragraph of their own.
+  return peopleResult(dataset, question, mentioned.withTickets, options.comparison ?? "on");
 }
 
 export function askSample(dataset: Dataset, question: string, latencyMs: number, options: AskOptions = { level: "team", mentions: [] }): AskResponse {
@@ -379,7 +379,7 @@ export function askSample(dataset: Dataset, question: string, latencyMs: number,
   };
   const empty = { answer: null, citations: [], facts: [], plan: [], missing_evidence: [], message: null, suggestions: [], people: [] };
   const board = directoryPeople(dataset);
-  const holders = new Set(workPeople(dataset).map((person) => person.id));
+  const withTickets = new Set(workPeople(dataset).map((person) => person.id));
   const found = options.mentions.map((id) => board.find((person) => person.id === id));
   // Null when anyone mentioned is not on the board at all.
   const picked = found.every((person): person is Person => person !== undefined) ? found : null;
@@ -388,12 +388,12 @@ export function askSample(dataset: Dataset, question: string, latencyMs: number,
   const all = picked && [...picked, ...typed.people.filter((person) => !picked.some((other) => other.id === person.id))];
   const split = (people: readonly Person[]) => ({
     all: people,
-    holding: people.filter((person) => holders.has(person.id)),
-    without: people.filter((person) => !holders.has(person.id)),
+    withTickets: people.filter((person) => withTickets.has(person.id)),
+    without: people.filter((person) => !withTickets.has(person.id)),
   });
   let mentioned: Mentioned | null = all && { ...split(all), ambiguous: typed.ambiguous, ambiguousFirst: typed.ambiguousFirst };
   let outcome = result(dataset, asked, options, mentioned);
-  const aboutPeople = (mentioned?.holding.length ?? 0) > 0 || asksAboutPeopleAtPeopleLevel(asked) || namesSomeone(asked, dataset);
+  const aboutPeople = (mentioned?.withTickets.length ?? 0) > 0 || asksAboutPeopleAtPeopleLevel(asked) || namesSomeone(asked, dataset);
   const unplaced = (answer: ScriptResult | NoTickets) =>
     answer.outcome === "not_understood" &&
     (UNPLACED.includes(answer.message) || (answer.message === ASK_DECLINES.comparisonOff && judging(asked, aboutPeople) === null));
@@ -416,11 +416,11 @@ export function askSample(dataset: Dataset, question: string, latencyMs: number,
     if (unknown !== null) {
       outcome = declined(noOneCalledMessage(unknown), PEOPLE_SUGGESTIONS);
     } else {
-      const fallback = lastResort(dataset, asked, mentioned.holding, options.comparison ?? "on");
+      const fallback = lastResort(dataset, asked, mentioned.withTickets, options.comparison ?? "on");
       if (fallback !== null) outcome = fallback;
     }
   }
-  // The members mentioned who hold no tickets, when others mentioned do: the answer about the others ends with them.
+  // The people mentioned who have no tickets, when others mentioned do: the answer about the others ends with them.
   const rest =
     outcome.outcome !== "no_tickets" && mentioned && mentioned.without.length > 0 && options.level === "people"
       ? `\n\n${noTicketsSentence(mentioned.without.map((person) => person.name))}`

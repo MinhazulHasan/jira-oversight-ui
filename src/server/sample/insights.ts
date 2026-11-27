@@ -178,7 +178,8 @@ function risingRules(dataset: Dataset): Draft[] {
     .filter((rule) => missingFor(rule.catalogue).length === 0 && (rule.custom === null || rule.custom.createdAt <= now - 2 * WEEK))
     .map((rule) => (rule.custom ? rule.def : rule.catalogue));
   return rules.flatMap((rule) => {
-    const findings = dataset.engine.findings.filter((finding) => finding.rule.id === rule.id);
+    // An ignored finding never counts as new.
+    const findings = dataset.engine.findings.filter((finding) => finding.rule.id === rule.id && finding.resolvedWhy !== "ignored");
     const thisWeek = findings.filter((finding) => inWeekEnding(finding.firstSeenAt, now));
     const lastWeek = findings.filter((finding) => inLastWeek(finding.firstSeenAt, now));
     if (thisWeek.length <= lastWeek.length) return [];

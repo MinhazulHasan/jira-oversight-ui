@@ -63,7 +63,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "b6f1273dfe417f2c0eb539e695278afc",
         "warned_at": "2026-06-29T12:59:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "20920af505d2b131f56c82265b9631d7",
@@ -113,7 +114,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "4fbc2b571071f0e212ee97c3d9035300",
@@ -167,7 +169,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "71bbfb7f43af0762b0571175a7f10076",
         "warned_at": "2026-07-17T12:29:00.000Z"
-      }
+      },
+      "ignore": null
     },
     {
       "finding_id": "ea30592e231fe5a0604009dc2d5498fa",
@@ -217,7 +220,8 @@
           "changelog_id": null
         }
       ],
-      "warned_before": null
+      "warned_before": null,
+      "ignore": null
     },
     {
       "finding_id": "52bacd9b3bc8e47054c4d21e2d31bd2c",
@@ -271,7 +275,8 @@
         "warning_rule_id": "W-EST-01",
         "warning_finding_id": "f848b558a67c9738a4f1b48fca180cbe",
         "warned_at": "2026-07-03T16:29:00.000Z"
-      }
+      },
+      "ignore": null
     }
   ],
   "total": 73,
@@ -495,6 +500,11 @@
         "value": "resolved",
         "label": "Resolved",
         "count": 23
+      },
+      {
+        "value": "ignored",
+        "label": "Ignored",
+        "count": 0
       }
     ]
   }

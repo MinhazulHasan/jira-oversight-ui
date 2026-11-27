@@ -188,7 +188,7 @@ export function comparisonFromFacts(fact: FactSet, resolve: (id: string) => Pers
   for (const [index, row] of parsed.data.entries()) {
     if (!row.person_id) {
       const value = { ...valueOf(row), value: measure ? (row.value ?? null) : (row.open_findings_per_10 ?? null), vs_board: null };
-      // The whole board's row is the last with no person; a count's ranking has the work nobody holds before it.
+      // The whole board's row is the last with no person; a count's ranking has the work that counts for no one before it.
       if (index === lastNobody) board = value;
       else if (row.name === UNASSIGNED_LABEL && measure?.kind === "count") unassigned = value;
       continue;

@@ -116,7 +116,7 @@ function CardLink({ href, board, onLeave, here, className, title, children }: Ca
 
 /* -------------------------------------------------------------- pieces -- */
 
-/** The plain line under the name: "Holds 13 open tickets on Demo project", "Member of Demo project · no tickets". */
+/** The plain line under the name: "13 open tickets on Demo project", "Member of Demo project · no tickets". */
 function HeaderLineText({ card, failed }: { card: PersonCard | undefined; failed: boolean }) {
   const locale = useFigureLocale();
   if (!card) {
@@ -587,7 +587,7 @@ function Actions({ card, error, person, days, board, onLeave, layout }: ActionsP
       )}
       {divider}
       {closed || member ? (
-        // A member who holds none of the board's tickets owns no finding: Findings would be an empty page.
+        // No ticket counts for them here, so the card counts no findings to open.
         <span aria-disabled="true" title={closed ?? "No tickets on this board, so no findings"} className={cn(item, shut)}>
           Open findings
         </span>

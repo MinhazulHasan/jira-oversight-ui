@@ -19,7 +19,7 @@ import { Timestamp } from "@/components/ui/timestamp";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useFigureLocale } from "@/components/ui/use-figures";
 import { getAccessLog } from "@/lib/api/client";
-import { useAccessLog, useAccessLogRefresh, type ApiError } from "@/lib/api/hooks";
+import { useAccessLog, useAccessLogRefresh, useProjects, type ApiError } from "@/lib/api/hooks";
 import {
   ACCESS_ACTION_LABELS,
   ACCESS_ACTIONS,
@@ -232,6 +232,9 @@ const PILL = "pressable inline-flex h-6 max-w-[12rem] min-w-0 items-center round
 
 function SubjectPill({ person, board, onPick }: { person: Person; board: string | null; onPick: (person: Person) => void }) {
   const hintId = useId();
+  // A board the service does not hold has no picture to read: initials, and no request that would fail.
+  const boards = useProjects().data?.projects;
+  const pictured = board === null || (boards?.some((candidate) => candidate.key === board) ?? false) ? person : { ...person, avatar: null };
   const former = person.name === FORMER_MEMBER && person.avatar === null;
   const hint = `Show only reads of ${person.name}'s figures`;
   if (former) {
@@ -247,7 +250,7 @@ function SubjectPill({ person, board, onPick }: { person: Person; board: string 
   }
   return (
     <>
-      <PersonCardPill person={person} board={board} className={PILL} picture={<PersonAvatar person={person} board={board} />}>
+      <PersonCardPill person={person} board={board} className={PILL} picture={<PersonAvatar person={pictured} board={board} />}>
         <button
           type="button"
           onClick={() => onPick(person)}

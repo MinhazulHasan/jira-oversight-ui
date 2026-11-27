@@ -26,7 +26,10 @@ serves, and what the interface does with it. Written for the Python team: implem
   audit rows; (JO-15) a board's rule settings, previewed (`/rules/settings/preview`, which writes nothing) and
   saved (`/rules/settings`, which writes only the service's own settings tables and re-runs the rules); (JO-20) an
   AI draft of a rule (`/rules/settings/draft`, which writes only its model calls' audit rows); and (JO-18)
-  `/refresh`, which syncs one board into the service's snapshot, reading Jira only. Nothing here can change Jira.
+  `/refresh`, which syncs one board into the service's snapshot, reading Jira only; and one `PUT`, a board's credit
+  setting (`/people/credit`, 4.29, which writes only the service's own setting). Three more `POST`s
+  set findings aside (4.26, 4.27): an ignore's preview, which writes nothing, and the ignore and the restore, which
+  write only the service's own ignores and resolve or re-check the board's findings. Nothing here can change Jira.
 - **JSON, UTF-8**, with `Cache-Control: no-store`. Every field the contract names is always present: a
   value that is unknown or does not apply is `null`, never left out. Fields the contract does not name are
   ignored (the interface strips them before they reach a page), so adding one is safe and removing one is not.
@@ -39,6 +42,10 @@ serves, and what the interface does with it. Written for the Python team: implem
 | GET | `/overview` | Headline figures, hot spots, findings by rule, coverage, trend cards, where work sits, the latest briefing's first lines |
 | GET | `/findings` | One page of findings, filtered and sorted, with facet counts |
 | GET | `/findings/{finding_id}` | One finding with its issue's status timeline |
+| GET | `/findings/ignored` | People level only: the board's standing ignores, a page at a time (4.28) |
+| POST | `/findings/ignore/preview` | People level only: what ignoring findings would do now, writing nothing (4.26) |
+| POST | `/findings/ignore` | People level only: ignores findings, one rule on a ticket or every rule on it, without changing a rule (4.26) |
+| POST | `/findings/restore` | People level only: removes ignores, then re-checks the board's findings (4.27) |
 | GET | `/issues/{key}/timeline` | One issue: facts, status intervals, skipped stages, changelog, weekly worklog totals, findings |
 | POST | `/ask` | A question (and the people it mentions) in; answer, citations, facts, outcome and the people it names out |
 | GET | `/insights/latest` | The latest weekly briefing and the candidates it was written from |
@@ -49,9 +56,11 @@ serves, and what the interface does with it. Written for the Python team: implem
 | POST | `/rules/settings` | People level only: saves changes to the board's rule settings, then re-checks its findings (4.22) |
 | POST | `/rules/settings/draft` | People level only: an AI draft of a new rule from an admin's words, built only from the board's checks and names; saves nothing (4.23) |
 | GET | `/baseline/latest` | The latest ground-truth baseline report |
-| GET | `/people` | Who the board's tickets are assigned to, with their open work and open findings |
-| GET | `/people/directory` | Everyone on the board (assignees, and the members Jira lets you assign its tickets to), with their tickets now: Ask's @ list |
+| GET | `/people` | Who has the board's tickets (the credit rule, 4.29), with their open tickets, and the open findings on the tickets each is assigned now |
+| GET | `/people/directory` | Everyone on the board (assignees, and the members Jira lets you assign its tickets to), with their tickets (the credit rule, 4.29): Ask's @ list |
 | GET | `/people/scorecard` | People level only: how each person's tickets are handled next to the whole board, over 30, 90 or 180 days (4.15) |
+| GET | `/people/credit` | People level only: whom the board's tickets count for, and each choice's coverage over 30, 90 or 180 days (4.29) |
+| PUT | `/people/credit` | People level only: changes whom the board's tickets count for, from the revision read (4.29) |
 | GET | `/people/{person_id}/avatar` | A person's Jira picture, as the service fetched and keeps it: image bytes |
 | GET | `/people/{person_id}/card` | People level only: one person's card, their work, findings and process on the board next to its figures, what they work on now and the other boards they hold open tickets on (4.19) |
 | GET | `/access-log` | People level only: who viewed whose person-level figures, and when, a page at a time (4.16) |
@@ -254,11 +263,12 @@ One page of findings, with facet counts for the filter menus.
 |---|---|---|---|
 | `rule` | rule id, repeatable | all | Any of these rules |
 | `severity` | `breach` \| `warning` | both | |
-| `state` | `open` \| `resolved` \| `all` | `open` | |
+| `state` | `open` \| `resolved` \| `ignored` \| `all` | `open` | `ignored`: the findings an admin set aside (4.26). `resolved` leaves them out; `all` takes them in |
 | `epic` | issue key or `none`, repeatable | all | Any of these epics; `none` is findings with no epic (work outside every epic, and sprint findings) |
-| `person` | person id or `unassigned`, repeatable, at most 50 | all | Any of these people: findings whose issue is assigned to that person **now**; `unassigned` is issue findings whose issue nobody is assigned to. With any `person` given, sprint findings never match (they belong to no one), nor do findings whose issue is no longer in the snapshot (see `assignee`). An id nobody on the board has matches nothing: an empty page, not an error, and so does a member of the board who holds none of its tickets (4.14) |
+| `person` | person id or `unassigned`, repeatable, at most 50 | all | Any of these people: findings whose issue is assigned to that person **now** (the page says "assigned now": a finding follows its ticket's current assignee, whatever the board's credit setting says of finished work, 4.29); `unassigned` is issue findings whose issue nobody is assigned to. With any `person` given, sprint findings never match (they belong to no one), nor do findings whose issue is no longer in the snapshot (see `assignee`). An id nobody on the board has matches nothing: an empty page, not an error, and so does a member of the board who holds none of its tickets (4.14) |
 | `q` | string, at most 100 characters | none | An exact key (`DEMO-142`, any case), a bare number (`142` or `#142`, matched against the key's number), or words found in the key, the summary or the sprint's name, any case |
 | `first_seen` | `7d` \| `30d` \| `90d` \| `all` | `all` | First seen in the last 7, 30 or 90 days, counted back from now |
+| `ticket` | `open` \| `finished` | any | Findings on open tickets (not done) or on finished ones (done), by the ticket's status category now. A sprint's finding is on no ticket and never matches |
 | `sort` | `first_seen_at` \| `last_seen_at` \| `resolved_at` \| `severity` \| `rule_id` \| `issue_key` \| `epic_key` | `first_seen_at` | `severity` puts breach above warning; key columns sort by issue number |
 | `order` | `asc` \| `desc` | `desc` | Empty values (an open finding's `resolved_at`, a sprint finding's keys) sort last in either order. Ties: newest first, then `finding_id`. |
 | `page` | integer ≥ 1 | 1 | A page past the end is an empty page, not an error |
@@ -266,9 +276,10 @@ One page of findings, with facet counts for the filter menus.
 
 The interface refuses (400) unknown parameter names, a single-valued parameter given twice, and values
 out of range (a `person` that is not an id or `unassigned`, in exactly that case, among them), and it
-forwards only the canonical form: defaults left out, lists de-duplicated and sorted. When `person` names
-someone (an id, not only `unassigned`), it adds `level` (`team` | `people`, the level it decided for the
-reader): the service records the read in its access log as `person_findings_view` (4.16).
+forwards only the canonical form: defaults left out, lists de-duplicated and sorted. It adds `level` (`team` |
+`people`, the level it decided for the reader) to every read: the service names who ignored a finding at the people
+level alone, and when `person` names someone (an id, not only `unassigned`) it records the read in its access log as
+`person_findings_view` (4.16). The reads of one finding and of an issue (4.4, 4.5) carry `level` too.
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -280,7 +291,7 @@ reader): the service records the read in its access log as `person_findings_view
 | `facets.epics` | facet entry[] | Every epic by key, then `{"value": "none", "label": "No epic"}` |
 | `facets.people` | facet entry[] | Everyone assigned at least one ticket on the board now (any status or type) as `{value: person id, label: name, count, avatar: picture version \| null}` (the person object's `avatar`, so the Person menu can show their picture), by name (section 2), then `{"value": "unassigned", "label": "Unassigned", "count": …, "avatar": null}` last, always. Issue findings on the board's tickets only, so the counts add up to `total` less its sprint findings (and any finding whose issue is no longer in the snapshot) |
 | `facets.severity` | facet entry[] | `breach`, `warning` |
-| `facets.state` | facet entry[] | `open`, `resolved` |
+| `facets.state` | facet entry[] | `open`, `resolved`, `ignored` |
 
 A **facet entry** is `{value, label, count}`; a people facet entry adds `avatar`, `null` for
 `"unassigned"`. The other facets are unchanged. Each facet's counts apply every filter except its own,
@@ -295,7 +306,7 @@ menus never reshuffle.
 | `rule_id`, `rule_title`, `rule_version` | | The rule and the version it fired under: the catalogue's (`0.1.0`), or `0.1.0+breach` where the board's settings report the rule at another severity than the catalogue's (JO-15, 4.22) |
 | `kind` | `rule` \| `warning` | From the catalogue |
 | `severity` | `breach` \| `warning` | What it is reported as |
-| `state` | `open` \| `resolved` | `resolved` exactly when `resolved_at` is set |
+| `state` | `open` \| `resolved` \| `ignored` | `open` exactly when `resolved_at` is null; `ignored` exactly when `resolved_why` is `ignored` |
 | `message` | string | Short, team level, names nobody: `"Logged 18.0 h against an estimate of 8.0 h (2.25×, threshold 1.5×)"` |
 | `scope` | `issue` \| `sprint` | W-SPR-01 looks at a sprint; every other rule at an issue |
 | `issue_key` | issue key \| null | Set exactly when `scope` is `issue` |
@@ -306,10 +317,11 @@ menus never reshuffle.
 | `first_seen_at` | timestamp | The rules run that first saw it |
 | `last_seen_at` | timestamp | The last run that still saw it |
 | `resolved_at` | timestamp \| null | The first run that no longer saw it |
-| `resolved_why` | `cleared` \| `superseded` \| `settings_changed` \| null | Why it is resolved; null while open. `cleared`: the condition stopped. `superseded`: a newer rules version replaced it (a catalogue bump, or the board's severity for the rule changed). `settings_changed` (JO-15): the board's rule settings changed (a threshold moved, the rule was turned off) and the rule no longer holds it; never counted as fixed (the digest's "resolved" lists `cleared` alone), and the interface says "Closed: rule settings changed" wherever a resolution is shown (the Findings table's narrow State column shows "Closed" over "settings changed", with the whole sentence in its tooltip and to a screen reader) |
+| `resolved_why` | `cleared` \| `superseded` \| `settings_changed` \| `ignored` \| null | Why it is resolved; null while open. `ignored` (4.26): an admin set it aside, so it is neither open nor fixed and no open, resolved, fixed or new figure counts it; the interface says "Ignored" with who, when and why wherever it is shown. `cleared`: the condition stopped. `superseded`: a newer rules version replaced it (a catalogue bump, or the board's severity for the rule changed). `settings_changed` (JO-15): the board's rule settings changed (a threshold moved, the rule was turned off) and the rule no longer holds it; never counted as fixed (the digest's "resolved" lists `cleared` alone), and the interface says "Closed: rule settings changed" wherever a resolution is shown (the Findings table's narrow State column shows "Closed" over "settings changed", with the whole sentence in its tooltip and to a screen reader) |
 | `threshold` | string \| null | The rule's threshold on the board as a reader says it: `"1.5×"`, `"p90 of To Do: 524.8 h"` |
 | `evidence` | evidence item[] | Why it fired (below) |
 | `warned_before` | object \| null | "Warned on X, breached on Y": `{warning_rule_id, warning_finding_id, warned_at}` from `warning_links` |
+| `ignore` | ignore \| null | The ignore that holds it (4.26): `{scope, rule_id, reason, by, at}`, `scope` `finding` (one rule on the ticket, `rule_id` its rule) or `ticket` (every rule, `rule_id` null), `reason` the admin's words or null, `by` who ignored it by the name the access log keeps (null below the people level; never an email address), `at` when. `ignore_id` beside them names the ignore, which Restore takes; where it is left out the interface looks the ignore up (4.28). Null for a finding no ignore holds, and between a restore and its re-check |
 
 The engine stores sprint findings under `issue_key = "sprint:<id>"`. The API turns that into
 `scope: "sprint"`, `issue_key: null` and the `sprint` object.
@@ -333,7 +345,7 @@ The evidence drawer. 404 when no finding has that id.
 | Field | Type | Meaning |
 |---|---|---|
 | `meta` | meta | |
-| `finding` | finding | Identical to the same finding in `/findings`, `assignee` included |
+| `finding` | finding | Identical to the same finding in `/findings`, `assignee` and `ignore` included (who ignored it named at the people level alone: the interface sends `level`) |
 | `timeline` | interval[] | The issue's status intervals, oldest first; empty for a sprint finding |
 
 **Interval.** `status`, `stage` (or null), `status_category`, `entered_at`, `left_at` (null while still
@@ -352,7 +364,7 @@ issue is not in the synced data.
 | `skipped` | `{changelog_id, changed_at, from, to, skipped: stage[]}`[] | Forward jumps over mapped stages (`metrics.skipped_stages`) |
 | `changes` | `{changelog_id, changed_at, kind: "status" \| "field", field, from, to}`[] | Status and tracked-field changes, oldest first. `field` is `status`, `story_points`, `original_estimate`, `sprint` or `assignee`; assignee values read `Assigned` / `Unassigned`, never a person. |
 | `worklogs` | `{week: date (Monday, UTC), hours}`[] | Logged hours per week, totals only, oldest first |
-| `findings` | finding[] | Every finding about the issue: open first, then newest first |
+| `findings` | finding[] | Every finding about the issue: open first, then newest first, each with its `ignore` (4.3) |
 
 `issue`:
 
@@ -398,8 +410,8 @@ board at all (neither a current assignee of one of its tickets nor a member from
 fetch, 4.14) is `not_understood` with the message exactly
 `Someone you mentioned has no tickets on this board.`, and no model is asked.
 
-**Mentions of people with no tickets (JO-10).** A member of the board who holds none of its tickets may be
-mentioned (the @ list's "No tickets" group, 4.14). At people level, checked right after the unknown-mention
+**Mentions of people with no tickets (JO-10).** Someone on the board none of whose tickets count for them (a
+member, or someone the credit setting does not name, 4.29) may be mentioned (the @ list's "No tickets" group, 4.14). At people level, checked right after the unknown-mention
 check above and before anything else (a judgement included):
 
 - **Every mention has no tickets:** no model is asked and nothing is planned. `outcome` `no_data`;
@@ -421,7 +433,7 @@ check above and before anything else (a judgement included):
 | `qa_id` | 32 hex | The `qa_log` row, which records the level and the mention ids (ids only, never names) |
 | `question` | string | As asked, trimmed: the reader's own words, `@Name` and all |
 | `outcome` | `answered` \| `not_understood` \| `no_data` \| `not_measurable` \| `not_verified` | |
-| `answer` | string \| null | Markdown without citation markers: paragraphs, `-` bullet lists, bold, tables (no links, images or HTML; the interface links every cited issue key itself). The catalogue path writes plain prose, which is valid Markdown. Set only when `answered`, and for the `no_data` that says mentioned people hold no tickets (exactly that sentence; see above). |
+| `answer` | string \| null | Markdown without citation markers: paragraphs, `-` bullet lists, bold, tables (no links, images or HTML; the interface links every cited issue key itself). The catalogue path writes plain prose, which is valid Markdown. Set only when `answered`, and for the `no_data` that says mentioned people have no tickets (exactly that sentence; see above). |
 | `citations` | citation[] | Empty unless `answered` |
 | `facts` | fact set[] | What the catalogue calls returned (kept for `no_data` and `not_verified`) |
 | `plan` | `{tool, params}`[] | The catalogue calls, in order |
@@ -458,16 +470,19 @@ board's figures. The interface passes on a team-level answer only when its `peop
 (person id, or NULL) and `assignee` (the display name by the person rules of section 2, NULL when
 unassigned); `findings`, and any view built on issue findings, the `assignee_id` and `assignee` of the
 issue's current assignee (NULL for unassigned issues and for sprint findings); and a `people` view with
-the figures of `GET /people` (4.12): one row per person currently assigned a ticket on the board, plus an
-Unassigned row (`person_id` NULL, name `Unassigned`), columns `person_id, name, tickets, open_tickets,
-open_breaches, open_warnings, tickets_with_findings` (a person's tickets are the board's work, Epics left out,
-as everywhere: JO-12). Never a raw account id, an email address, a picture or
-its address, a time zone, the reporter, creator or any other person field, a name in the changelog
-(assignee changes stay `Assigned` / `Unassigned`), or a worklog's author. The model is told the mentioned
-people by name and person id, and filters by person id. It names people only by their display name as the
-data gives it: it may rank by a count (most open breaches, say), and then says that findings follow the
-ticket's current assignee. A ranking ranks people only: the Unassigned row is never ranked, and its figure is
-said after the ranking in one sentence, `Unassigned: <n> open tickets.` (the figure ranked).
+`GET /people`'s figures (4.12) as Ask reads them: one row per person with tickets on the board (the work that
+counts for them, by the board's credit setting, 4.29), plus an Unassigned row (`person_id` NULL, name
+`Unassigned`) for the tickets that count for no one, columns `person_id, name, tickets, open_tickets,
+open_breaches, open_warnings, tickets_with_findings` (a person's tickets, open or finished, are the board's work
+that counts for them, Epics left out, as everywhere: JO-12; their findings are the open findings on those tickets,
+where `GET /people`'s stay with the assignee). Every person tool reads a person's tickets the same way (the
+board's credit setting): their open tickets, those in progress, those done, and their findings. Never a raw
+account id, an email address, a picture or its address, a time zone, the reporter, creator or any other person
+field, a name in the changelog (assignee changes stay `Assigned` / `Unassigned`), or a worklog's author. The model
+is told the mentioned people by name and person id, and filters by person id. It names people only by their
+display name as the data gives it: it may rank by a count (most open breaches, say), and then says that a
+person's findings are those on their tickets. A ranking ranks people only: the Unassigned row is never ranked,
+and its figure is said after the ranking in one sentence, `Unassigned: <n> open tickets.` (the figure ranked).
 
 **Nothing is declined at people level (JO-11, the product owner's direction of 11 Nov 2026).** A question that
 evaluates someone (how they are doing, whether they follow the process, best, worst, rank, top, slowest...) is
@@ -478,8 +493,8 @@ only and never by the MCP server:
   `{person_id, name, measure, label, kind, value, numerator, denominator, shown, enough, vs_board, board_value,
   board_numerator, board_denominator, board_shown, measurable, reason, rule_ids}` (`shown` the figure as the page
   writes it, "72% · 18 of 25"). One mention: their scorecard; two to ten: side by side.
-- `oversight_people_compare(project, measure, days?, order, n?)`, only while comparison is on: everyone who holds a
-  ticket, in the order the question asks, too few tickets last whatever the order, by one measure (rows as above
+- `oversight_people_compare(project, measure, days?, order, n?)`, only while comparison is on: everyone with
+  tickets, in the order the question asks, too few tickets last whatever the order, by one measure (rows as above
   with `standing`, then the board's row, `person_id` null, name `Whole board`) or `overall` (`{person_id, name,
   closer, further, level, compared, too_few, open_findings_per_10, open_findings, open_tickets, enough,
   standing}`: the measures on which each is closer to the process than the board, ties by open findings per 10
@@ -487,7 +502,7 @@ only and never by the MCP server:
   `open_tickets` are that ratio's numerator and denominator, `enough` whether it rests on at least 5; `standing`
   `Too few tickets` for someone compared on no measure; no board row), or by a count, `open_tickets`,
   `in_progress` or `done_in_period` (whose backlog is biggest, who has the most in progress, who finished the
-  most; ties by name; `standing` null; then, when the board has work nobody holds, one row for it, `person_id`
+  most; ties by name; `standing` null; then, when the board has work that counts for no one, one row for it, `person_id`
   null, name `Unassigned`, never ranked; then the board's row, always the last). **The order (JO-14, the product
   owner's decision of 13 Nov 2026: answer exactly what was asked)** is one parameter, `order`, accepted for every
   measure: `"most"` the figure highest first (most, highest, largest, biggest, top N, more, higher, and close
@@ -556,20 +571,24 @@ holder, or asks to pick with @ when two people share it. "How many open tickets 
 by status category, Epics left out (`oversight_count_issues` with `state`: `open`, `in_progress` or `done`), so it
 equals the Portfolio's and the Overview's open tickets; the sample answers it alike.
 - `oversight_board_people(project, holding)`: everyone on the board as the @ list shows them, `{person_id, name,
-  tickets}`: those assigned its tickets now (`tickets` every ticket they hold, any status, Epics left out), then
-  the people on the board who hold none (`tickets` 0: its members who hold no ticket, and anyone holding only
-  Epics), each by name (`holding: "any"`); or only those (`holding: "none"`). The answer names each person once:
-  `11 people are on this board: Ada Brooks, ... and Hana Mori, and 3 members who hold none of its tickets: Noor
-  Haddad, Tomás Ferreira and Yuki Tanabe.` (`1 member who holds`; with no holder, `{n} people are on this board,
-  all members who hold none of its tickets: {names}.`; with everyone holding, `{n} people are on this board:
-  {names}.`).
+  tickets}`: those with its tickets (`tickets` every ticket that counts for them, any status, Epics left out), then
+  the people on the board with none (`tickets` 0: its members, anyone the credit setting names on none of its work,
+  and anyone assigned only Epics), each by name (`holding: "any"`); or only those (`holding: "none"`). The answer
+  names each person once: `11 people are on this board: Ada Brooks, ... and Hana Mori, and 3 members who have none
+  of its tickets: Noor Haddad, Tomás Ferreira and Yuki Tanabe.` (`1 member who has`; with no one with tickets, `{n}
+  people are on this board, all members who have none of its tickets: {names}.`; with everyone with tickets, `{n}
+  people are on this board: {names}.`).
 - `oversight_ticket_assignee(project, issue_key)`: the ticket's row (`{issue_key, summary, issue_type, status,
   epic_key, assignee_id, assignee}`) and who holds it now (`Unassigned`, `assignee_id` null, when nobody does).
 - `oversight_people` (JO-09's ranking) ranks people only, by the figure, most first or, with `order: "fewest"`,
   lowest first, ties by name (the directory's order, so a count gives one order whichever tool ranks by it); the
-  tickets nobody holds come after them as one unranked row (`person_id` null, name `Unassigned`), and the answer
-  says it after the ranking: `Ada Brooks has the most open tickets: 58, then Dev Malhotra with 49. Unassigned:
-  148 open tickets.` (the sentence only when its figure is above 0).
+  tickets that count for no one come after them as one unranked row (`person_id` null, name `Unassigned`), and the
+  answer says it after the ranking: `Ada Brooks has the most open tickets: 58, then Dev Malhotra with 49.
+  Unassigned: 148 open tickets.` (the sentence only when its figure is above 0). A ranking by findings ends `A
+  person's findings are those on their tickets.`
+- `oversight_person_tickets(project, person, state, days?, n?)`: one person's tickets, the ones that count for them
+  (`open`, `in_progress`, `done` over `days`, or `all`; Epics left out), each row with `assignee_id` and `assignee`
+  (headed "Counts for") the person asked about.
 
 A personnel question (fire, sack, let go, dismiss, lay off, demote, replace, promote, reward, a bonus or a pay rise,
 an appraisal, deserve, blame, trust, lazy, attitude, competence, skill, reliability, and the labels an answer never
@@ -627,7 +646,8 @@ name two share is `not_understood`, asking the admin to pick with @ (a first nam
 and pick the one you mean.`); part of a name after an @ that is no one's is `Type @ and pick the person you mean
 from the list, so the answer is about them.` Every scorecard or comparison answer over a period (not a ranking by a
 count of now alone) ends, in code, with the caveat
-`Figures from Jira over the last {days} days, next to the whole board, by each ticket's current assignee.`, plus
+`Figures from Jira over the last {days} days, next to the whole board.`, then whom the figures count for as the
+board's credit setting has it (4.15), plus
 ` Code review isn't recorded on this board, so reviewers' work doesn't show.` where code review is not measurable for
 want of it ("This board doesn't record code review in Jira."; not where R-FLOW-01 is only turned off, JO-15);
 an answer whose figures mix periods names each ("over the last 30 and 180 days"). The answer orders and summarises;
@@ -824,26 +844,30 @@ search field, the arrow keys and Page Up and Down move, Enter picks, Escape clea
 
 ### 4.12 `GET /people`
 
-Who the board's tickets are assigned to now, with each person's open work and open findings: the findings
-grouped by person. Board-scoped like `/overview` (`?project=`, section 2), whole: everyone who may read the
-board sees every person on it. No other parameter.
+Who has the board's tickets, with each person's open tickets, and the open findings grouped by the person each
+ticket is assigned to now: the Overview's open findings by person. Board-scoped like `/overview` (`?project=`,
+section 2), whole: everyone who may read the board sees every person on it. No other parameter.
 
 | Field | Type | Meaning |
 |---|---|---|
 | `meta` | meta | |
-| `people` | row[] | One row per person currently assigned at least one of the board's work tickets (Epics left out), and one row with `person: null` for the work nobody is assigned to, only when there is at least one |
+| `people` | row[] | One row per person at least one of the board's work tickets (Epics left out) counts for (the credit rule, 4.29), one per person assigned work now that carries open findings, and one row with `person: null` for the work that counts for no one and the open findings on work nobody is assigned to now, only when there is either |
 
 **Row.** One meaning of a person's tickets everywhere (JO-12): the board's work, every type but Epic (section 2's
-"work"), as the scorecard (4.15), the directory (4.14) and every Ask tool and view count them. Someone who holds
-only Epics has no row: they hold none of the board's work (the directory lists them with 0).
+"work"), that counts for them by the board's credit setting (4.29), open or finished, as the scorecard (4.15), the
+directory (4.14), the person card (4.19) and every Ask tool and view count them. Someone the setting names on none of
+the work (with Programmer chosen, an assignee never named as Programmer), or assigned only Epics, has no tickets (the
+directory lists them with 0). Open findings alone stay with whoever is assigned a ticket now, as Findings' Person
+filter reads them (4.3) and the Overview's open findings by person shows them; so someone assigned work that counts
+for others has a row for its findings, with `tickets` 0.
 
 | Field | Type | Meaning |
 |---|---|---|
-| `person` | person \| null | `null`: the unassigned tickets, shown as "Unassigned" |
-| `tickets` | count, at least 1 | The board's work assigned to them now, of every status (Epics left out) |
-| `open_tickets` | count | Those whose status category is not `done`: the scorecard's `open_tickets`, figure for figure |
-| `open_breaches`, `open_warnings` | count | Open findings on those tickets, by severity. Issue findings only: a sprint finding belongs to no one, and so does a finding whose issue is no longer in the snapshot |
-| `tickets_with_findings` | count | Distinct tickets with at least one open finding |
+| `person` | person \| null | `null`: the work that counts for no one, and the findings on the unassigned tickets, shown as "Unassigned" |
+| `tickets` | count | Their tickets, of every status (Epics left out): the board's work that counts for them; 0 for a row of findings alone. The `null` row's: the work that counts for no one |
+| `open_tickets` | count | Those of their tickets whose status category is not `done`: the scorecard's `open_tickets`, figure for figure |
+| `open_breaches`, `open_warnings` | count | Open findings on the tickets they are assigned now, by severity, as Findings filtered to them lists them. Issue findings only: a sprint finding belongs to no one, and so does a finding whose issue is no longer in the snapshot |
+| `tickets_with_findings` | count | Distinct tickets they are assigned now with at least one open finding |
 
 Ordered by `open_breaches`, then `open_warnings`, then `open_tickets`, each most first; then by name
 (section 2), the unassigned row as "Unassigned"; then by id, the unassigned row's being `unassigned`.
@@ -851,11 +875,12 @@ Ordered by `open_breaches`, then `open_warnings`, then `open_tickets`, each most
 A row must click through exactly: `/findings?state=open&person=<id or unassigned>` lists
 `open_breaches + open_warnings` findings, and the same page's `facets.people` entry counts as many (no rule
 applies to an Epic unless the catalogue names Epics, which by default it does not; a finding on one would be on
-Findings only). The rows' `tickets` add up to the board's work (`issues` in `/projects`, less its Epics). The
-interface checks each row's
-arithmetic (`open_tickets` and `tickets_with_findings` at most `tickets`; `tickets_with_findings` at most
-the open findings, and at least 1 when there are any) and that nobody is listed twice; a body that fails
-is answered 502 `upstream_invalid`.
+Findings only). The rows' `tickets` add up to the board's work (`issues` in `/projects`, less its Epics) only
+where every ticket counts for exactly one person or no one, as on a board that credits its assignees (DEMO): a
+ticket with several people in the field the setting reads counts once for each. The interface checks each row's
+arithmetic (`open_tickets` at most `tickets`; `tickets_with_findings` at most the open findings, and at least 1 when
+there are any; never a row with neither tickets nor open findings) and that nobody is listed twice; a body that
+fails is answered 502 `upstream_invalid`.
 
 ### 4.13 `GET /people/{person_id}/avatar`
 
@@ -905,14 +930,14 @@ sample or the service is asked anything.
 | Field | Type | Meaning |
 |---|---|---|
 | `meta` | meta | |
-| `people` | entry[] | One entry per person on the board, each once: everyone currently assigned at least one of the board's tickets (any status or type, an Epic too), and every member of the board's last successful member fetch. No Unassigned entry |
+| `people` | entry[] | One entry per person on the board, each once: everyone currently assigned at least one of the board's tickets (any status or type, an Epic too), everyone a people field of its tickets names (the fields 4.29 offers), and every member of the board's last successful member fetch. No Unassigned entry |
 
 **Entry.**
 
 | Field | Type | Meaning |
 |---|---|---|
 | `person` | person | Never `null` |
-| `tickets` | count | The board's work assigned to them now (Epics left out): `GET /people`'s `tickets` for the same person, `0` for a member who holds none and for someone who holds only Epics |
+| `tickets` | count | Their tickets (Epics left out): the board's work that counts for them under its credit setting (4.29), `GET /people`'s `tickets` for the same person; `0` for a member who has none, for someone assigned only Epics, and for someone assigned, or named in a people field, whose work the setting credits elsewhere |
 
 Ordered by name folded for case and accents (lower case, accents taken off, as the @ list's filter folds a
 search: `foldText()` in `src/lib/names.ts`), compared code point by code point; then by id.
@@ -930,10 +955,11 @@ time zone, locale or `self`). A fetch that fails keeps the board's previous memb
 (`board_members_not_refreshed`, the board and a short reason, never a person), and never fails the sync.
 
 **"On the board" now includes members.** A person is on the board when they are a current assignee of one of
-its tickets, or a member from its last successful member fetch. That widens exactly three things: this
-directory, a person's picture (4.13) and Ask's mention check (4.6). Everything else stays with the
-assignees: `GET /people` and the views built on it, the findings' people facet and the Ask views. A member
-with no tickets owns no finding: `/findings?person=<their id>` is an empty list (4.3).
+its tickets, a person one of its people fields names, or a member from its last successful member fetch. That widens
+exactly three things: this directory, a person's picture (4.13) and Ask's mention check (4.6). `GET /people` and the
+views built on it count a person's tickets by the credit rule (4.12); the findings' people facet stays with the
+assignees. A member assigned nothing owns no finding: `/findings?person=<their id>` is an empty list (4.3), and so is
+the list of someone whose tickets count for them but who is assigned none of the board's tickets now.
 
 The interface checks each entry's person as everywhere (an id, a name and a picture's version, nothing else),
 `tickets` a count, and that nobody is listed twice; a body that fails is answered 502 `upstream_invalid`.
@@ -949,8 +975,8 @@ admin's. Board-scoped like `/people` (`?project=`, section 2); `Cache-Control: n
 `team` when left out: the level this interface's server decided for the reader, exactly as it sets Ask's `level`,
 never anything the browser said), `days` (`30` | `90` | `180`, default `90`) and `person` (a person id, repeatable,
 at most 10). Any other name, a name given twice (but `person`), a bad `days` or an eleventh `person` is 422. A
-`person` who is not on the board (neither a current assignee nor a member, 4.14) is 404, as the picture route
-answers. At team level the service answers 403 with code `people_level_only`; with `PEOPLE_COMPARISON=off`, two or
+`person` who is not on the board (neither a current assignee, a person one of its people fields names, nor a member,
+4.14) is 404, as the picture route answers. At team level the service answers 403 with code `people_level_only`; with `PEOPLE_COMPARISON=off`, two or
 more `person` values are 403 with code `comparison_off` (the code anywhere in FastAPI's body: `{"detail", "code"}`).
 
 **Request, browser to interface.** `/api/oversight/people/scorecard?days=&person=`: `days` and `person` only, each
@@ -961,8 +987,8 @@ people's scorecards."), after the board checks and before the sample or the serv
 that shows the figures (`/people`) answers such a reader with the app's not-found page.
 
 **Comparison.** `PEOPLE_COMPARISON` on the service (`on` by default; `off` only where an organisation does not want
-people compared; `SAMPLE_PEOPLE_COMPARISON` in the sample). With it `on`, no `person` is everyone who holds at least
-one of the board's work tickets now (Epics left out: `GET /people`'s people). With it `off`, no `person` is `comparison: "off"`, `people: []` and the board's
+people compared; `SAMPLE_PEOPLE_COMPARISON` in the sample). With it `on`, no `person` is everyone with at least one of
+the board's work tickets (Epics left out) that counts for them (the credit rule, 4.29): "Everyone with tickets". With it `off`, no `person` is `comparison: "off"`, `people: []` and the board's
 figures (so a one-person view needs one call), one `person` is that person, and two or more are refused: the
 interface answers 403 `comparison_off` with the contract's sentence, `Comparing people side by side is turned off.
 Ask about one person at a time instead.`
@@ -971,11 +997,11 @@ Ask about one person at a time instead.`
 |---|---|---|
 | `meta` | meta | |
 | `period` | `{days, from, to}` | `to` is the snapshot's as-of (the last successful sync); `from` is `days` before it. "In the period" is from ≤ t ≤ to |
-| `basis` | `"current_assignee"` | Whose a ticket is: the person it is assigned to now, as findings are |
+| `basis` | `"credit"` | Whose a ticket is (the credit rule, 4.29): every measure, of now (`open_tickets`, `in_progress`, `stuck_now`, `open_findings_per_10`) and of finished work alike, counts each ticket for the people the board's credit setting names on it, and for no one where it names no one |
 | `comparison` | `"on"` \| `"off"` | As above |
 | `measures` | measure[] | Always all eleven, in the order of the table below |
-| `board` | `{tickets, values}` | Every ticket on the board, assigned or not. `tickets` counts the board's work, Epics left out, as a person's `tickets` and `GET /people`'s count do (JO-12: one meaning of a person's tickets everywhere) |
-| `people` | row[] | `{person, tickets, values}`, by name folded for case and accents, then id (the directory's order). `tickets` is `GET /people`'s and the directory's count for the same person (Epics left out). Anyone on the board asked for who holds no work (a member who holds no ticket, or someone who holds only Epics) is `tickets: 0` with every value null, `enough: false`, `vs_board: null`. With comparison off, at most one row |
+| `board` | `{tickets, values}` | Every ticket on the board, whoever it counts for. `tickets` counts the board's work, Epics left out, as `GET /people`'s count does (JO-12: one meaning of tickets everywhere) |
+| `people` | row[] | `{person, tickets, values}`, by name folded for case and accents, then id (the directory's order). `tickets` is `GET /people`'s and the directory's count for the same person: the board's work that counts for them (Epics left out). Anyone on the board asked for who has no work (a member with no ticket, someone the setting names on none of it, someone assigned only Epics) is `tickets: 0` with every value null, `enough: false`, `vs_board: null`. With comparison off, at most one row |
 
 **Measure** `{key, label, kind, direction, rule_ids, measurable, reason}`: `kind` `count` \| `rate` \| `ratio`;
 `direction` `neutral` \| `higher_is_closer` \| `lower_is_closer`; `rule_ids` the rules whose findings are its tickets
@@ -990,7 +1016,7 @@ compared. `vs_board`, for rates and the ratio only and only when both sides have
 percentage points (0.5 for the ratio) of the board on the figures as shown, otherwise `closer` or `further` by the
 measure's direction; null otherwise.
 
-| key | label | kind | direction | counts, over each person's work now (Epics left out, as every rule leaves them out) | rule_ids |
+| key | label | kind | direction | counts, over each person's work (Epics left out, as every rule leaves them out): the tickets that count for them, for every measure | rule_ids |
 |---|---|---|---|---|---|
 | `open_tickets` | Open tickets | count | neutral | not in a done category now | |
 | `in_progress` | In progress now | count | neutral | in an in-progress category now | |
@@ -1029,13 +1055,21 @@ off; and, against the request, the period asked for and no one who was not asked
 **The page** (`/people`, people level only; the rail, the palette and `g` then `e` offer it there and nowhere else):
 the period (30, 90 or 180 days) and the board picked in the top bar. With comparison on, the everyone table (the
 person held at the left, a column per measure the board can show, sortable by any column: a measure sorts closer to
-the process first, and too few tickets always last; a header's tooltip says what it counts), then the scorecard of
-the row chosen. At phone width the table is a list with the sort above it. With comparison off, a person picker (the
-directory's two groups, "With tickets" first) and that person's scorecard. The scorecard: a row per measure, the
+the process first, and too few tickets always last; a header's tooltip says what it counts, which way is closer, and
+whom it counts for in the note's words), the note under it in plain words following the setting (Programmer:
+"Tickets count for their Programmer in Jira; tickets without one count for no one."; Assignee: "Tickets count for
+their assignee; tickets without one count for no one."; Automatic: "Tickets count for their Programmer in Jira, or
+their assignee where there is no Programmer."), then the scorecard of the row chosen. Beside the period, the
+setting's control, "Counts for: Automatic" (4.29). At phone width the table is a list with the sort above it. With
+comparison off, a person picker (the directory's two groups, "With tickets" first) and that person's scorecard. The
+scorecard: the count of their tickets beside the name ("142 tickets"), a row per measure, the
 person's figure ("72% · 18 of 25") beside the board's, its mark ("Closer to the process", "Further from the
 process", "Level with the board" or "Too few tickets", in the neutral inks: none of them is good or bad), and a link
 to its tickets (Findings by person and rule, or Ask's list of their tickets); the measures the board cannot show last,
-muted, with the reason; the caveat at the foot. The address holds `days`, `person`, `sort` and `order`. Ways in:
+muted, with the reason; the caveat at the foot, the service's words to the letter (its Ask answers end with them):
+"Figures from Jira over the last 90 days, next to the whole board.", then the note's words for the setting ("Tickets
+count for their Programmer in Jira, or their assignee where there is no Programmer." on Automatic). The address holds
+`days`, `person`, `sort` and `order`. Ways in:
 "View scorecard" beside the Findings Person filter when one person is chosen, "View scorecards" on the
 Overview's open findings by person, and an Ask comparison's "Open on the People page", sorted by its measure in the
 answer's order (`order` only where it is not the column's own first order: `/people?sort=reopened&order=desc` for
@@ -1076,6 +1110,7 @@ the entry's subjects:
 | `access_log_view` | `GET /access-log` | `{from, to, actions, viewer, entries}` |
 | `access_log_export` | `GET /access-log?export=true` | `{from, to, actions, viewer, entries}` |
 | `person_card_view` | `GET /people/{person_id}/card` (JO-13), at most once per viewer, person and board in any ten minutes, so hovering back and forth over a name does not flood the log | `{days}` |
+| `scorecard_tickets_view` | `GET /people/scorecard/tickets` (4.25), with the person (none for the whole board) | `{measure, days}` |
 
 A failure to write the entry fails the request closed: the service serves nothing and answers 500 with code
 `access_log_unavailable`; the interface says so in its own words (503 `access_log_unavailable`, section 5). Entries
@@ -1142,6 +1177,7 @@ or a sync. Empty and error states as everywhere. The plain words:
 | `access_log_view` | Viewed the access log |
 | `access_log_export` | Exported the access log |
 | `person_card_view` | Viewed a person card |
+| `scorecard_tickets_view` | Viewed the tickets behind a figure |
 
 Resting the pointer on a person's pill opens their card (4.19), read on the entry's board; a press on it still shows only
 the reads of their figures (the pill says so to a screen reader). A former member's pill has no card.
@@ -1260,8 +1296,8 @@ has synced), and "Choose a board", which opens the board picker, where each can 
 What an admin sees on resting on or pressing a person's name (JO-13, the product owner's request of 12 Nov 2026: "the
 same thing as Jira and Confluence, in a very attractive way"): as Atlassian's profile card shows the person, this card
 shows their work on the board. People level only. Board-scoped like `/people` (`?project=`, section 2);
-`Cache-Control: no-store`. Every figure on it is one the page it leads to shows, worked out by the same functions from
-the same records, so a card never disagrees with the People page or with Findings filtered to the person.
+`Cache-Control: no-store`. Every figure on it is one the People page shows, worked out by the same functions from the
+same records under the board's credit setting (4.29), so a card never disagrees with the People page.
 
 **Request, interface to service.** `project` (added by the interface: the board picked in the top bar, or the board the
 page named, below), `level` (`team` | `people`, the level this interface's server decided for the reader, exactly as
@@ -1287,19 +1323,19 @@ sample or the service is asked anything: users get no card.
 | `meta` | meta | |
 | `person` | person | Whose card |
 | `board` | `{key, name}` | The board read; its name as `GET /projects` gives it |
-| `membership` | `"holds_tickets"` \| `"member_no_tickets"` | `holds_tickets`: they hold at least one of the board's work tickets now, in any status (`GET /people`'s row, the directory's "With tickets"); `member_no_tickets`: one of its members who holds none (or holds only Epics) |
-| `work` | `{open_tickets, in_progress, done_in_period, days}` | Their scorecard's three counts over `days` (4.15): `open_tickets` is `GET /people`'s too, Epics left out (JO-12, G5); each 0 for a member who holds none |
-| `findings` | `{open_breaches, open_warnings}` | Their `GET /people` row's: the open findings on every ticket they hold, finished ones too, which is what Findings filtered to them lists; each 0 for a member who holds none |
-| `process` | `{closer, level, further, too_few, measurable}` \| null | Their scorecard's marks over `days` (4.15), counted over the measures that compare (the rates and the ratio) the board can show: `closer`, `level` and `further` the measures on which their figure stands so; `too_few` those on which they were not compared (too few tickets, theirs or the board's); `measurable` the four together. Null when they were compared on no measure: they hold no tickets, or too few for every one |
+| `membership` | `"holds_tickets"` \| `"member_no_tickets"` | `holds_tickets`: at least one of the board's work tickets, in any status, counts for them (4.29: the directory's "With tickets"); `member_no_tickets`: someone on the board with none (a member, someone the setting names on none of its work, or someone assigned only Epics) |
+| `work` | `{open_tickets, in_progress, done_in_period, days}` | Their scorecard's three counts over `days` (4.15), all over the tickets that count for them: open, in progress, and done in the period (`open_tickets` is `GET /people`'s too, Epics left out, JO-12, G5); each 0 for someone with none |
+| `findings` | `{open_breaches, open_warnings}` | The open findings on every ticket that counts for them, finished ones too (as Ask's people view counts them, 4.6); each 0 for someone with no tickets. Findings filtered to them lists the tickets they are assigned now, so where the setting reads a people field the two can differ |
+| `process` | `{closer, level, further, too_few, measurable}` \| null | Their scorecard's marks over `days` (4.15), counted over the measures that compare (the rates and the ratio) the board can show: `closer`, `level` and `further` the measures on which their figure stands so; `too_few` those on which they were not compared (too few tickets, theirs or the board's); `measurable` the four together. Null when they were compared on no measure: they have no tickets, or too few for every one |
 | `in_progress_now` | `{key, summary, status, since}`[] | At most three of their tickets in progress now (the scorecard's `in_progress`), longest in progress first, then by issue number. `status` the status's name as Jira shows it; `summary` as Jira has it (empty when it has none); `since` when the ticket last went into progress: the start of the unbroken run of in-progress statuses it is in now (In Progress to In Review keeps it in progress; a ticket reopened from Done starts again; one never moved counts from its creation), read from its status history as sync stored it (derive's timeline, rebuilt by derive's own function, so a sync derive has not followed yet is never read as the status before it); null when that history ends outside progress though Jira says the ticket is in progress now (a change missing from it: when it went back into progress is not known), or when the ticket has no creation time (never for a ticket a sync stored): such a ticket is listed last, and the card shows no time for it |
 | `in_progress_more` | count | How many more of their tickets are in progress than are listed: the two make `work.in_progress` |
-| `other_boards` | `{key, name, open_tickets}`[] | Every other board the service serves on which they hold open tickets (its work, not done, as that board's `GET /people` counts them), in the service's order; never the board read, nor a board where they hold none open. This interface's server keeps only the boards the reader may open (an admin, or sign-in off: every board) before anything reaches the browser |
-| `last_activity_at` | timestamp \| null | The latest status change or logged work (by when the work was done) on the tickets they hold on the board; null when there is none, and for a member who holds none |
+| `other_boards` | `{key, name, open_tickets}`[] | Every other board the service serves on which they have open tickets (its work, not done, that counts for them by that board's credit setting, as its `GET /people` counts them), in the service's order; never the board read, nor a board where they have none open. This interface's server keeps only the boards the reader may open (an admin, or sign-in off: every board) before anything reaches the browser |
+| `last_activity_at` | timestamp \| null | The latest status change or logged work (by when the work was done) on their tickets on the board; null when there is none, and for someone with no tickets |
 
 The interface checks the body (`personCardSchema`): no more in progress than open; the tickets listed (each once,
 longest in progress first, three at most, and as many as there are up to three) and `in_progress_more` making
 `work.in_progress`; `process`'s four parts making `measurable`, and null exactly when nothing compared; the other boards
-each once, never the board read, each with an open ticket; a member who holds no tickets with no figures at all; and,
+each once, never the board read, each with an open ticket; someone with no tickets with no figures at all; and,
 against the request, the person, the period and (when it named one) the board asked for. A body that fails is 502
 `upstream_invalid`, with the failing paths.
 
@@ -1344,22 +1380,22 @@ column heads (the answer's pills above it open the same cards).
 - Top to bottom, 340 px wide: the 48 px picture, the size Jira gives it (the initials where there is none; 13 Nov
   2026, the product owner: at its source's size rather than stretched to the brief's 56 px), the name (never cut: it
   wraps) and
-  one plain line ("Holds 13 open tickets on Demo project", "No open tickets on Demo project" for someone whose tickets
+  one plain line ("13 open tickets on Demo project", "No open tickets on Demo project" for someone whose tickets
   are all done, "Member of Demo project · no tickets": the board by its name, as the top bar names it, its key in the
-  tooltip); three figures (Open, In progress, Done in 90 days); "Open findings on all their tickets" over the breaches and
-  warnings with their severity marks (the findings on every ticket they hold, done ones too, as Findings filtered to
-  them lists them, so they can outnumber the open tickets: said where everyone sees it); the process meter (the
+  tooltip); three figures (Open, In progress, Done in 90 days); "Open findings on their tickets" over the breaches and
+  warnings with their severity marks (the findings on every ticket of theirs, done ones too, so they can outnumber the
+  open tickets: said where everyone sees it); the process meter (the
   scorecard's sentence, "Closer to the process than the board on 5 of 8 measures.", a slim bar of closer, level,
   further and too few tickets in the neutral inks, never the status colours, and its key with each count; where nothing
   compared, one muted line in its place); what they are working on now, with when anything last happened on their
   tickets, in a framed list exactly as tall as its rows, in a section with the room of three (the key leading to the
   ticket, the status, how long it has been in progress as of the snapshot, the summary on one line; "and 4 more" at the
   section's foot, leading to Ask's list of everything they work on; nothing in progress, one muted line); the other
-  boards they hold open tickets on ("Also on OPS (3 open) · WEB (1 open)", each one the top bar can open switching to it
+  boards they have open tickets on ("Also on OPS (3 open) · WEB (1 open)", each one the top bar can open switching to it
   and opening their scorecard there; as many as fit whole on the line, then "+2 more", named in full in its tooltip and
-  to a screen reader; where the reader has more than one board and they hold nothing open elsewhere, it says so); and
+  to a screen reader; where the reader has more than one board and they have nothing open elsewhere, it says so); and
   the ways on: View scorecard (the People page, over the card's period), Open findings (Findings filtered to them; none
-  for a member who holds no tickets), Ask about them (Ask with their chip in the question box, nothing asked:
+  for someone with no tickets), Ask about them (Ask with their chip in the question box, nothing asked:
   `/ask?about=<id>`; on the Ask page itself the chip joins the question being written, the answer on screen and the
   address kept, and someone already in the question gets no second chip, the caret going just after theirs), three
   equal cells never cut short (a long first name wraps).
@@ -1892,6 +1928,296 @@ access log and usage), in the page's place under its heading: "AILED hasn't been
 large board can take a few minutes." and the one action, "Sync AILED"; while it is queued or running the button
 says so and a bar sweeps under it; a failure says why and offers it again; once it has synced, the page fills in.
 
+### 4.25 `GET /people/scorecard/tickets`
+
+The proof behind a figure of the scorecard (4.15): the tickets a number counts, so that anyone can check it (James,
+26 Nov 2026: "I need to see what is behind the number."). People level only. The figure and its list are one
+computation on the service: the list is the set the figure is the size of. Board-scoped like the scorecard
+(`?project=`, section 2); `Cache-Control: no-store`. A read is recorded in the access log as `scorecard_tickets_view`
+(4.16), with the person if one was asked for, the measure and `days`.
+
+**Request, interface to service.** `project` (added by the interface), `level` (`team` | `people`, `team` when left
+out, set by this server as for the scorecard), `days` (`30` | `90` | `180`, default `90`), `measure` (one of the
+scorecard's eleven keys, or `tickets`: every ticket the figure "N tickets" counts) and `person` (a person id; left out
+is the whole board). Any other name, a name given twice or a bad value is 422. At team level the service answers 403
+`people_level_only`; a `person` who is not on the board is 404; a measure the board cannot show (the scorecard's
+`measurable: false`) is 409 `not_measurable`. With `PEOPLE_COMPARISON=off` one person and the whole board are both
+allowed.
+
+**Request, browser to interface.** `/api/oversight/people/scorecard/tickets?days=&measure=&person=`: those three only,
+each checked and rebuilt (`measure` against the twelve keys, `person` as one person id); anything else is 400
+`bad_request`, `project` and `level` included. The admin gate of the scorecard applies (403 `people_not_allowed`).
+
+| Field | Type | Meaning |
+|---|---|---|
+| `meta` | meta | |
+| `period` | `{days, from, to}` | As the scorecard's |
+| `measure` | measure | The scorecard's measure object; for `tickets`, `{key: "tickets", label: "Tickets", kind: "count", direction: "neutral", rule_ids: [], measurable: true, reason: null}` |
+| `person` | person \| null | Whose figure; null is the whole board |
+| `value` | value | Byte for byte the value the scorecard shows in that cell (same days, same person); for `tickets`, `{value: n, numerator: null, denominator: null, enough: true, vs_board: null}` |
+| `total` | integer | Tickets in `tickets` |
+| `counted` | integer | Tickets in `tickets` with `counted` true |
+| `tickets` | ticket[] | Counted first, then by `at`, newest first (null last), then by key number |
+| `left_out` | ticket[] | Tickets an ignore leaves out of this measure (4.26), each with `ignore` set; `[]` when none |
+
+These always hold, and the interface checks them (`peopleProofSchema`): counts and `tickets` have `total == counted
+== value.value` with every ticket counted; rates have `counted == value.numerator` and `total == value.denominator`;
+the ratio (`open_findings_per_10`) has `total == value.denominator`, the `findings` of its tickets adding up to
+`value.numerator`, and `counted` the tickets with at least one open finding; no key is listed twice across `tickets`
+and `left_out`; each ticket's `detail` has the shape its measure gives. A body that fails is 502 `upstream_invalid`,
+with the failing paths.
+
+**Ticket** `{key, summary, issue_type, status, status_category, counted, credit, at, detail, ignore, url}`: `summary`,
+`issue_type` and `status` as Jira has them (null if unknown); `status_category` `new` | `indeterminate` | `done` |
+null; `counted` whether it is in the figure's numerator (all of them for a count); `credit` is why it counts for this
+row, for every measure alike (the board's credit setting, 4.29), `{person, basis, field}`, where `basis` is
+`assignee_now` (its assignee now) or `field` (the Jira field named in `field`, "Programmer" on the sites that fill it),
+and, for the whole board, the first person it counts for (`person` null and `basis` null: no one); `at` is `done_at` for the measures of finished
+work, `started_at` for `estimated_before_start` and null otherwise; `ignore` is `{scope, rule_id, reason, by, at}`
+when an ignore left it out; `url` is always null from the service, and the interface fills it with the Jira link of the
+key (`OVERSIGHT_JIRA_BASE_URL`, as `issue.url` is filled; null where none is set, as in the sample).
+
+`detail` by measure, raw numbers (the page words them): `open_tickets`, `in_progress`, `done_in_period` and `tickets`:
+null. `estimated_before_start`: `{started_at, estimate_set_at, grace_hours}`. `time_logged`: `{time_spent_s,
+subtask_time_spent_s}`. `within_estimate`: `{logged_s, estimate_s, ratio, limit}`. `stuck_now`: `{status, since, hours,
+threshold}` (the threshold as the finding states it, "p90 of To Do: 524.8 h"). `reopened`: `{times}`. `skipped_stage`:
+`{stages}`. `code_review`: `{breach}`. `open_findings_per_10`: `{findings, rule_ids}`.
+
+**The page** (`/people`): every figure in the everyone table (the whole board's row too) and in the scorecard is a
+button, named "Nasif Ishtiaque Islam, Open tickets stuck in a status, 78%, 7 of 9: show tickets"; "N tickets" under a
+name opens the `tickets` list; a cell with nothing behind it (a dash, 0 of 0) is no button. The tickets open in a side
+sheet (full screen on a phone) and the address keeps them (`proof=<measure>` and `proof_person=<id or board>`), so a
+link opens the same list. The sheet names the person and the measure, the period, and the figure with its sentence;
+a rate's tickets split under a control ("Stuck 7", "Not stuck 2", "All 9"); a list shows the key (to Jira, in a new
+tab), the summary, the status, the measure's detail in plain words, whom it counts for with its basis (the field's
+name, such as "Programmer", or "Assignee"; on every measure's list, a person's and the board's) and a link to the
+ticket's page here; ignored tickets carry an
+"Ignored" tag and a muted "Left out" group at the end. The foot offers "Open in Jira" for the keys shown (Jira's search),
+or, past 100 keys, "Copy keys" and "Copy JQL".
+
+### 4.26 `POST /findings/ignore/preview` and `POST /findings/ignore`
+
+Ignoring findings (James, 26 Nov 2026: "I don't want to change the rules; I want the system to ignore that particular
+ticket."). An admin sets findings aside without changing a rule: one rule on a ticket (scope `finding`), or every rule
+on it (scope `ticket`). An ignore is kept by the board, the ticket and the rule (none for a whole ticket), never by
+finding id, so it outlasts a severity change or a catalogue bump, and a finding that clears and fires again stays
+ignored. It holds at once: the open findings it covers are resolved in the same transaction as `ignored` (4.3); every
+later rules run keeps them so, and records a new finding on an ignored ticket and rule already resolved as `ignored`.
+Ignored is neither open nor fixed: it leaves every open count (the Overview, the Portfolio, People, Findings and its
+facets, the digest, the insights, the weekly series, Ask) and never counts as resolved, fixed or new. People level
+only; board-scoped; `Cache-Control: no-store`. Nothing here writes to Jira.
+
+**Request, interface to service.** `project` and `level=people` (`team`, or none, is 403 `{"detail", "code":
+"people_level_only"}`), the reader's `X-Oversight-Viewer` and `X-Oversight-Viewer-Name` (who ignored it, by the name
+the access log keeps: never an email address), and a JSON body of at most 1 MB:
+
+```jsonc
+{ "target": { "query": { "ticket": "finished" } }, "scope": "finding", "reason": "Closed before we estimated work" }
+```
+
+`target` is exactly one of `{"finding_ids": [...]}` (1 to 10,000 finding ids), `{"issue_keys": [...]}` (1 to 10,000
+issue keys, scope `ticket` only), or `{"query": {...}}`: the filters of 4.3 that narrow (`rule`, `severity`, `epic`,
+`person`, `q`, `first_seen`, `ticket`), resolved on the service to the matching **open** findings at that moment (it
+takes no state, sort or paging). With scope `ticket` every open finding on the tickets the target comes to is ignored,
+its other rules' too. A sprint's finding (W-SPR-01) is on no ticket and is never ignored. `reason` (the ignore only)
+is optional plain text, at most 500 characters as Python counts them. A target that comes to nothing ignores nothing:
+200 with zeros. A body the contract does not allow is 422 with each problem at its field; nothing is written.
+
+The preview answers:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `meta` | meta | |
+| `findings` | count | The open findings the ignore would resolve now |
+| `tickets` | count | The tickets they are on |
+| `by_rule` | `{rule_id, rule_title, findings}`[] | Those findings by rule, in the board's order of its rules, each rule once, adding up to `findings` |
+| `already_ignored` | count | Findings the target names that are ignored already, left as they are |
+
+The ignore answers:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `meta` | meta | |
+| `ignored` | `{findings, tickets}` | What it resolved: the preview's figures for the same target, at that moment |
+| `ignore_ids` | string[] | One ignore for each ticket and rule (or whole ticket) it recorded, each once; one already standing for a pair is given back, never doubled |
+
+**Request, browser to interface.** `/api/oversight/findings/ignore/preview` and `/api/oversight/findings/ignore`, no
+parameters (400 for any), from this dashboard's own pages as JSON (403 `forbidden` otherwise, section 6), and from a
+reader Ask answers at the people level (403 `people_not_allowed`, "Only admins can ignore findings or restore them.",
+for anyone else), both decided before the body is read. The body, at most 1 MB (413 `bad_request`), is checked
+(`ignorePreviewRequestSchema` and `ignoreRequestSchema`, `src/lib/api/ignores.ts`: one target, its ids and keys each
+once and in order, the filters in canonical form with nothing that does not narrow, issue keys at scope `ticket` alone,
+the reason as plain words on one line with no email address, blank read as none) and rebuilt: the service is sent
+what was checked, never the browser's body. 400 `bad_request` with each problem at its field otherwise. Forwarded with
+`level=people` beside the board; it waits 30 s. The service's 422 is passed on as 400 `bad_request`, in its own words
+where they can be shown; its 404 without `unknown_board` (a service from before) as 502 `upstream_error` ("The oversight
+service does not ignore findings yet: it may be an earlier version than this dashboard."). A 200 is checked: a preview
+whose rules do not add up to its findings, or an ignore that names an ignore twice, is 502 `upstream_invalid`.
+
+**The page** (Findings, people level only; nobody else sees any of it):
+
+- The table's first column selects: a box on each row an admin can act on (an open finding on a ticket, or an ignored
+  one), a box in the head for the page. A focused row takes x or Space for its box and Shift+F10 for its actions; the
+  boxes are no tab stops of their own in the table (they are in the phone's list). Escape lets go of the selection,
+  and another page, filter or sort starts afresh.
+- A selection raises a bar at the foot of the page, its room always kept: "3 selected · Ignore · Clear", with Restore
+  for ignored rows, and "Select all 412 matching" once the whole page is picked on Open with more beyond it, which
+  turns the selection into the filters themselves (a `query` target).
+- Each row's actions (the kit's menu, at its end): Ignore, Ignore every rule on this ticket, or on an ignored row,
+  Restore.
+- Filters: State gains Ignored; Ticket (Any, Open, Finished) beside First seen; and "Ignore findings on finished
+  tickets…" beside Export CSV, which opens the dialog for every open finding on a finished ticket the other filters
+  match, and leaves the list as it is. It opens "Findings on finished tickets": every rule that runs on the board,
+  breaches first, each with its severity and its open and ignored counts on finished tickets, ticked where its
+  findings there are ignored by rule; a rule with none there is listed greyed ("None on finished tickets").
+  Whole-ticket ignores are only counted in a note. Ticking a rule ignores its open findings there (a `query` target
+  with `ticket=finished` and that rule, scope `finding`); unticking it restores that rule's own ignores there. One
+  Save does both ("Ignore 56, restore 266"), with an optional reason for the new ignores.
+- The dialog: "Ignore 412 findings?", the service's preview (the findings and their tickets, by rule, and how many are
+  ignored already), the scope as two cards where it can be chosen ("Only this rule" / "Every rule on this ticket", or
+  for several "Only these rules" / "Every rule on these tickets"), an optional reason with its counter, and "Ignore 412
+  findings" (⌘↵), held back while the preview is worked out or finds nothing. Then a toast, "Ignored 412 findings",
+  with Undo, which restores the ignores it made.
+- An ignored row reads "Ignored" (a neutral chip, never a status colour) with "Ignored by Morgan Ellis on 26 Nov 2026:
+  Closed long ago" in its tooltip and to a screen reader; the name only at the people level.
+- The drawer: Ignore or Restore beside Copy link, and on an ignored finding a note of who ignored it, when, why and
+  what the ignore covers. The ticket page: "Ignore all on this ticket" beside its findings (scope `ticket`, no choice),
+  and the same chip on its ignored findings.
+- Everything an ignore moves is read again after it (the Overview, Findings, People, the Portfolio, the weekly series,
+  the ticket pages, the rules' open counts): no new widget anywhere, the counts just change.
+
+### 4.27 `POST /findings/restore`
+
+Removes ignores. Body `{"ignore_ids": [...]}` (1 to 10,000, each once): the board's standing ignores among them are
+restored, each kept as history with who restored it and when, and an id that is not one is passed over. The board is
+then re-checked through the Refresher's re-check (the one a rule settings save starts, 4.22), so exactly the findings
+the rules still hold reopen, under the same ids with their first sighting kept, as an undo of a rule settings change
+reopens them. People level only, as 4.26, its body at most 1 MB.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `meta` | meta | |
+| `restored` | count | The ignores restored |
+| `recheck` | object \| null | The re-check it started: `{state, started_at, finished_at, message}`, `state` as the Refresher says a job (`queued`, `running`, `succeeded`, `failed`); the interface also reads a rule settings apply state there (`running`, `applied`, `pending`, `failed`, 4.20). Null when nothing needed one |
+
+**Request, browser to interface.** `/api/oversight/findings/restore`, as 4.26: from this dashboard's own pages, as JSON,
+from an admin, its body checked (`restoreRequestSchema`) and rebuilt. While the re-check is queued or running the page
+follows it as it follows a rule settings save's (the shell reads `GET /rules/settings` every 2 s), and reads every
+figure again when it ends. One restore runs at once with a toast ("Restored"); several, from the bar, after a dialog
+that says how many come back and that a whole ticket's ignore brings back its other findings too ("Keep ignored"
+focused). The toast after an ignore restores its `ignore_ids` the same way.
+
+### 4.28 `GET /findings/ignored`
+
+The board's standing ignores, a page at a time. People level only; board-scoped.
+
+| Parameter | Type | Default | Meaning |
+|---|---|---|---|
+| `rule` | rule id, repeatable, at most 24 | all | Ignores of any of these rules (a whole ticket's has none) |
+| `q` | string, at most 100 characters | none | A key, a number or words in the ticket's key or summary, as 4.3's search reads them |
+| `sort` | `at` \| `issue_key` \| `rule_id` | `at` | `issue_key` by number; a whole ticket's ignore last by `rule_id` either way |
+| `order` | `asc` \| `desc` | `desc` | Ties: newest first, then `ignore_id` |
+| `page`, `page_size` | integer ≥ 1; 1 to 100 | 1; 25 | A page past the end is an empty page |
+
+The answer is `{meta, items, total, page, page_size}`, each item an ignore: `{ignore_id, scope, issue_key,
+issue_summary, issue_type, status, status_category, rule_id, rule_title, findings, reason, by, at}`, the ticket as the
+snapshot has it now (null where it has left), `rule_id` and `rule_title` null exactly for a whole ticket's ignore,
+`findings` the findings resolved as ignored under it now, and who made it, when and why. The interface refuses (400)
+unknown parameter names, a single-valued one given twice and values out of range, forwards only the canonical form
+with `level=people`, and refuses (403 `people_not_allowed`, "Only admins can see the ignored findings' ignores.") a
+reader below the people level. It checks the answer: each ignore once, a rule exactly when it covers one, no more items
+than a page; an email address in `by` reads "Signed-in user" and one in a reason "(email address removed)". The page
+reads it to find the ignore behind an ignored finding when the finding does not name it.
+
+### 4.29 `GET /people/credit` and `PUT /people/credit`
+
+Whom a board's tickets count for, and the choice an admin makes of it (26 Nov 2026: on MJH DASHBOARD the
+workflow clears the assignee at every hand-off, so crediting the assignee now missed almost all finished work; AILED
+fills no Programmer field). People level only; board-scoped (`?project=`, section 2); `Cache-Control: no-store`.
+
+**The credit rule** (the product owner's decision of 26 Nov 2026, final). The board's setting decides whom every work
+ticket counts for, open or finished, wherever people figures are shown: every scorecard measure, those of now
+(`open_tickets`, `in_progress`, `stuck_now`, `open_findings_per_10`) and those of finished work alike, a person's
+tickets, who is listed under "Everyone with tickets", the person card, the proof lists, and Ask's people answers
+(their findings too). Only the open findings Findings lists by person (its Person filter and Assignee column), and
+`GET /people`'s open findings that the Overview's open findings by person shows, stay with whoever is assigned the
+ticket now. A ticket counts for whom the board's setting names, and no one else:
+
+- **A Jira people field**: everyone in that field now (`field`; one ticket can have several, and it counts once for
+  each). Empty, the ticket counts for no one.
+- **Assignee**: the current assignee (`assignee_now`). Unassigned, no one.
+- **Automatic**: the Programmer field where it is filled (`field`), otherwise the current assignee (`assignee_now`);
+  neither, no one.
+
+A ticket that counts for no one counts for the whole board only. A person's tickets (`GET /people`'s, the directory's,
+the scorecard's and the card's, 4.12 to 4.19) are the board's work that counts for them. So with Programmer chosen,
+someone never named as Programmer has no tickets, no figures, and is not listed under "Everyone with tickets".
+
+**The setting**, per board, with three choices. **Automatic** (`auto`, every board's default): the site's Programmer
+field (`programmer` in config/fields.yaml) where it is filled, otherwise the assignee; the assignee alone where the
+site has no Programmer field. **Assignee** (`assignee`). **A Jira people field** (`field`): one of the site's people
+fields (a people or user picker type in fields.yaml: today Programmer, Code Reviewers, Testers and Test Reviewers)
+filled on at least one of the board's work tickets. A board starts on its choice in config/process.yaml
+(`credit: {source, field}` under the project; `auto` where it names none): MJHDASH reads Programmer, AIL credits the
+assignee. An admin's change overrides it from then on, at once (no Jira call, no rules run), and is kept in the
+snapshot.
+
+**Request, interface to service.** `GET /people/credit?project=&level=&days=`: `level` as 4.15 (`team`, or none, is
+403 `people_level_only`); `days` `30` | `90` | `180`, 90 when left out, the period the coverage is counted over. Any
+other parameter, or one given twice, is 422. `PUT /people/credit?project=&level=` with the reader's
+`X-Oversight-Viewer` and `X-Oversight-Viewer-Name` (4.16; the name is the setting's `changed_by`) and the
+JSON body `{"source": "auto" | "assignee" | "field", "field": key | null, "revision": count}`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `meta` | meta | |
+| `period` | `{days, from, to}` | As 4.15's: the coverage is counted over the work finished in it (the People page's period) |
+| `setting` | `{source, field, revision, changed_by, changed_at}` | The choice in force: `field` `{key, name}` exactly when `source` is `field`; `revision` 0 while the process.yaml choice stands, then 1, 2, 3 …; `changed_by` (the name the access log keeps, never an email address) and `changed_at` null exactly while it stands |
+| `effective_field` | `{key, name}` \| null | The people field the setting reads now: the chosen field, or Automatic's Programmer where the site has it; null for Assignee |
+| `finished` | count | The board's work (Epics left out) finished in the period: what each option is counted out of |
+| `options` | option[] | Automatic, then Assignee, then each eligible people field by its name (folded for case and accents, then its key) |
+
+**Option** `{source, field, source_filled, credited}`: `source_filled` the finished tickets the option's own source
+fills (a field's: filled now; Automatic's: Programmer, 0 where the site has none; Assignee's: assigned now);
+`credited` the finished tickets that count for at least one person under it.
+
+A `PUT` is made against the revision the page read: one that is not the board's is 409 `{"detail", "code":
+"stale_revision"}`, and nothing is written. An unknown source, a field with a source other than `field`, `field`
+without one, or a field the site lacks or the board fills on none of its work tickets is 422. Choosing what already
+stands writes nothing. Otherwise the choice is saved as the next revision with the reader and the time, and the answer
+is 200 with the setting as `GET` gives it (over 90 days).
+
+**Request, browser to interface.** `GET /api/oversight/people/credit?days=`: `days` alone, checked
+(`parseCreditQuery` in `src/lib/api/params.ts`) and rebuilt; anything else is 400 `bad_request`, `project` and `level`
+included. `PUT /api/oversight/people/credit`, no parameters (400 for any): from this dashboard's own pages, as JSON
+(403 `forbidden` otherwise: "How finished work is counted can be changed only from this dashboard's own pages, so
+nothing was changed."), at most 16 KB (413), and from a reader Ask answers at people level (403 `people_not_allowed`,
+"Only admins can change how finished work is counted."; a read, "Only admins can see how finished work is
+counted."), all decided before the body is read or anyone is asked anything. The body is checked
+(`peopleCreditSaveRequestSchema`: the source, a field's key exactly when the source is `field`, the revision a whole
+number, nothing else; 422 `credit_invalid` otherwise) and the service is sent the body rebuilt from it. The service's
+409 is passed on as 409 `stale_revision` in this interface's words ("Someone changed how finished work is counted on
+this board since you opened it. Look again, then choose."), its 422 as 422 `credit_invalid` in its own words where
+they can be shown, and a 404 without `unknown_board` (a service from before the setting) as 502 `upstream_error`. A
+200 is checked (`peopleCreditSchema`: the field exactly with its source, who and when together, Automatic and
+Assignee first and each field once, no option over the finished work) against the board and, for a read, the period
+asked for; a body that fails is 502 `upstream_invalid`. Saves are never retried by the page.
+
+**The page** (People, `/people`): beside the period, a quiet control, "Counts for: Automatic" (or "Assignee", or
+the field's name), opens "Whom tickets count for" ("Every ticket, open or finished, counts for the people this choice
+names. Tickets without them count for no one."): the choices as selectable cards (a radio group: the arrows
+move and choose, ⌘↵ saves), each with what it does in one line (Automatic: "Programmer in Jira where it is filled,
+otherwise the assignee."; Assignee: "The assignee in Jira now. Tickets without one count for no one."; a field:
+"Testers in Jira. Tickets without it count for no one."), Automatic marked "Recommended" where the board fills the
+field it reads, the one in force "In use", and its coverage over the period on screen as one slim bar (the share that
+counts for someone) and one line ("471 of 475 finished tickets count for someone"); Save (the one primary action)
+applies it at once: every figure that follows it is read again, and a toast says so ("Tickets now count for the
+assignee"). The note under the everyone table, each column's tooltip, the scorecard's caveat and Ask's (the same
+words: "Tickets count for their Programmer in Jira; tickets without one count for no one."; "Tickets count for their
+assignee; tickets without one count for no one."; "Tickets count for their Programmer in Jira, or their assignee where
+there is no Programmer."), and whom each ticket counts for in a figure's tickets follow the setting (4.15, 4.25). A reader below people level never sees the
+control: the page itself is theirs alone.
+
 ## 5. Errors
 
 The service answers failures with any JSON body (FastAPI's `{"detail": ...}` is fine); the interface
@@ -1922,6 +2248,16 @@ never shows it to anyone. What matters is the status:
 | 409 on `/rules/settings`, its body's code `rule_settings_conflict`: the board's settings moved on from the revision sent | 409 | `rule_settings_conflict`, in this interface's words (4.22) |
 | 422 on `/rules/settings` or its preview, its body's code `rule_settings_invalid` | 422 | `rule_settings_invalid`, each problem the service names at its setting, in plain words only (4.22) |
 | 503 on `/rules/settings`, its body's code `rule_settings_busy`: a rules run held the board's lock, nothing was written | 503 | `upstream_unavailable` ("The rules are running on this board right now. Try again in a moment.") |
+| (never asked) a team-level reader asks for `/people/credit`, or changes it | 403 | `people_not_allowed` ("Only admins can see how finished work is counted.", "Only admins can change how finished work is counted."; 4.29) |
+| (never asked) a change of the credit setting whose body the contract does not allow | 422 | `credit_invalid` (4.29) |
+| 409 on `PUT /people/credit`, its body's code `stale_revision`: the board's setting moved on from the revision sent | 409 | `stale_revision`, in this interface's words (4.29) |
+| 422 on `PUT /people/credit`: the service refused the choice | 422 | `credit_invalid`, in the service's own words where they can be shown (4.29) |
+| 404 on `/people/credit` without the code `unknown_board`: a service from before the setting | 502 | `upstream_error` ("The oversight service does not offer the credit setting yet: …") |
+| (never asked) a team-level reader posts an ignore, its preview or a restore, or asks for `/findings/ignored` | 403 | `people_not_allowed` ("Only admins can ignore findings or restore them.", "Only admins can see the ignored findings' ignores."; 4.26 to 4.28) |
+| (never asked) an ignore, its preview or a restore not from this dashboard's own pages, or not JSON | 403 | `forbidden` (section 6) |
+| (never asked) an ignore, its preview or a restore whose body the contract does not allow; over 1 MB | 400; 413 | `bad_request`, each problem at its field (4.26, 4.27) |
+| 422 on an ignore, its preview or a restore: the service refused the body | 400 | `bad_request`, in the service's own words where they can be shown (4.26) |
+| 404 on an ignore route without the code `unknown_board`: a service from before ignoring | 502 | `upstream_error` ("The oversight service does not ignore findings yet: …") |
 | 404 on `/rules/settings` or its preview without the code `unknown_board`: a service from before JO-15 | 502 | `upstream_error` ("The oversight service does not offer rule settings yet: …") |
 | 404 on `/rules/settings/draft` without the code `unknown_board`: a service from before JO-20 | 502 | `upstream_error` ("The oversight service does not draft rules yet: …") |
 | 429 on `/ask` or `/rules/settings/draft`, its body's code `ask_rate_limited` | 429 | `ask_rate_limited`, with the contract's sentence and the service's `Retry-After` (4.17, 4.23) |
@@ -1934,22 +2270,23 @@ never shows it to anyone. What matters is the status:
 | Unreachable | 503 | `upstream_unavailable` |
 | 2xx with a body that is not JSON | 502 | `upstream_malformed` |
 | 2xx with JSON that breaks this contract | 502 | `upstream_invalid`, with the failing field paths (never their values) |
-| 2xx on `/people/{id}/avatar` that is not one of the four image types, by `Content-Type` and by its first bytes, or is over 256 KB | 502 | `upstream_invalid` |
+| 2xx on `/people/{id}/avatar` that is not one of the four image types, by `Content-Type` and by its first bytes, or is over 1 MB | 502 | `upstream_invalid` |
 | 2xx on `/ask` at team level whose `people` is not empty | 502 | `upstream_invalid` |
 | 2xx on `/people/directory` naming a person twice, or with an entry that is not a person and a count | 502 | `upstream_invalid` |
 
 Every non-2xx body the browser receives from the interface is
 `{"error": "<code>", "message": "<plain words>", "issues": [{"path", "message"}]?}`, where `error` is one
 of `bad_request`, `not_found`, `unknown_board`, `board_not_synced`, `board_not_allowed`, `people_not_allowed`, `comparison_off`,
-`ask_rate_limited`, `access_log_unavailable`, `rule_settings_conflict`, `rule_settings_invalid`, `forbidden`,
+`ask_rate_limited`, `access_log_unavailable`, `rule_settings_conflict`, `rule_settings_invalid`, `stale_revision`, `credit_invalid`, `forbidden`,
 `unauthenticated`, `not_configured`, `upstream_unavailable`, `upstream_timeout`, `upstream_refused`,
 `upstream_error`, `upstream_malformed`, `upstream_invalid` or `internal_error`. `unauthenticated` (401) is the
 interface's own: sign-in is on and the request carries no valid session, so the browser is sent to `/login` and
 back. `board_not_allowed` (403) is the interface's own too: sign-in is on and the board picked in the top bar is not
 one the person's Jira account can open. So is `people_not_allowed` (403): a question that mentions people, or a read
 of the directory, from a reader Ask answers at team level (4.6, 4.14), and any rule settings request from them
-(4.20 to 4.23). So is `forbidden` (403): a POST (a question, "Sync now", a change to rule settings, an AI draft of a
-rule) not sent from this dashboard's own pages, or with a body not sent as JSON. The service never sees any of these requests. `rule_settings_conflict` (409) and `rule_settings_invalid`
+(4.20 to 4.23), and any ignore request (4.26 to 4.28). So is `forbidden` (403): a POST (a question, "Sync now", a change
+to rule settings, an AI draft of a rule, an ignore or a restore) not sent from this dashboard's own pages, or with a
+body not sent as JSON. The service never sees any of these requests. `rule_settings_conflict` (409) and `rule_settings_invalid`
 (422) are the service's refusals of a change, said in this interface's words; a body this interface itself cannot
 take is `rule_settings_invalid` too, before anything is forwarded.
 
@@ -1975,8 +2312,9 @@ it:
 
 1. **Resolves the request against an allowlist** (`src/server/endpoints.ts`): the GET paths of
    section 1, `GET /projects`, `GET /refresh`, `POST /refresh`, `POST /ask`, (JO-15) `POST
-   /rules/settings/preview` and `POST /rules/settings`, and (JO-20) `POST /rules/settings/draft`. Anything else is 404
-   before any work is done. Endpoints without parameters
+   /rules/settings/preview` and `POST /rules/settings`, (JO-20) `POST /rules/settings/draft`, `PUT /people/credit`
+   (4.29), and `POST /findings/ignore/preview`, `POST /findings/ignore` and `POST /findings/restore` (4.26, 4.27).
+   Anything else is 404 before any work is done. Endpoints without parameters
    refuse any query parameter (400); a person's picture takes only its version, `v`, which is checked
    and never forwarded; a person's card only its period, `days`, and the board the page names, `board`, which goes on
    as the board read (4.19). Findings and trends parameters are validated
@@ -1984,8 +2322,10 @@ it:
    interface validated, never the raw request. Only Ask and the three rule settings POSTs have a body read (at most
    16 KB, a chunk at a time; larger is 413): Ask's as `{"question", "mentions"}`, a rule settings change's checked
    against its schema (4.21, 4.22) and rebuilt from what was checked, an AI draft's as `{"text"}`, its text sent on as
-   the plain text it was checked as (4.23). Every POST (a question, "Sync now", a rule settings preview, save or
-   draft) is refused with 403 `forbidden` before its body is read unless it comes from this
+   the plain text it was checked as (4.23). The ignore POSTs' bodies are read the same way, up to 256 KB (a page's
+   findings by id, tickets by key, or the filters), checked and rebuilt (4.26, 4.27). Every POST (a question, "Sync
+   now", a rule settings preview, save or draft, an ignore or a restore) is refused with 403 `forbidden` before its body
+   is read unless it comes from this
    dashboard's own pages: its `Origin` must be `APP_URL`'s with sign-in on (as signing out checks it), or with sign-in
    off name the host the browser addressed (the first `X-Forwarded-Host` a proxy in front sends, else `Host`; never
    the address the server is bound to, such as the container's `0.0.0.0`), by http or https, as a proxy that ends TLS
@@ -2006,7 +2346,8 @@ it:
    `?project=<board>`, added here: the board picked in the top bar, held to the person's boards when sign-in
    is on (section 5); the board list and what belongs to no one board (the Portfolio, the access log, usage) carry
    none. Redirects are refused, since a redirect would
-   carry the key elsewhere. Reads time out after 15 s; a rule settings preview or save after 30 s; an AI draft of a
+   carry the key elsewhere. Reads time out after 15 s; a rule settings preview or save, an ignore, its preview and a
+   restore after 30 s; an AI draft of a
    rule after 60 s (a model call, its thinking and one repair); `/ask` after 120 s, because the analyst may take
    several rounds of model calls and queries. Every 2xx body is parsed
    against the schema; only the parsed body (unknown fields dropped) is passed on, and issue `url`s are rebuilt from
@@ -2014,7 +2355,9 @@ it:
    types (4.13). `/ask` is sent `{"question", "level", "mentions"}`: the level this route decided for the
    reader and the mentions it checked, never anything the browser said about the level (4.6). A rule settings
    preview, save or draft is sent as a `POST` with `Content-Type: application/json`, the body this route checked and
-   rebuilt (4.21 to 4.23), and `level=people` beside the board.
+   rebuilt (4.21 to 4.23), and `level=people` beside the board; so are an ignore, its preview and a restore (4.26,
+   4.27). A team-level reader's findings, finding and issue reads have every ignore's `by` set to null here as well,
+   whatever the service sent.
 4. **Never caches** (`Cache-Control: no-store`), and never names the service, its address or its key in
    anything it returns. The one exception is a person's picture, which the reader's browser keeps for a
    day (`private, max-age=86400`), under an address that carries its version.
@@ -2113,6 +2456,16 @@ real project's shape at a smaller scale:
   work), so the log does not grow as a demo clicks. Usage is made up too: a working week of questions, quiet at
   the weekend, today counted to now, and no daily budget set. The sample never limits questions and never
   writes `note`.
+- The credit rule and setting (4.29, `sample/credit.ts`, `credit-store.ts`, `credit-view.ts`): the service's rule step
+  for step, every view of people reading it (`GET /people`, the directory, the scorecard, the person card and Ask's
+  people tools). The sample's site has the four people fields (Programmer, Code Reviewers, Testers, Test Reviewers).
+  DEMO fills none and keeps every assignee, so on DEMO the rule gives exactly the figures it always has, under
+  Automatic (its starting choice) or Assignee; MOB, which starts on Assignee as AIL does, fills Programmer (mostly the
+  assignee, sometimes a pair, sometimes the one who wrote it before handing it on) and Testers (on finished work,
+  mostly two of the team), each drawn from a stream of its own so nothing else on MOB moves: there a field changes
+  whom every ticket counts for, open or finished; `GET /people`'s open findings alone stay with the assignee. The setting is kept in memory per server process and per board, saved under the
+  reader (the local reader with sign-in off) at the sample's "now"; a restart forgets it. The vitest
+  suites set it back with `resetSampleCredit()`.
 - Rule settings (JO-15, `sample/settings-store.ts`, `board-rules.ts`, `recheck.ts`, `rule-settings.ts`): kept in memory,
   per server process and per board (the sample's one, DEMO), as the service keeps them in its snapshot: the board's
   revision, each rule's overrides (only what differs from the catalogue) and every change, never purged until the
@@ -2161,6 +2514,17 @@ real project's shape at a smaller scale:
   reporting it. Once HELP's first sync has ended it serves its own small world, like MOB; a restart forgets every
   sync, and HELP is unsynced again. The vitest suites set it back with `resetSampleSync()`; the end-to-end spec
   that syncs runs on a server of its own.
+- Ignores (4.26 to 4.28; `sample/ignores.ts`, `ignore-views.ts`): kept in memory, per server process and board, as the
+  service keeps them, by ticket and rule (none for a whole ticket), restored ones kept as history, never purged until
+  the server restarts, which forgets them. The board's findings are worked out as the rules leave them, then each
+  finding a standing ignore covers that was open when the ignore was made (read as a re-check reads a save: never
+  before the last rules run), or that opened after, is resolved as `ignored` at that moment; so ignoring and restoring
+  move every view at once, and a restore leaves exactly the findings the rules still hold open, under their own ids
+  and first sighting, as the service's re-check would (its `recheck` says `succeeded` at once). A rule settings preview
+  or save never opens or closes an ignored finding. `activeIgnores(board)` answers `covers(key, ruleIds)` (the
+  ticket's own ignore first) and `ticket(key)` for the views that leave an ignored ticket out of a measure. Ignores
+  are recorded under the reader (the local reader with sign-in off) at the sample's "now". The vitest suites set the
+  board back with `resetSampleIgnores()`; the end-to-end spec that ignores runs on a server of its own.
 
 Every view is computed from the same findings and the same issues, and the tests hold them to it: an
 Overview total is the total behind the Findings filter it clicks through to, the rule catalogue's open
@@ -2194,10 +2558,10 @@ way, naming no one, and questions about people are answered from the views of 4.
 
 | Question | Outcome |
 |---|---|
-| Who has the most open breaches? (or warnings) | answered: the ranking from the `people` view (people only, ties by name), its leader's figures and the two who follow, then `Unassigned: 15 open breaches.` and `Findings follow the ticket's current assignee.`; `people` lists the three |
-| Who holds the most open tickets? Who has the fewest? | answered: the same ranking by open tickets (Epics left out, the scorecard's figure), `Dev Malhotra and Grace Lindqvist have the most open tickets, 13 each, then …`, then `Unassigned: 9 open tickets.`: the work nobody holds is one row after the people and one sentence after the ranking, never ranked (JO-12, G5) |
-| What are @X's open findings? (or breaches, or warnings; one mention) | answered: X's row of the `people` view and their newest open findings, by `assignee_id` |
-| What is @X working on? (one mention) | answered: X's tickets in progress |
+| Who has the most open breaches? (or warnings) | answered: the ranking from the `people` view (people only, ties by name), its leader's figures and the two who follow, then `Unassigned: 15 open breaches.` and `A person's findings are those on their tickets.`; `people` lists the three |
+| Who holds the most open tickets? Who has the fewest? | answered: the same ranking by open tickets (Epics left out, the scorecard's figure), `Dev Malhotra and Grace Lindqvist have the most open tickets, 13 each, then …`, then `Unassigned: 9 open tickets.`: the work that counts for no one is one row after the people and one sentence after the ranking, never ranked (JO-12, G5) |
+| What are @X's open findings? (or breaches, or warnings; one mention) | answered: X's row of the `people` view and their newest open findings, on the tickets that count for them |
+| What is @X working on? (one mention) | answered (`oversight_person_tickets`, state in_progress): X's tickets in progress, those that count for them |
 | A question mentioning two to ten people | answered: each one's open breaches and warnings |
 | Is @X doing well? How is @X doing? Is @X lazy? (one mention, evaluating or personnel) | answered (`oversight_person_scorecard`): X's summary next to the board, then (personnel) `The figures are above; the decision is yours.`, then the caveat |
 | How are @X and @Y doing? (two to ten mentions) | answered: their scorecards side by side; with `SAMPLE_PEOPLE_COMPARISON=off`, not_understood with the comparison-off sentence |
@@ -2209,7 +2573,7 @@ way, naming no one, and questions about people are answered from the views of 4.
 | Who is doing the most? Who did the most this month? | answered: the open tickets, most first, then (`done_in_period`, the question's period) the tickets done, most first, in one paragraph; then the caveat |
 | Who could take more work? Who has capacity? Who is doing the least? Who is underworked? Who has the lightest load? Who is available? | answered: the open tickets fewest first, then the members with no tickets (`oversight_board_people`, `none`) |
 | Who is idle? Who has nothing in progress? Who contributes least? | answered: the count (in progress, done in the period) fewest first; for the first, then the members with no tickets |
-| Who is on this board? List the members. Who has no tickets? | answered (`oversight_board_people`): `11 people are on this board: Ada Brooks, … and Hana Mori, and 3 members who hold none of its tickets: Noor Haddad, Tomás Ferreira and Yuki Tanabe.`, each name once (JO-12, G8); or only those members |
+| Who is on this board? List the members. Who has no tickets? | answered (`oversight_board_people`): `11 people are on this board: Ada Brooks, … and Hana Mori, and 3 members who have none of its tickets: Noor Haddad, Tomás Ferreira and Yuki Tanabe.`, each name once (JO-12, G8); or only those members |
 | Is Ada Brooks doing well? (a full name typed, no @) | as if picked with @ (a name two people share asks for @) |
 | how is ada doing? (a first name in lower case where a name stands, nothing else answering it) | as if picked with @, when one person on the board has that first name (two: asks for @, naming them) |
 | What is @Noor Haddad working on? (any question whose mentions are all members with no tickets) | no_data: `Noor Haddad has no tickets on this board.` as the answer, `people` naming her, nothing planned; two or three of them, one sentence naming each |
@@ -2276,5 +2640,11 @@ change ops and their history fields, the widened rule id, and `POST /rules/setti
 them, the live rule settings page says it could not load the settings, with Try again; `GET /rules`'s `custom` and
 `check_label`, a param's `kind`, a rule's `created_at` and `created_by` and the board's `issue_types` are read as
 absent from a service that predates them, and its 404 for a draft is 502 `upstream_error`, "The oversight service does
-not draft rules yet: it may be an earlier version than this dashboard.").
+not draft rules yet: it may be an earlier version than this dashboard."), and so are the scorecard's `basis`
+`"credit"` and `GET` and `PUT /people/credit` (4.29, 26 Nov 2026: until the service sends `basis: "credit"`, the live
+People page says it could not load the figures, with Try again, and until it serves the setting, the control says it
+is not loaded and its dialog that it could not load the choices, with Try again), and so are the finding's `ignore`, the
+`ignored` state and its facet, the `ticket` filter and the four routes of ignoring (4.26 to 4.28, 26 Nov 2026: until the
+service sends `ignore`, every live findings, finding and issue read fails this interface's schema, so release the
+service with the interface; until it serves the routes, an ignore says the service does not ignore findings yet).
 Renaming or removing one, or changing its type, needs both sides released together and `api_version` raised.

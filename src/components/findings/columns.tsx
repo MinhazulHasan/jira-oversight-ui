@@ -10,7 +10,9 @@ import type { Finding } from "@/lib/api/schemas";
 import { formatDateTime } from "@/lib/format";
 
 import { usePageFindingClock } from "./clock";
+import { IgnoredChip } from "./ignored-chip";
 import { findingAgeMs, findingStatus, formatAge, NO_ONES_LABEL, noOnesReason, SETTINGS_CHANGED_TITLE, STATUS_LABEL } from "./model";
+import { PageCheckbox, RowCheckbox, RowMenu } from "./selection";
 import type { FindingsFilters, FindingsSort } from "./url-state";
 
 const keepServerOrder = () => 0;
@@ -60,7 +62,7 @@ function EpicCell({ finding }: { finding: Finding }) {
   const title = finding.epic_title ?? finding.epic_key;
   return (
     <span
-      className="line-clamp-2 whitespace-normal break-words hyphens-auto text-ink-mid"
+      className="line-clamp-2 whitespace-normal break-normal text-ellipsis hyphens-auto text-ink-mid"
       title={`${finding.epic_key} · ${title}`}
     >
       {title}
@@ -106,6 +108,7 @@ function OpenForHeader() {
 
 function StateCell({ finding }: { finding: Finding }) {
   const status = findingStatus(finding);
+  if (status === "ignored") return <IgnoredChip ignore={finding.ignore} />;
   if (status === "resolved") {
     return (
       <span className="inline-flex items-center gap-1.5 text-ink-mid">
@@ -140,7 +143,7 @@ export const FINDING_COLUMNS: DataTableColumn<Finding>[] = col.columns([
     sortDescFirst: true,
     ...SERVER_SORTED,
     // A sortable header keeps 28 px for its sort arrow: these widths hold the whole label.
-    meta: { width: "6.5rem" },
+    meta: { width: "7rem" },
   }),
   col.accessor("rule_id", {
     // "Rule": the reason under it needs no word of its own, and "Rule and reason" was cut short at 1440 px.
@@ -172,14 +175,14 @@ export const FINDING_COLUMNS: DataTableColumn<Finding>[] = col.columns([
     header: "Assignee",
     cell: ({ row }) => <AssigneeCell finding={row.original} />,
     enableSorting: false,
-    meta: { width: "9%" },
+    meta: { width: "9rem" },
   }),
   col.accessor("first_seen_at", {
     header: "First seen",
     cell: ({ row }) => <Timestamp value={row.original.first_seen_at} mode="relative" className="text-ink-mid" />,
     sortDescFirst: true,
     ...SERVER_SORTED,
-    meta: { width: "6.5rem", numeric: true },
+    meta: { width: "7rem", numeric: true },
   }),
   col.accessor((finding) => findingAgeMs(finding), {
     id: "age",
@@ -194,9 +197,36 @@ export const FINDING_COLUMNS: DataTableColumn<Finding>[] = col.columns([
     cell: ({ row }) => <StateCell finding={row.original} />,
     sortDescFirst: true,
     ...SERVER_SORTED,
-    meta: { width: "8.5rem" },
+    meta: { width: "7.5rem" },
   }),
 ]);
+
+// The two extra columns take 64 px from the rule, so the others give back what their labels can spare; the assignee keeps a name whole.
+const SELECTION_WIDTHS: Record<string, string> = { epic_key: "9%", assignee: "8.75rem", first_seen_at: "7rem", age: "4.5rem", resolved_at: "7rem" };
+
+function narrowForSelection(column: DataTableColumn<Finding>): DataTableColumn<Finding> {
+  const width = SELECTION_WIDTHS[column.id ?? ""];
+  return width ? { ...column, meta: { ...column.meta, width } } : column;
+}
+
+/** The same columns with a checkbox before them and each row's actions after, for a reader who may ignore findings. */
+export const SELECTABLE_COLUMNS: DataTableColumn<Finding>[] = [
+  col.display({
+    id: "select",
+    header: () => <PageCheckbox />,
+    cell: ({ row }) => <RowCheckbox finding={row.original} />,
+    enableSorting: false,
+    meta: { width: "2.25rem", label: "Select", cellClassName: "!pr-0" },
+  }),
+  ...FINDING_COLUMNS.map(narrowForSelection),
+  col.display({
+    id: "actions",
+    header: () => <span className="sr-only">Actions</span>,
+    cell: ({ row }) => <RowMenu finding={row.original} />,
+    enableSorting: false,
+    meta: { width: "1.75rem", label: "Actions", cellClassName: "!px-0 text-right" },
+  }),
+];
 
 /** The columns the API can sort by share the sort's name, so the URL maps straight onto the headers. */
 const SORTABLE = new Set<string>(["severity", "rule_id", "issue_key", "epic_key", "first_seen_at", "resolved_at"]);

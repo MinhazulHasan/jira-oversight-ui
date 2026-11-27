@@ -104,7 +104,7 @@ export function IssueKeys({ keys, primary = false }: { keys: readonly string[]; 
             <Link
               href={`/issues/${key}`}
               data-row-primary={(primary && index === 0) || undefined}
-              className={cn("mono text-ink-mid hover:text-cite", linkText)}
+              className={cn("mono -my-0.5 inline-block py-0.5 text-ink-mid hover:text-cite", linkText)}
             >
               {key}
             </Link>

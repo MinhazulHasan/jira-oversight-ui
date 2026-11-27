@@ -160,8 +160,8 @@ export function Ledger({ state, className }: { state: LedgerState; className?: s
       </div>
     );
   } else if (response?.outcome === "no_data" && response.answer?.trim()) {
-    // People mentioned who hold none of the board's tickets: said in code, with nothing to look up.
-    body = <RuledEmpty>Nothing was read. They hold no tickets on this board.</RuledEmpty>;
+    // People mentioned who have none of the board's tickets: said in code, with nothing to look up.
+    body = <RuledEmpty>Nothing was read. They have no tickets on this board.</RuledEmpty>;
   } else if (response && declineOf(response)) {
     // Understood and turned down: said in the decline's own terms, never as a question nothing matched.
     body = <RuledEmpty>{DECLINE_LEDGER[declineOf(response)!]}</RuledEmpty>;

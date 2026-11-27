@@ -1,8 +1,8 @@
 "use client";
 
 import type { UseQueryResult } from "@tanstack/react-query";
-import { ChevronRight, CircleCheck, Link2 } from "lucide-react";
-import { useRef, type ReactNode } from "react";
+import { ChevronRight, CircleCheck, EyeOff, Link2 } from "lucide-react";
+import { useEffect, useEffectEvent, useMemo, useRef, type ReactNode } from "react";
 
 import { useElementWidth } from "@/components/charts/use-element-width";
 import { SeverityBadge } from "@/components/ui/badge";
@@ -19,17 +19,32 @@ import type { ApiError } from "@/lib/api/client";
 import type { Finding, FindingsPage } from "@/lib/api/schemas";
 import { copyCurrentLink } from "@/lib/copy-link";
 import { formatCount } from "@/lib/format";
+import { isTypingTarget } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
 
+import { BulkBar } from "./bulk-bar";
 import { FindingClockProvider } from "./clock";
-import { FINDING_COLUMNS, sortToUrl, sortingFromUrl } from "./columns";
+import { FINDING_COLUMNS, SELECTABLE_COLUMNS, sortToUrl, sortingFromUrl } from "./columns";
 import { clearFilters } from "./filter-bar";
+import { IgnoredChip } from "./ignored-chip";
 import { FINDINGS_CSV, describeFilters, noOnesReason, resultSummary } from "./model";
+import { RowCheckbox, rowKeys, useFindingSelection, type Selection } from "./selection";
 import { hasActiveFilters, type FindingsFilters, type SetFindingsUrl } from "./url-state";
 
 const EMPTY: Finding[] = [];
+const capitalised = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 const LIST_BELOW_PX = 640;
+const SHOW_AGE_FROM_PX = 1000;
+
+/** What a selection does, at the people level. */
+export interface BulkActions {
+  selection: Selection;
+  onSelectMatching: () => void;
+  onClear: () => void;
+  onIgnore: () => void;
+  onRestore: () => void;
+}
 
 export interface FindingsTableProps {
   findings: UseQueryResult<FindingsPage, ApiError>;
@@ -38,6 +53,10 @@ export interface FindingsTableProps {
   /** The finding open in the drawer, marked as the current row. */
   openId: string | null;
   onOpen: (finding: Finding) => void;
+  /** At the people level: the selection's bar and what it does. Anyone else sees no selection. */
+  bulk?: BulkActions;
+  /** At the people level: "Ignore findings on finished tickets…". */
+  onIgnoreFinished?: () => void;
 }
 
 /** "809 open findings · 523 breaches", said politely to screen readers when it changes. */
@@ -63,7 +82,8 @@ function ResultLine({
     </span>
   );
   return (
-    <p className="flex flex-wrap items-baseline gap-x-2 text-sm text-ink-mid">
+    // Where the focus waits once an action takes its own control away (a selection's bar after an ignore).
+    <p tabIndex={-1} data-findings-result="" className="flex flex-wrap items-baseline gap-x-2 rounded-xs text-sm text-ink-mid outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
       <span role="status" aria-atomic="true">
         {figure(summary.total)} {summary.noun}
         {summary.breaches !== null ? (
@@ -98,6 +118,7 @@ function FindingList({
   openId: string | null;
   onOpen: (finding: Finding) => void;
 }) {
+  const { enabled } = useFindingSelection();
   if (loading) {
     return (
       <SkeletonGroup label="Loading the findings" className="flex flex-col divide-y divide-rule-weak rounded-lg border border-rule-weak">
@@ -115,20 +136,33 @@ function FindingList({
   return (
     <ul aria-label="Findings" className="flex flex-col divide-y divide-rule-weak rounded-lg border border-rule-weak" data-findings-list>
       {rows.map((finding) => (
-        <li key={finding.finding_id}>
+        <li key={finding.finding_id} className="flex items-stretch">
+          {enabled ? (
+            // The box beside the row, never inside its button: one control is not nested in another.
+            <span className="flex w-10 shrink-0 justify-center pt-3">
+              <RowCheckbox finding={finding} tabbable />
+            </span>
+          ) : null}
           <button
             type="button"
             onClick={() => onOpen(finding)}
             aria-current={finding.finding_id === openId || undefined}
             // Hover and the open one as the table's rows show them: the paper's step, and the accent's tint and bar.
-            className="pressable flex w-full items-center gap-3 px-3.5 py-3 text-left hover:bg-[var(--paper-100)] aria-[current=true]:bg-cite-tint aria-[current=true]:shadow-[inset_2px_0_0_var(--cite)]"
+            className={cn(
+              "pressable flex min-w-0 flex-1 items-center gap-3 py-3 pr-3.5 text-left hover:bg-[var(--paper-100)] aria-[current=true]:bg-cite-tint aria-[current=true]:shadow-[inset_2px_0_0_var(--cite)]",
+              enabled ? "pl-0" : "pl-3.5",
+            )}
           >
             <span className="flex min-w-0 flex-1 flex-col gap-1">
               <span className="flex items-start justify-between gap-3">
                 <span className="min-w-0 text-sm font-medium text-ink" data-rule-title>
                   {finding.rule_title}
                 </span>
-                <SeverityBadge severity={finding.severity} size="sm" />
+                {finding.state === "ignored" ? (
+                  <IgnoredChip ignore={finding.ignore} />
+                ) : (
+                  <SeverityBadge severity={finding.severity} size="sm" />
+                )}
               </span>
               <span className="flex min-w-0 items-baseline gap-2 text-xs">
                 <span className="mono shrink-0 text-ink">{finding.issue_key ?? finding.sprint?.name ?? "Sprint"}</span>
@@ -150,12 +184,16 @@ function FindingList({
   );
 }
 
-export function FindingsTable({ findings, filters, setFilters, openId, onOpen }: FindingsTableProps) {
+export function FindingsTable({ findings, filters, setFilters, openId, onOpen, bulk, onIgnoreFinished }: FindingsTableProps) {
   const locale = useFigureLocale();
   const top = useRef<HTMLDivElement>(null);
+  const frame = useRef<HTMLDivElement>(null);
+  const selectionState = useFindingSelection();
   // The width the list has: zero until laid out (and on the server), when the table is drawn.
   const width = useElementWidth(top);
   const asList = width > 0 && width < LIST_BELOW_PX;
+  // Below this width the rule, the assignee and the dates keep their room: how long a finding has been open is in its drawer.
+  const visibility = useMemo(() => ({ age: width === 0 || width >= SHOW_AGE_FROM_PX }), [width]);
   const { data, error, isPending, isPlaceholderData, isFetching, refetch } = findings;
   const rows = data?.items ?? EMPTY;
   const active = hasActiveFilters(filters);
@@ -195,12 +233,21 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
         description={"Nothing is open at the last sync."}
       />
     );
+  } else if (data && filters.state === "ignored" && !hasActiveFilters({ ...filters, state: "open" })) {
+    empty = (
+      <EmptyState
+        size="compact"
+        icon={EyeOff}
+        title="Nothing is ignored"
+        description="Findings an admin ignores are listed here, with who ignored them and why."
+      />
+    );
   } else if (data) {
     empty = (
       <EmptyState
         size="compact"
         title="No findings match these filters"
-        description={`${describeFilters(filters, data.meta.projects, data.facets)}.`}
+        description={`${capitalised(describeFilters(filters, data.meta.projects, data.facets))}.`}
         action={
           <Button size="sm" onClick={() => clearFilters(setFilters)}>
             Clear filters
@@ -218,11 +265,42 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
     if (frame.getBoundingClientRect().top < bar) frame.scrollIntoView({ block: "start" });
   };
 
+  const picked = bulk ? bulk.selection.kind === "matching" || bulk.selection.ids.size > 0 : false;
+  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    rowKeys(event, selectionState, frame.current);
+    // Escape lets go of the selection, but never one a menu, a dialog or a field takes first.
+    if (event.key === "Escape" && !event.defaultPrevented && picked && !isTypingTarget(event.target)) {
+      event.preventDefault();
+      bulk?.onClear();
+    }
+  });
+  const selecting = bulk !== undefined;
+  useEffect(() => {
+    if (!selecting) return;
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selecting]);
+
   return (
     <div ref={top} className="flex scroll-mt-[calc(var(--topbar-h)+1rem)] flex-col gap-3">
       <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <ResultLine data={data} filters={filters} updating={isPlaceholderData} failed={Boolean(error)} />
-        <div data-print="hide" className="flex shrink-0 items-center gap-1.5">
+        <div data-print="hide" className="flex min-w-0 flex-wrap items-center gap-1.5">
+          {onIgnoreFinished && filters.state !== "ignored" ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={EyeOff}
+              onClick={(event) => {
+                // Safari does not focus a button on click; the dialog hands the focus back to what held it.
+                event.currentTarget.focus();
+                onIgnoreFinished();
+              }}
+              data-ignore-finished=""
+            >
+              Ignore findings on finished tickets…
+            </Button>
+          ) : null}
           <ExportCsvButton rows={rows} columns={FINDINGS_CSV} fileName="findings" rowNoun="finding" size="sm" />
           <Button size="sm" icon={Link2} onClick={() => void copyCurrentLink()}>
             Copy link
@@ -231,9 +309,13 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
       </div>
 
       <div
+        ref={frame}
         aria-busy={isPlaceholderData || undefined}
         className={cn("transition-opacity duration-150 motion-reduce:transition-none", isPlaceholderData && "opacity-60")}
       >
+        {bulk ? (
+          <p className="sr-only">X or Space selects the row in focus, Shift+F10 opens its actions, and Escape lets go of the selection.</p>
+        ) : null}
         {/* First seen and Open for on one clock: now while the board's data is fresh, else as at its last sync. */}
         <FindingClockProvider lastSyncedAt={data?.meta.last_synced_at}>
           {asList ? (
@@ -242,7 +324,7 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
             <DataTable
               caption="Findings"
               data={rows}
-              columns={FINDING_COLUMNS}
+              columns={bulk ? SELECTABLE_COLUMNS : FINDING_COLUMNS}
               getRowId={(finding) => finding.finding_id}
               onRowOpen={onOpen}
               selectedRowId={openId}
@@ -252,7 +334,8 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
               loadingRows={12}
               empty={empty}
               keyboardScope="page"
-              minWidth="56rem"
+              columnVisibility={visibility}
+              minWidth={bulk ? "57rem" : "56rem"}
             />
           )}
         </FindingClockProvider>
@@ -265,6 +348,19 @@ export function FindingsTable({ findings, filters, setFilters, openId, onOpen }:
           total={data.total}
           onPageChange={onPageChange}
           noun={data.total === 1 ? "finding" : "findings"}
+        />
+      ) : null}
+
+      {bulk ? (
+        <BulkBar
+          selection={bulk.selection}
+          rows={rows}
+          total={data?.total ?? 0}
+          matchState={filters.state}
+          onSelectMatching={bulk.onSelectMatching}
+          onClear={bulk.onClear}
+          onIgnore={bulk.onIgnore}
+          onRestore={bulk.onRestore}
         />
       ) : null}
     </div>

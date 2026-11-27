@@ -289,7 +289,7 @@ test.describe("acknowledgement", () => {
 test("an empty result says what was looked at", async ({ page }) => {
   await page.goto("/findings?q=zzzz-no-such-thing");
   await expect(page.getByText("No findings match these filters")).toBeVisible();
-  await expect(page.getByText("open findings in DEMO, matching “zzzz-no-such-thing”.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Open findings in DEMO, matching “zzzz-no-such-thing”.", { exact: true })).toBeVisible();
   await expect(table(page).getByRole("button", { name: "Clear filters" })).toBeVisible();
   expect(await axeBlocking(page)).toEqual([]);
 });

@@ -18,14 +18,17 @@ import {
   FINDINGS_SORTS,
   FIRST_SEEN_WINDOWS,
   NO_EPIC,
+  TICKET_STATES,
   type FindingsQueryInput,
 } from "@/lib/api/params";
+import { canonicalIgnoreQuery, type IgnoreQuery } from "@/lib/api/ignores";
 import { FINDING_ID_PATTERN, ISSUE_KEY_PATTERN, PERSON_ID_PATTERN, RULE_ID_PATTERN, UNASSIGNED } from "@/lib/api/schemas";
 
 export const SEVERITY_FILTERS = ["breach", "warning"] as const;
 export type SeverityFilter = (typeof SEVERITY_FILTERS)[number];
 export type StateFilter = (typeof FINDING_STATES)[number];
 export type FirstSeenFilter = (typeof FIRST_SEEN_WINDOWS)[number];
+export type TicketFilter = (typeof TICKET_STATES)[number];
 export type FindingsSort = (typeof FINDINGS_SORTS)[number];
 
 const ORDERS = ["asc", "desc"] as const;
@@ -81,6 +84,7 @@ export const findingsUrlParsers = {
   epic: parseAsNativeArrayOf(epicParser),
   person: parseAsNativeArrayOf(personParser),
   first_seen: parseAsStringLiteral(FIRST_SEEN_WINDOWS).withDefault("all"),
+  ticket: parseAsStringLiteral(TICKET_STATES),
   sort: parseAsStringLiteral(FINDINGS_SORTS).withDefault("first_seen_at"),
   order: parseAsStringLiteral(ORDERS).withDefault("desc"),
   page: parseAsInteger.withDefault(1),
@@ -95,6 +99,8 @@ export interface FindingsFilters {
   /** Person ids and "unassigned", by the issue's assignee now. */
   person: string[];
   first_seen: FirstSeenFilter;
+  /** Findings on open or on finished tickets, by the ticket's status now; null (or left out) for any. */
+  ticket?: TicketFilter | null;
   sort: FindingsSort;
   order: "asc" | "desc";
   page: number;
@@ -120,6 +126,7 @@ export const CLEARED_FILTERS = {
   epic: null,
   person: null,
   first_seen: null,
+  ticket: null,
   page: null,
 } as const;
 
@@ -132,7 +139,8 @@ export function hasActiveFilters(filters: FindingsFilters): boolean {
     filters.rule.length > 0 ||
     filters.epic.length > 0 ||
     filters.person.length > 0 ||
-    filters.first_seen !== "all"
+    filters.first_seen !== "all" ||
+    (filters.ticket ?? null) !== null
   );
 }
 
@@ -147,10 +155,25 @@ export function toFindingsQuery(filters: FindingsFilters, search: string = filte
     state: filters.state,
     q: q === "" ? undefined : q,
     first_seen: filters.first_seen,
+    ticket: filters.ticket ?? undefined,
     sort: filters.sort,
     order: filters.order,
     page: Math.min(MAX_PAGE, Math.max(1, Math.trunc(filters.page) || 1)),
   };
+}
+
+/** Every open finding the filters match, as an ignore's target names them (the service resolves them as it ignores). */
+export function ignoreQueryOf(filters: FindingsFilters, search: string = filters.q): IgnoreQuery {
+  const query = toFindingsQuery(filters, search);
+  return canonicalIgnoreQuery({
+    rule: query.rule,
+    severity: query.severity,
+    epic: query.epic,
+    person: query.person,
+    q: query.q,
+    first_seen: query.first_seen,
+    ticket: query.ticket,
+  });
 }
 
 export function useOpenFinding() {

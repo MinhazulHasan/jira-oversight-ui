@@ -13,7 +13,7 @@
   "qa_id": "ff6ff5bc4aeb71180762f0f64dcba77d",
   "question": "How are @Ada Brooks and @Carmen Ruiz doing?",
   "outcome": "answered",
-  "answer": "Ada Brooks, last 90 days, next to the board: closer to the process on Estimated before work started; further from it on Open tickets stuck in a status; level on Time logged on done work, Done within the effort limit, Reopened after Done, Skipped a stage and Open findings per 10 open tickets.\n\nCarmen Ruiz, last 90 days, next to the board: closer to the process on Open tickets stuck in a status; further from it on Done within the effort limit; level on Estimated before work started, Time logged on done work, Reopened after Done, Skipped a stage and Open findings per 10 open tickets.\n\nNot measurable on this board: Code review recorded.\n\nFigures from Jira over the last 90 days, next to the whole board, by each ticket's current assignee. Code review isn't recorded on this board, so reviewers' work doesn't show.",
+  "answer": "Ada Brooks, last 90 days, next to the board: closer to the process on Estimated before work started; further from it on Open tickets stuck in a status; level on Time logged on done work, Done within the effort limit, Reopened after Done, Skipped a stage and Open findings per 10 open tickets.\n\nCarmen Ruiz, last 90 days, next to the board: closer to the process on Open tickets stuck in a status; further from it on Done within the effort limit; level on Estimated before work started, Time logged on done work, Reopened after Done, Skipped a stage and Open findings per 10 open tickets.\n\nNot measurable on this board: Code review recorded.\n\nFigures from Jira over the last 90 days, next to the whole board. Tickets count for their Programmer in Jira, or their assignee where there is no Programmer. Code review isn't recorded on this board, so reviewers' work doesn't show.",
   "citations": [
     {
       "marker": 1,
@@ -585,7 +585,7 @@
       ],
       "truncated": false,
       "as_of": "2026-11-04T14:28:00.000Z",
-      "note": "each person's figures over the last 90 days (6 Aug 2026 to 4 Nov 2026), next to the whole board's, by each ticket's current assignee, Epics left out; a rate's value is a percentage of its denominator, a count's value is the count, and open findings per 10 open tickets is the open breaches and warnings on the person's open tickets for every 10 of those tickets; enough tickets means the figure rests on at least 5 tickets; next to the board says closer to the process than the board, further from it, or level with it (within 5 points, 0.5 for the ratio), only when both sides have enough"
+      "note": "each person's figures over the last 90 days (6 Aug 2026 to 4 Nov 2026), next to the whole board's, every ticket, open or finished, by whom it counts for (the board's credit setting: a people field such as Programmer, the assignee, or Automatic: Programmer where it is filled, otherwise the assignee; a ticket without one counts for no one), Epics left out; a rate's value is a percentage of its denominator, a count's value is the count, and open findings per 10 open tickets is the open breaches and warnings on the person's open tickets for every 10 of those tickets; enough tickets means the figure rests on at least 5 tickets; next to the board says closer to the process than the board, further from it, or level with it (within 5 points, 0.5 for the ratio), only when both sides have enough"
     }
   ],
   "plan": [

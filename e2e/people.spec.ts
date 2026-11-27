@@ -386,12 +386,12 @@ test.describe("the Person filter on Findings", () => {
     await page.goto(`/findings?person=${ada.value}&q=zzzz-no-such-thing`);
     await expect(page.getByText("No findings match these filters")).toBeVisible();
     await expect(
-      page.getByText("open findings in DEMO, assigned to Ada Brooks, matching “zzzz-no-such-thing”.", { exact: true }),
+      page.getByText("Open findings in DEMO, assigned to Ada Brooks, matching “zzzz-no-such-thing”.", { exact: true }),
     ).toBeVisible();
 
     await page.goto("/findings?person=unassigned&q=zzzz-no-such-thing");
     await expect(
-      page.getByText("open findings in DEMO, on unassigned tickets, matching “zzzz-no-such-thing”.", { exact: true }),
+      page.getByText("Open findings in DEMO, on unassigned tickets, matching “zzzz-no-such-thing”.", { exact: true }),
     ).toBeVisible();
     expect(await axeBlocking(page)).toEqual([]);
   });
@@ -400,7 +400,7 @@ test.describe("the Person filter on Findings", () => {
     expect((await findings(request, `?person=${NOBODY_HERE}`)).total).toBe(0);
     await page.goto(`/findings?person=${NOBODY_HERE}`);
     await expect(page.getByText("No findings match these filters")).toBeVisible();
-    await expect(page.getByText("open findings in DEMO, assigned to someone not on this board.", { exact: true })).toBeVisible();
+    await expect(page.getByText("Open findings in DEMO, assigned to someone not on this board.", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Person Not on this board" })).toBeVisible();
     await expect(page.getByRole("main")).not.toContainText(NOBODY_HERE);
     expect(await axeBlocking(page)).toEqual([]);

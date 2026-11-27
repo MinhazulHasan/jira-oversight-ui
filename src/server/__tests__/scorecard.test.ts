@@ -136,7 +136,7 @@ describe("the sample holds every state a page must draw", () => {
   const marks = new Set<string>();
   let tooFew = 0;
   for (const days of SCORECARD_DAYS) {
-    for (const row of scorecards(dataset, days).holders) {
+    for (const row of scorecards(dataset, days).withTickets) {
       for (const figure of Object.values(row.values)) {
         if (figure.vs_board) marks.add(figure.vs_board);
         if (figure.value !== null && !figure.enough && figure.denominator !== null) tooFew += 1;
@@ -169,7 +169,7 @@ describe("the sample holds every state a page must draw", () => {
   });
 
   it("everyone with comparison on, the board's figures alone with it off", () => {
-    expect(body().people.map((row) => row.person.id)).toEqual(scorecards(dataset, 90).holders.map((row) => row.person.id));
+    expect(body().people.map((row) => row.person.id)).toEqual(scorecards(dataset, 90).withTickets.map((row) => row.person.id));
     expect(body(90, [], "off").people).toEqual([]);
     expect(scorecardView(dataset, { days: 90, person: [CARMEN, NOOR] }, "off")).toMatchObject({ found: false, status: 403, error: "comparison_off" });
   });

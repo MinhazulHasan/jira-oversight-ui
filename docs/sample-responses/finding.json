@@ -62,7 +62,8 @@
       "warning_rule_id": "W-EST-01",
       "warning_finding_id": "a59f6d27db353a9c64e3667e6e1e4e86",
       "warned_at": "2026-10-23T12:29:00.000Z"
-    }
+    },
+    "ignore": null
   },
   "timeline": [
     {

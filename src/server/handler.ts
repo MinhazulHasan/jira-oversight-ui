@@ -2,6 +2,7 @@ import "server-only";
 
 import type { NextRequest } from "next/server";
 
+import { IGNORE_BODY_MAX_BYTES } from "@/lib/api/ignores";
 import {
   askResponseSchema,
   healthSchema,
@@ -19,7 +20,20 @@ import { sessionOrRefusal } from "./auth/gate";
 import { askLevel, readableBoards } from "./auth/roles";
 import { LOCAL_READER, viewerOf, type ReaderContext } from "./auth/viewer";
 import { cardForBoards, projectsFor } from "./boards";
-import { ASK_BODY_FORM, DRAFT_BODY_FORM, RESPONSE_SCHEMAS, resolveGet, resolvePost, ruleSettingsPost, type Resolution, type Resolved } from "./endpoints";
+import {
+  ASK_BODY_FORM,
+  CREDIT_BODY_FORM,
+  creditPut,
+  DRAFT_BODY_FORM,
+  ignorePost,
+  RESPONSE_SCHEMAS,
+  resolveGet,
+  resolvePost,
+  resolvePut,
+  ruleSettingsPost,
+  type Resolution,
+  type Resolved,
+} from "./endpoints";
 import { ConfigError, readConfig, type LiveConfig, type SampleConfig, type ServerConfig } from "./env";
 import { json, problem } from "./http";
 import { BOARD_NOT_SYNCED, BOARDLESS_ROUTES, forward, unknownBoard } from "./live";
@@ -40,11 +54,14 @@ const ASK_OUTSIDE = "That question reaches a board your Jira account cannot open
 const PEOPLE_NOT_ALLOWED = "Only admins can ask about a person. Ask about the work instead, or use the Person filter on Findings.";
 const DIRECTORY_NOT_ALLOWED = "Only admins can pick people to ask about.";
 const SCORECARD_NOT_ALLOWED = "Only admins can see people's scorecards.";
+const PROOF_NOT_ALLOWED = "Only admins can see the tickets behind people's figures.";
 const ACCESS_LOG_NOT_ALLOWED = "Only admins can see the access log.";
 const USAGE_NOT_ALLOWED = "Only admins can see Ask's usage.";
 const CARD_NOT_ALLOWED = "Only admins can see person cards.";
 const RULE_SETTINGS_NOT_SHOWN = "Only admins can see rule settings.";
 const RULE_SETTINGS_NOT_CHANGED = "Only admins can change rule settings.";
+const CREDIT_NOT_SHOWN = "Only admins can see how finished work is counted.";
+const CREDIT_NOT_CHANGED = "Only admins can change how finished work is counted.";
 const NAMED_AT_TEAM_LEVEL = "The oversight service named people in a team-level answer, so it was not passed on.";
 
 /** What a POST refused for where it came from, or for a body that is not JSON, is told; null for one with no body. */
@@ -65,6 +82,16 @@ const QUESTION_POST: PostWords = {
   elsewhere: "Questions can be asked only from this dashboard's own pages, so nothing was asked.",
   notJson: "A question is sent as a JSON body, so nothing was asked.",
 };
+const CREDIT_PUT: PostWords = {
+  elsewhere: "How finished work is counted can be changed only from this dashboard's own pages, so nothing was changed.",
+  notJson: "How finished work is counted is changed with a JSON body, so nothing was changed.",
+};
+const IGNORE_POST: PostWords = {
+  elsewhere: "Findings can be ignored or restored only from this dashboard's own pages, so nothing was changed.",
+  notJson: "Findings are ignored or restored with a JSON body, so nothing was changed.",
+};
+const IGNORES_NOT_SHOWN = "Only admins can see the ignored findings' ignores.";
+const IGNORES_NOT_CHANGED = "Only admins can ignore findings or restore them.";
 const SYNC_POST: PostWords = {
   elsewhere: "A sync can be started only from this dashboard's own pages, so none was started.",
   notJson: null,
@@ -123,6 +150,10 @@ async function serveSample(config: SampleConfig, resolved: Resolved, reader: Rea
   const answer = sampleResponse(dataset, route, delay, {
     peopleComparison: config.peopleComparison,
     settings,
+    // A change of the credit setting is recorded under the reader's name and the sample's clock.
+    credit: { by: (reader.viewer ?? LOCAL_READER).name, at },
+    // An ignore or a restore is recorded under the reader and the sample's clock.
+    ignores: { reader: reader.viewer ?? LOCAL_READER, at },
     boards,
     sync: { board, at, readMs: config.latency.read },
   });
@@ -202,6 +233,22 @@ async function portfolioFor(response: Response, allowed: readonly string[]): Pro
   });
 }
 
+/** The routes whose findings carry their ignore: who ignored one is said at the people level alone. */
+const FINDING_ROUTES: ReadonlySet<Resolved["route"]["name"]> = new Set(["findings", "finding", "issue_timeline"]);
+
+/** The findings with each ignore's name taken out, for a team-level reader, whatever the service sent. */
+async function ignorersHidden(response: Response): Promise<Response> {
+  const body = (await response.json()) as Record<string, unknown>;
+  const hide = (finding: unknown) => {
+    const ignore = (finding as { ignore?: unknown } | null)?.ignore;
+    return ignore && typeof ignore === "object" ? { ...(finding as object), ignore: { ...ignore, by: null } } : finding;
+  };
+  if (Array.isArray(body.items)) body.items = body.items.map(hide);
+  if (Array.isArray(body.findings)) body.findings = body.findings.map(hide);
+  if (body.finding) body.finding = hide(body.finding);
+  return json(body);
+}
+
 async function personCardFor(response: Response, allowed: readonly string[]): Promise<Response> {
   const parsed = personCardSchema.safeParse(await response.json());
   if (!parsed.success) return problem(500, "internal_error", "Something went wrong in this interface. Try again in a moment.");
@@ -237,9 +284,18 @@ const SETTINGS_BODY: BodyWords = {
   notJson: 'Send a JSON body of the form {"changes": [...]}, as the rule settings page does.',
 };
 const DRAFT_BODY: BodyWords = { tooLarge: "The request body is far larger than a rule's description can be.", notJson: DRAFT_BODY_FORM };
+const CREDIT_BODY: BodyWords = { tooLarge: "The request body is far larger than a credit setting can be.", notJson: CREDIT_BODY_FORM };
+const IGNORE_BODY: BodyWords = {
+  tooLarge: "The request body is larger than an ignore takes (1 MB). Ignore all that match the filters instead.",
+  notJson: 'Send a JSON body, such as {"target": {"finding_ids": [...]}, "scope": "finding"}.',
+};
 
-async function readBody(request: Request, words: BodyWords): Promise<{ ok: true; body: unknown } | { ok: false; response: Response }> {
-  const text = await readCapped(request, MAX_BODY_BYTES);
+async function readBody(
+  request: Request,
+  words: BodyWords,
+  limit = MAX_BODY_BYTES,
+): Promise<{ ok: true; body: unknown } | { ok: false; response: Response }> {
+  const text = await readCapped(request, limit);
   if (text === null) {
     return { ok: false, response: problem(413, "bad_request", words.tooLarge) };
   }
@@ -279,7 +335,7 @@ function crossSiteRefusal(request: NextRequest, words: PostWords): Response | nu
   return null;
 }
 
-export async function handle(method: "GET" | "POST", segments: readonly string[], request: NextRequest): Promise<Response> {
+export async function handle(method: "GET" | "POST" | "PUT", segments: readonly string[], request: NextRequest): Promise<Response> {
   try {
     // src/proxy.ts turns away requests without a session before they get here; checked again all the same.
     const access = await sessionOrRefusal(request);
@@ -299,6 +355,17 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
     let resolution: Resolution;
     if (method === "GET") {
       resolution = resolveGet(segments, search);
+    } else if (method === "PUT" && !creditPut(segments)) {
+      // Nothing else takes a PUT: refused for its path before any body is read.
+      resolution = resolvePut(segments, search, null);
+    } else if (method === "PUT") {
+      // A change of the credit setting: from this dashboard's own pages, as JSON, by an admin, decided before its body is read.
+      const forged = crossSiteRefusal(request, CREDIT_PUT);
+      if (forged) return forged;
+      if (askLevel(access.session) === "team") return problem(403, "people_not_allowed", CREDIT_NOT_CHANGED);
+      const read = await readBody(request, CREDIT_BODY);
+      if (!read.ok) return read.response;
+      resolution = resolvePut(segments, search, read.body);
     } else if (segments.length === 1 && segments[0] === "ask") {
       // A question: from this dashboard's own pages, as JSON, decided before its body is read.
       const forged = crossSiteRefusal(request, QUESTION_POST);
@@ -312,6 +379,14 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
       if (forged) return forged;
       if (askLevel(access.session) === "team") return problem(403, "people_not_allowed", RULE_SETTINGS_NOT_CHANGED);
       const read = await readBody(request, draft ? DRAFT_BODY : SETTINGS_BODY);
+      if (!read.ok) return read.response;
+      resolution = resolvePost(segments, search, read.body);
+    } else if (ignorePost(segments)) {
+      // An ignore, its preview or a restore: from this dashboard's own pages, as JSON, by an admin, before its body is read.
+      const forged = crossSiteRefusal(request, IGNORE_POST);
+      if (forged) return forged;
+      if (askLevel(access.session) === "team") return problem(403, "people_not_allowed", IGNORES_NOT_CHANGED);
+      const read = await readBody(request, IGNORE_BODY, IGNORE_BODY_MAX_BYTES);
       if (!read.ok) return read.response;
       resolution = resolvePost(segments, search, read.body);
     } else {
@@ -349,8 +424,24 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
       if (askLevel(access.session) === "team") return problem(403, "people_not_allowed", SCORECARD_NOT_ALLOWED);
       resolved = { ...resolved, route: { ...route, level: "people" } };
     }
+    if (route.name === "scorecard_tickets") {
+      if (askLevel(access.session) === "team") return problem(403, "people_not_allowed", PROOF_NOT_ALLOWED);
+      resolved = { ...resolved, route: { ...route, level: "people" } };
+    }
     if (route.name === "person_card") {
       if (askLevel(access.session) === "team") return problem(403, "people_not_allowed", CARD_NOT_ALLOWED);
+      resolved = { ...resolved, route: { ...route, level: "people" } };
+    }
+    if (route.name === "people_credit" || route.name === "people_credit_save") {
+      if (askLevel(access.session) === "team") {
+        return problem(403, "people_not_allowed", route.name === "people_credit" ? CREDIT_NOT_SHOWN : CREDIT_NOT_CHANGED);
+      }
+      resolved = { ...resolved, route: { ...route, level: "people" } };
+    }
+    if (route.name === "ignored" || route.name === "ignore_preview" || route.name === "ignore" || route.name === "restore") {
+      if (askLevel(access.session) === "team") {
+        return problem(403, "people_not_allowed", route.name === "ignored" ? IGNORES_NOT_SHOWN : IGNORES_NOT_CHANGED);
+      }
       resolved = { ...resolved, route: { ...route, level: "people" } };
     }
     if (route.name === "access_log" || route.name === "usage") {
@@ -389,6 +480,7 @@ export async function handle(method: "GET" | "POST", segments: readonly string[]
     if (route.name === "ask" && response.ok && (route.level === "team" || allowed !== null)) {
       return await answerWithin(response, allowed !== null ? board : null, route.level);
     }
+    if (FINDING_ROUTES.has(route.name) && response.ok && reader.level === "team") return await ignorersHidden(response);
     return response;
   } catch (error) {
     console.error("oversight route failed", error);

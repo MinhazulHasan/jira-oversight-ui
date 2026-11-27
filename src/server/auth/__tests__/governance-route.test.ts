@@ -361,13 +361,13 @@ describe("governance in live mode", () => {
     await expectProblem(await ask("Where do tickets get stuck most?"), 503, "upstream_unavailable");
   });
 
-  it("tells the service the level when Findings are filtered by a person, and never otherwise", async () => {
+  it("tells the service the level with every findings read: the access log's when filtered by a person, and who ignored a finding", async () => {
     const findings = (await import("../../../../docs/sample-responses/findings.json")).default;
     const upstream = liveService(() => Response.json({ ...findings, meta: { ...findings.meta, data_mode: "live" } }));
     await call(`findings?person=${ADA}`);
     expect(new URL(String(upstream.mock.calls[0][0])).searchParams.get("level")).toBe("people");
     await call("findings?severity=breach");
-    expect(new URL(String(upstream.mock.calls[1][0])).searchParams.has("level")).toBe(false);
+    expect(new URL(String(upstream.mock.calls[1][0])).searchParams.get("level")).toBe("people");
   });
 });
 
